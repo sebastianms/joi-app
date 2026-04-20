@@ -26,13 +26,13 @@
 - [x] T012 [P] Configurar `docker-compose.yml` en la raíz para orquestar ambos servicios y actualizar `README.md`.
 
 ## Phase 4: User Story 1 (SQL Connections)
-- [ ] T013 [US1] Implementar servicio `ConnectionTesterService` (SRP) en `backend/app/services/connection_tester.py`
+- [x] T013 [US1] Implementar servicio `ConnectionTesterService` (SRP) en `backend/app/services/connection_tester.py`
   - Lógica de test de conexión read-only agnóstica al tipo de DB (OCP)
-- [ ] T014 [US1] Escribir tests unitarios para `ConnectionTesterService` con mocks de DB en `backend/tests/unit/test_connection_tester.py`
-- [ ] T015 [US1] Crear endpoint POST `/api/connections/sql` con validación Pydantic en `backend/app/api/endpoints/connections.py`
-- [ ] T016 [US1] Escribir test de integración del endpoint en `backend/tests/integration/test_connections_endpoint.py`
-- [ ] T017 [US1] Crear componente `SQLConnectionForm` (props tipadas, un solo propósito) en `frontend/src/components/setup/sql-form.tsx`
-- [ ] T018 [US1] Integrar el formulario en la vista principal del wizard en `frontend/src/app/setup/page.tsx`
+- [x] T014 [US1] Escribir tests unitarios para `ConnectionTesterService` con mocks de DB en `backend/tests/unit/test_connection_tester.py`
+- [x] T015 [US1] Crear endpoint POST `/api/connections/sql` con validación Pydantic en `backend/app/api/endpoints/connections.py`
+- [x] T016 [US1] Escribir test de integración del endpoint en `backend/tests/integration/test_connections_endpoint.py`
+- [x] T017 [US1] Crear componente `SQLConnectionForm` (props tipadas, un solo propósito) en `frontend/src/components/setup/sql-form.tsx`
+- [x] T018 [US1] Integrar el formulario en la vista principal del wizard en `frontend/src/app/setup/page.tsx`
 - [ ] T019 [US1] Escribir test e2e del flujo completo "conexión SQL exitosa" en `frontend/e2e/setup-sql.spec.ts`
 
 ## Phase 5: User Story 2 (JSON Upload)
