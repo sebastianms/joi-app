@@ -1,13 +1,24 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
+from app.db.base import Base
+from app.db.session import engine
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Inicializar las tablas de base de datos
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
 
 app = FastAPI(
     title="Joi-App API",
     description="Backend de la plataforma Joi-App — Generación Dinámica de UI con IA",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
