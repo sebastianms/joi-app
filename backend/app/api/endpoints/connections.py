@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,6 +6,7 @@ from app.db.session import get_db
 from app.models.connection import DataSourceConnection, DataSourceType, ConnectionStatus
 from app.repositories.connection_repository import SQLiteConnectionRepository
 from app.services.connection_tester import ConnectionTesterService
+from app.services.json_handler import JsonFileService, FileTooLargeError, InvalidJsonError
 
 router = APIRouter()
 
@@ -66,6 +67,47 @@ async def create_sql_connection(
     )
 
     # 3. Guardar en el repositorio (DIP)
+    repo = SQLiteConnectionRepository(db)
+    saved_connection = await repo.save(new_connection)
+
+    return saved_connection
+
+@router.post("/json", response_model=ConnectionResponse, status_code=status.HTTP_201_CREATED)
+async def upload_json_connection(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    user_session_id: str = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sube un archivo JSON como fuente de datos estática.
+    Valida el tamaño (<10MB) y la integridad del JSON.
+    """
+    if file.filename and not file.filename.endswith(".json"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be a .json file")
+
+    json_service = JsonFileService()
+    
+    try:
+        # FastAPI's UploadFile.read() asíncrono
+        content = await file.read()
+        file_path, _ = await json_service.save_and_validate(content, file.filename or "upload.json")
+    except FileTooLargeError as e:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(e))
+    except InvalidJsonError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error: {str(e)}")
+
+    # Crear modelo de dominio para el archivo
+    new_connection = DataSourceConnection(
+        user_session_id=user_session_id,
+        name=name,
+        source_type=DataSourceType.JSON,
+        connection_string=file_path, # Guardamos la ruta física como connection_string
+        status=ConnectionStatus.ACTIVE
+    )
+
     repo = SQLiteConnectionRepository(db)
     saved_connection = await repo.save(new_connection)
 
