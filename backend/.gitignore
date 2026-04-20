@@ -8,3 +8,4 @@ joi_app.db
 htmlcov/
 .pytest_cache/
 uploads/
+coverage.xml

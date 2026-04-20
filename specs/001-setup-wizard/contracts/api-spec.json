@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Setup Wizard API Contracts",
+    "version": "1.0.0",
+    "description": "Contratos para la conexión a orígenes de datos en el MVP."
+  },
+  "paths": {
+    "/api/connections/sql": {
+      "post": {
+        "summary": "Crea y prueba una conexión SQL (PostgreSQL, MySQL, SQLite)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["POSTGRESQL", "MYSQL", "SQLITE"] },
+                  "name": { "type": "string" },
+                  "connection_string": { "type": "string", "description": "String completo de conexión" }
+                },
+                "required": ["type", "name", "connection_string"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Conexión exitosa y guardada en BD secundaria" },
+          "400": { "description": "Error al probar conexión (credenciales inválidas o host inaccesible)" }
+        }
+      }
+    },
+    "/api/connections/json": {
+      "post": {
+        "summary": "Sube un archivo JSON (límite estricto 10MB)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "Nombre de la fuente" },
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["name", "file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Archivo subido, parseado correctamente y registrado" },
+          "413": { "description": "Archivo excede 10MB" },
+          "400": { "description": "Archivo JSON inválido" }
+        }
+      }
+    }
+  }
+}
