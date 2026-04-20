@@ -27,7 +27,18 @@ joi-app/
 └── docs/             # Artefactos generados (badges, etc.)
 ```
 
-## Dev Setup
+## Docker (Recomendado)
+
+Levanta toda la plataforma con un solo comando (construye y orquesta backend y frontend):
+
+```bash
+docker-compose up --build
+```
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:8000/api](http://localhost:8000/api)
+- Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## Dev Setup (Local)
 
 ```bash
 # Backend

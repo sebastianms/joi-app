@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: joi-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Montamos un volumen para la base de datos local
+      - ./backend/data:/app/data
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/joi.db
+      - CORS_ORIGINS=["http://localhost:3000"]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: joi-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Asegura que las llamadas a la API vayan al servicio backend en modo cliente o SSR según corresponda
+      # (En SSR usaría el nombre del servicio, pero como el frontend de Nextjs llama desde el browser en este MVP, usamos localhost)
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+    restart: unless-stopped

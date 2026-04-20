@@ -1,0 +1,9 @@
+# frontend/.dockerignore
+node_modules
+npm-debug.log
+.next
+out
+build
+.env*.local
+.vercel
+.eslintcache
