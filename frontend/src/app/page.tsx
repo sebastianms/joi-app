@@ -1,3 +1,5 @@
+"use client"
+
 import { SQLConnectionForm } from "@/components/setup/sql-form";
 import { JSONUploadForm } from "@/components/setup/json-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

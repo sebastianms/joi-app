@@ -57,7 +57,7 @@ export function JSONUploadForm() {
       formData.append("name", connectionName)
       formData.append("user_session_id", "demo-session-123") // Hardcoded para MVP multitenant
 
-      const response = await fetch("http://localhost:8000/api/connections/json", {
+      const response = await fetch("http://127.0.0.1:8000/api/connections/json", {
         method: "POST",
         body: formData,
       })

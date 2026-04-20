@@ -33,14 +33,16 @@
 - [x] T016 [US1] Escribir test de integración del endpoint en `backend/tests/integration/test_connections_endpoint.py`
 - [x] T017 [US1] Crear componente `SQLConnectionForm` (props tipadas, un solo propósito) en `frontend/src/components/setup/sql-form.tsx`
 - [x] T018 [US1] Integrar el formulario en la vista principal del wizard en `frontend/src/app/setup/page.tsx`
-- [ ] T019 [US1] Escribir test e2e del flujo completo "conexión SQL exitosa" en `frontend/e2e/setup-sql.spec.ts`
+- [x] T019 [US1] Escribir test e2e del flujo completo "conexión SQL exitosa" en `frontend/e2e/setup-sql.spec.ts`
 
 ## Phase 5: User Story 2 (JSON Upload)
-- [ ] T020 [US2] Implementar servicio `JsonFileService` (SRP) para parsing, validación de esquema y almacenamiento seguro en `backend/app/services/json_handler.py`
-  - Rechaza archivos > 10 MB con error 413 explícito
-- [ ] T023 [US2] Escribir test e2e del flujo completo "subida de JSON válido" y "rechazo de archivo grande" en `frontend/e2e/setup-json.spec.ts`
+- [x] T020: Implementar servicio `JsonFileService` (SRP) para parsing, validación de esquema y almacenamiento seguro en `backend/app/services/json_handler.py`
+- [x] T021: Crear endpoint `POST /api/connections/json` en `backend/app/api/endpoints/connections.py`
+- [x] T022: Crear componente `JSONUploadForm.tsx` con feedback de carga en `frontend/src/components/setup/json-form.tsx`
+- [x] T023: Escribir test e2e del flujo completo "subida de JSON válido" y "rechazo de archivo grande" en `frontend/e2e/setup-json.spec.ts`
 
 ## Phase 5: Polish
-- [ ] T024 Revisar coverage total de tests en backend (`pytest --cov`) y asegurar mínimo 80% en servicios y endpoints
-- [ ] T025 Revisar consistencia de nombres y estructura de carpetas contra las reglas de Clean Code definidas en la fase de Plan
-- [ ] T026 Asegurar que no existe lógica duplicada entre `connection_tester.py` y `json_handler.py` (DRY)
+- [x] T024 Revisar coverage total de tests en backend (`pytest --cov`) y asegurar mínimo 80% en servicios y endpoints
+- [x] T025 Realizar auditoría de Clean Code con el skill Deckard y corregir deudas técnicas menores
+- [x] T026 Verificar persistencia de ambas fuentes de datos en la base de datos de auditoría
+- [x] T027 Consolidar branch y documentar en `walkthrough.md`

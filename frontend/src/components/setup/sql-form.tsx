@@ -22,7 +22,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 const connectionSchema = z.object({
   name: z.string().min(2, "Connection name must be at least 2 characters"),
   source_type: z.enum(["POSTGRESQL", "MYSQL", "SQLITE", "FILE"]),
-  connection_string: z.string().url("Must be a valid database connection string (e.g. postgresql://...)"),
+  connection_string: z.string().min(5, "Must be a valid database connection string (e.g. sqlite+aiosqlite:///...)"),
   user_session_id: z.string(), // Oculto o auto-generado
 });
 
@@ -47,7 +47,7 @@ export function SQLConnectionForm() {
     setErrorMessage(null);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
       const response = await fetch(`${baseUrl}/connections/sql`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,68 +90,57 @@ export function SQLConnectionForm() {
         </Alert>
       )}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Connection Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Production DB" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      <form 
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const data = {
+            name: formData.get("name") as string,
+            source_type: formData.get("source_type") as any,
+            connection_string: formData.get("connection_string") as string,
+            user_session_id: "demo-session-123"
+          };
+          onSubmit(data);
+        }} 
+        className="space-y-6"
+      >
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Connection Name</label>
+          <input 
+            name="name" 
+            placeholder="Production DB" 
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            required
           />
+        </div>
 
-          <FormField
-            control={form.control}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Engine</label>
+          <select
             name="source_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Engine</FormLabel>
-                <FormControl>
-                  <select
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    {...field}
-                  >
-                    <option value="POSTGRESQL">PostgreSQL</option>
-                    <option value="MYSQL">MySQL</option>
-                    <option value="SQLITE">SQLite</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            required
+          >
+            <option value="POSTGRESQL">PostgreSQL</option>
+            <option value="MYSQL">MySQL</option>
+            <option value="SQLITE">SQLite</option>
+          </select>
+        </div>
 
-          <FormField
-            control={form.control}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Connection String</label>
+          <input
             name="connection_string"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Connection String</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="postgresql+asyncpg://user:pass@host/db"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Standard SQLAlchemy connection string.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            placeholder="postgresql+asyncpg://user:pass@host/db"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            required
           />
+        </div>
 
-          <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Testing connection..." : "Connect"}
-          </Button>
-        </form>
-      </Form>
+        <Button type="submit" className="w-full">
+          Connect
+        </Button>
+      </form>
     </div>
   );
 }
