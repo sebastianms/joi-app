@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+joi_app.db
+.coverage
+htmlcov/
+.pytest_cache/
+uploads/
