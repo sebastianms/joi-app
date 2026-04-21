@@ -29,7 +29,7 @@ test.describe('JSON Uploads Setup', () => {
 
   test('should successfully upload a valid JSON file', async ({ page }) => {
     // 1. Navigate to the setup page
-    await page.goto('/');
+    await page.goto('/setup');
 
     // 2. Go to JSON File tab
     const jsonTab = page.locator('button[role="tab"]', { hasText: 'JSON File' });
@@ -54,7 +54,7 @@ test.describe('JSON Uploads Setup', () => {
   });
 
   test('should reject a JSON file larger than 10MB on the client side', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/setup');
 
     const jsonTab = page.locator('button[role="tab"]', { hasText: 'JSON File' });
     await jsonTab.click();

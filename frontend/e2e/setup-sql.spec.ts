@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('SQL Connections Setup', () => {
   test('should successfully test and save a valid SQL connection', async ({ page }) => {
     // 1. Navigate to the setup page
-    await page.goto('/');
+    await page.goto('/setup');
 
     // 2. Ensure we are on the SQL Database tab
     const sqlTab = page.locator('button[role="tab"]', { hasText: 'SQL Database' });
@@ -27,7 +27,7 @@ test.describe('SQL Connections Setup', () => {
   });
 
   test('should display an error for an invalid SQL connection', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/setup');
 
     const sqlTab = page.locator('button[role="tab"]', { hasText: 'SQL Database' });
     await sqlTab.click();
