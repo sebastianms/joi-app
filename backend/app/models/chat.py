@@ -1,0 +1,30 @@
+from enum import Enum
+from typing import Optional
+from pydantic import BaseModel, Field
+
+class Role(str, Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+class IntentType(str, Enum):
+    SIMPLE = "simple"
+    COMPLEX = "complex"
+
+class Message(BaseModel):
+    role: Role
+    content: str
+
+class ChatRequest(BaseModel):
+    session_id: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1)
+
+class TriageResult(BaseModel):
+    intent_type: IntentType
+    confidence: float = Field(ge=0.0, le=1.0)
+    matched_pattern: Optional[str] = None
+    suggested_route: str
+
+class ChatResponse(BaseModel):
+    response: str
+    intent_type: IntentType

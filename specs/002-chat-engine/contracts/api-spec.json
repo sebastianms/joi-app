@@ -1,0 +1,59 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Chat API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/chat/messages": {
+      "post": {
+        "summary": "Send a message to the chat engine",
+        "description": "Processes a user message through the hybrid triage engine.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "description": "Session identifier to maintain context"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "The text message from the user"
+                  }
+                },
+                "required": ["session_id", "message"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "response": {
+                      "type": "string",
+                      "description": "The response from the system"
+                    },
+                    "intent_type": {
+                      "type": "string",
+                      "enum": ["simple", "complex"],
+                      "description": "How the message was routed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
