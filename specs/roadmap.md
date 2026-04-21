@@ -16,10 +16,11 @@
 - [x] Conectores de base de datos (PostgreSQL, MySQL, SQLite, JSON) interactivos.
 - [ ] Módulo de selección de framework UI y carga de Design System (Diferido - Ver Spec 001).
 
-## Phase 4: Chat Engine & Hybrid Triage (Shippable Slice 2)
-- Implementación del sistema de chat interactivo.
-- Construcción del motor de Triage (Enfoque determinístico + probabilístico).
-- Ruteo de intenciones simples vs complejas.
+## Phase 4: Chat Engine & Hybrid Triage (Shippable Slice 2) [DONE]
+- [x] Implementación del sistema de chat interactivo.
+- [x] Construcción del motor de Triage (Enfoque determinístico — regex/keywords).
+- [x] Ruteo de intenciones simples vs complejas.
+- [ ] Capa probabilística (LLM classifier) — diferida a Feature 003.
 
 ## Phase 5: Multi-Agent Pipeline & Rendering Canvas (Shippable Slice 3)
 - Desarrollo del Agente de Datos (Text-to-SQL y Extracción a JSON).

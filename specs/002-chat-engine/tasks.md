@@ -21,13 +21,13 @@
 - [x] T007 [US1] Escribir test de integración del endpoint en `backend/tests/integration/test_chat_endpoint.py`
 
 ## Phase 4: User Story 1 (Conversación Base - Frontend)
-- [ ] T008 [P] [US1] Crear custom hook `useChat` para gestionar el estado de los mensajes en memoria en `frontend/src/hooks/use-chat.ts`
-- [ ] T009 [P] [US1] Crear componente visual `MessageInput` (input de texto + botón enviar) en `frontend/src/components/chat/message-input.tsx`
-- [ ] T010 [P] [US1] Crear componente visual `MessageList` (renderizado del historial de chat) en `frontend/src/components/chat/message-list.tsx`
-- [ ] T011 [US1] Ensamblar el contenedor principal `ChatPanel` utilizando los componentes previos y el hook `useChat` en `frontend/src/components/chat/chat-panel.tsx`
-- [ ] T012 [US1] Integrar el `ChatPanel` en el layout principal del panel dual en `frontend/src/app/page.tsx` (o donde corresponda en la arquitectura actual)
+- [x] T008 [P] [US1] Crear custom hook `useChat` para gestionar el estado de los mensajes en memoria en `frontend/src/hooks/use-chat.ts`
+- [x] T009 [P] [US1] Crear componente visual `MessageInput` (input de texto + botón enviar) en `frontend/src/components/chat/message-input.tsx`
+- [x] T010 [P] [US1] Crear componente visual `MessageList` (renderizado del historial de chat) en `frontend/src/components/chat/message-list.tsx`
+- [x] T011 [US1] Ensamblar el contenedor principal `ChatPanel` utilizando los componentes previos y el hook `useChat` en `frontend/src/components/chat/chat-panel.tsx`
+- [x] T012 [US1] Integrar el `ChatPanel` en el layout principal del panel dual en `frontend/src/app/page.tsx` (o donde corresponda en la arquitectura actual)
 
 ## Phase 5: Polish
-- [ ] T013 Escribir test e2e validando el envío de un mensaje simple y su respuesta en `frontend/e2e/chat-basic.spec.ts`
-- [ ] T014 Validar métricas de Clean Code usando el skill Deckard y refactorizar si es necesario
-- [ ] T015 Documentar los cambios en el archivo `walkthrough.md` consolidando el completado de la Feature 002
+- [x] T013 Escribir test e2e validando el envío de un mensaje simple y su respuesta en `frontend/e2e/chat-basic.spec.ts`
+- [x] T014 Validar métricas de Clean Code usando el skill Deckard y refactorizar si es necesario
+- [x] T015 Documentar los cambios en el archivo `walkthrough.md` consolidando el completado de la Feature 002
