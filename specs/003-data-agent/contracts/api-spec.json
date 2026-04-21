@@ -1,0 +1,144 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Joi-App Chat API — Feature 003 Extension",
+    "version": "1.1.0",
+    "description": "Extensión retrocompatible del endpoint POST /api/chat/messages (introducido en Feature 002) que añade los campos opcionales 'extraction' y 'trace' en la respuesta cuando el Data Agent produce un resultado. Los consumidores existentes que solo leen 'response' e 'intent_type' siguen funcionando sin cambios."
+  },
+  "paths": {
+    "/api/chat/messages": {
+      "post": {
+        "summary": "Procesar un mensaje del chat",
+        "description": "Punto único de entrada del chat. El triage decide si responder directamente (intent simple) o invocar al Data Agent (intent complex). Cuando se invoca al Data Agent, la respuesta incluye 'extraction' y 'trace'.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta exitosa del chat.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request inválido (validación Pydantic)."
+          },
+          "500": {
+            "description": "Error interno no recuperable. Los errores de extracción (sintaxis, timeout, etc.) NO devuelven 500; se reportan como status='error' dentro de la extracción con HTTP 200."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChatRequest": {
+        "type": "object",
+        "required": ["session_id", "message"],
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Identificador de la sesión del usuario. Si es la primera vez que el backend lo ve, se crea la UserSession asociada con rag_enabled=true."
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Mensaje del usuario en lenguaje natural."
+          }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "required": ["response", "intent_type"],
+        "properties": {
+          "response": {
+            "type": "string",
+            "description": "Mensaje del asistente. Puede incluir un resumen natural de la extracción (p.ej. 'Encontré 42 filas de ventas en la región norte')."
+          },
+          "intent_type": {
+            "type": "string",
+            "enum": ["simple", "complex"],
+            "description": "Clasificación del triage."
+          },
+          "extraction": {
+            "oneOf": [
+              { "type": "null" },
+              { "$ref": "https://joi-app.local/schemas/data_extraction.v1.json" }
+            ],
+            "description": "Presente solo cuando intent_type='complex' y el Data Agent fue invocado. Sigue el schema data_extraction.v1 definido en data-extraction-v1.schema.json."
+          },
+          "trace": {
+            "oneOf": [
+              { "type": "null" },
+              { "$ref": "#/components/schemas/AgentTrace" }
+            ],
+            "description": "Presente solo cuando intent_type='complex'. Contiene metadatos de observabilidad."
+          }
+        }
+      },
+      "AgentTrace": {
+        "type": "object",
+        "required": [
+          "trace_id",
+          "extraction_id",
+          "pipeline",
+          "query_display",
+          "preview_rows",
+          "preview_columns",
+          "security_rejection",
+          "collapsed",
+          "created_at"
+        ],
+        "properties": {
+          "trace_id": { "type": "string", "format": "uuid" },
+          "extraction_id": { "type": "string", "format": "uuid" },
+          "pipeline": { "type": "string", "enum": ["sql", "json"] },
+          "query_display": {
+            "type": "string",
+            "description": "Consulta formateada para mostrar en el chat (SQL pretty-printed o JSONPath)."
+          },
+          "preview_rows": {
+            "type": "array",
+            "description": "Primeras N filas (default N=10). Subconjunto de DataExtraction.rows.",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "preview_columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "integer", "float", "boolean", "datetime", "null", "unknown"]
+                }
+              }
+            }
+          },
+          "security_rejection": {
+            "type": "boolean",
+            "description": "true si la consulta fue bloqueada por ReadOnlySqlGuard antes de ejecutarse."
+          },
+          "collapsed": {
+            "type": "boolean",
+            "description": "Estado UI inicial sugerido (default true)."
+          },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

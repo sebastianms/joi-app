@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://joi-app.local/schemas/data_extraction.v1.json",
+  "title": "DataExtraction v1",
+  "description": "Contrato de salida del Data Agent. Independiente del tipo de fuente (SQL o JSON). Consumido por el chat (Feature 003) y por el Widget Generation (Feature 004).",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "extraction_id",
+    "session_id",
+    "connection_id",
+    "source_type",
+    "query_plan",
+    "columns",
+    "rows",
+    "row_count",
+    "truncated",
+    "status",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "v1",
+      "description": "Versión del contrato. Debe ser 'v1' para este schema."
+    },
+    "extraction_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador único de la extracción."
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Sesión del usuario que originó la extracción."
+    },
+    "connection_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de la DataSourceConnection utilizada."
+    },
+    "source_type": {
+      "type": "string",
+      "enum": ["SQL_POSTGRESQL", "SQL_MYSQL", "SQL_SQLITE", "JSON"],
+      "description": "Tipo de fuente procesada."
+    },
+    "query_plan": {
+      "type": "object",
+      "required": ["language", "expression"],
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["sql", "jsonpath"]
+        },
+        "expression": {
+          "type": "string",
+          "description": "Consulta completa (SQL o JSONPath). Auditada en el trace."
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Parámetros bindeados si la consulta es parametrizada.",
+          "additionalProperties": true
+        },
+        "generated_by_model": {
+          "type": "string",
+          "description": "Alias del modelo LLM que generó la consulta (observabilidad)."
+        }
+      }
+    },
+    "columns": {
+      "type": "array",
+      "description": "Columnas del resultado, en orden.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "type": {
+            "type": "string",
+            "enum": ["string", "integer", "float", "boolean", "datetime", "null", "unknown"]
+          }
+        }
+      }
+    },
+    "rows": {
+      "type": "array",
+      "description": "Filas del resultado. Cada fila es un objeto { nombre_columna: valor }.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "row_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Cantidad de filas devueltas en 'rows'. Puede ser menor al total real si 'truncated=true'."
+    },
+    "truncated": {
+      "type": "boolean",
+      "description": "true si el resultado excedió el límite y fue recortado."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "error"]
+    },
+    "error": {
+      "type": ["object", "null"],
+      "description": "Presente solo si status='error'.",
+      "required": ["code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "NO_CONNECTION",
+            "SECURITY_REJECTION",
+            "QUERY_SYNTAX",
+            "TARGET_NOT_FOUND",
+            "PERMISSION_DENIED",
+            "TIMEOUT",
+            "AMBIGUOUS_PROMPT",
+            "SOURCE_UNAVAILABLE",
+            "UNKNOWN"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "description": "Mensaje legible para el usuario (en español)."
+        },
+        "technical_detail": {
+          "type": "string",
+          "description": "Detalle técnico para debugging (opcional)."
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp UTC ISO-8601."
+    }
+  },
+  "allOf": [
+    {
+      "description": "Si status='error', el campo error debe estar presente.",
+      "if": { "properties": { "status": { "const": "error" } } },
+      "then": { "required": ["error"] }
+    },
+    {
+      "description": "Si status='success', el campo error debe ser null o estar ausente.",
+      "if": { "properties": { "status": { "const": "success" } } },
+      "then": {
+        "properties": {
+          "error": { "type": "null" }
+        }
+      }
+    }
+  ]
+}
