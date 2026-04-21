@@ -12,8 +12,8 @@
 - [x] T002 [P] Escribir tests unitarios iniciales para la inicialización y validación de modelos en `backend/tests/unit/test_chat_models.py`
 
 ## Phase 2: User Story 2 (Triage de Intenciones)
-- [ ] T003 [US2] Implementar servicio `TriageEngineService` (Regex/Keywords determinístico) en `backend/app/services/triage_engine.py`
-- [ ] T004 [US2] Escribir tests unitarios para `TriageEngineService` validando correctamente clasificaciones simples vs complejas en `backend/tests/unit/test_triage_engine.py`
+- [x] T003 [US2] Implementar servicio `TriageEngineService` (Regex/Keywords determinístico) en `backend/app/services/triage_engine.py`
+- [x] T004 [US2] Escribir tests unitarios para `TriageEngineService` validando correctamente clasificaciones simples vs complejas en `backend/tests/unit/test_triage_engine.py`
 
 ## Phase 3: User Story 1 (Conversación Base - Backend)
 - [ ] T005 [US1] Implementar orquestador `ChatManagerService` integrando el motor de Triage en `backend/app/services/chat_manager.py`
