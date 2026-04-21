@@ -7,7 +7,7 @@ test.describe('Chat Engine - Basic Flow', () => {
     const chatPanel = page.getByRole('region', { name: 'Panel de chat' });
     await expect(chatPanel).toBeVisible();
 
-    const input = page.getByLabel('Mensaje');
+    const input = page.getByRole('textbox', { name: 'Mensaje' });
     await expect(input).toBeVisible();
 
     const userMessage = 'hola';
@@ -24,7 +24,7 @@ test.describe('Chat Engine - Basic Flow', () => {
   test('should route a data-visualization request through the complex pipeline placeholder', async ({ page }) => {
     await page.goto('/');
 
-    const input = page.getByLabel('Mensaje');
+    const input = page.getByRole('textbox', { name: 'Mensaje' });
     await input.fill('muéstrame las ventas por mes');
     await page.getByRole('button', { name: 'Enviar' }).click();
 
