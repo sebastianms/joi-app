@@ -17,7 +17,7 @@
 
 ## Phase 3: User Story 1 (Conversación Base - Backend)
 - [x] T005 [US1] Implementar orquestador `ChatManagerService` integrando el motor de Triage en `backend/app/services/chat_manager.py`
-- [ ] T006 [US1] Crear endpoint POST `/api/chat/messages` consumiendo `ChatManagerService` en `backend/app/api/endpoints/chat.py`
+- [x] T006 [US1] Crear endpoint POST `/api/chat/messages` consumiendo `ChatManagerService` en `backend/app/api/endpoints/chat.py`
 - [ ] T007 [US1] Escribir test de integración del endpoint en `backend/tests/integration/test_chat_endpoint.py`
 
 ## Phase 4: User Story 1 (Conversación Base - Frontend)
