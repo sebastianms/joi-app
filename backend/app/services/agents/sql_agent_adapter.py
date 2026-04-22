@@ -68,9 +68,14 @@ def _strip_fences(text: str) -> str:
 
 def _build_dsn(connection: DataSourceConnection) -> str:
     if connection.source_type == DataSourceType.SQLITE:
-        if not connection.file_path:
-            raise ValueError("SQLite connection missing file_path")
-        return f"sqlite:///{connection.file_path}"
+        if connection.file_path:
+            return f"sqlite:///{connection.file_path}"
+        if connection.connection_string:
+            # Strip async driver prefix saved by the setup wizard (aiosqlite → pysqlite)
+            return connection.connection_string.replace(
+                "sqlite+aiosqlite://", "sqlite://"
+            )
+        raise ValueError("SQLite connection missing both file_path and connection_string")
     if not connection.connection_string:
         raise ValueError(f"{connection.source_type.value} connection missing connection_string")
     return connection.connection_string

@@ -20,6 +20,25 @@ Purpose = Literal["sql", "json", "chat"]
 
 ChatMessage = dict[str, str]
 
+def _mock_sql_response() -> str:
+    return settings.MOCK_LLM_SQL
+
+
+_MOCK_STATIC: dict[str, str] = {
+    "json": "$.products[*]",
+    "chat": "Hola, ¿en qué puedo ayudarte?",
+}
+
+
+def _mock_content(purpose: Purpose) -> str:
+    if purpose == "sql":
+        return _mock_sql_response()
+    return _MOCK_STATIC[purpose]
+
+
+def _mock_response(purpose: Purpose) -> dict:
+    return {"choices": [{"message": {"content": _mock_content(purpose)}}]}
+
 
 class LiteLLMConfigurationError(RuntimeError):
     """Raised when no provider credentials are configured."""
@@ -51,6 +70,8 @@ class LiteLLMClient:
         purpose: Purpose,
         **kwargs: Any,
     ) -> str:
+        if settings.MOCK_LLM_RESPONSES:
+            return _mock_content(purpose)
         model = self.model_for(purpose)
         response = litellm.completion(model=model, messages=messages, **kwargs)
         return response["choices"][0]["message"]["content"]
@@ -62,6 +83,8 @@ class LiteLLMClient:
         purpose: Purpose,
         **kwargs: Any,
     ) -> Any:
+        if settings.MOCK_LLM_RESPONSES:
+            return _mock_response(purpose)
         model = self.model_for(purpose)
         return await litellm.acompletion(model=model, messages=messages, **kwargs)
 
@@ -99,7 +122,7 @@ def get_client() -> LiteLLMClient:
     with _lock:
         if _client is not None:
             return _client
-        if not _has_any_provider_configured():
+        if not settings.MOCK_LLM_RESPONSES and not _has_any_provider_configured():
             raise LiteLLMConfigurationError(
                 "No LLM provider credentials configured. Set ANTHROPIC_API_KEY, "
                 "OPENAI_API_KEY, or GEMINI_API_KEY in the environment."

@@ -38,7 +38,7 @@ export function SQLConnectionForm() {
       name: "",
       source_type: "POSTGRESQL",
       connection_string: "",
-      user_session_id: "demo-session-123", // Harcodeado temporalmente
+      user_session_id: "",
     },
   });
 
@@ -98,7 +98,7 @@ export function SQLConnectionForm() {
             name: formData.get("name") as string,
             source_type: formData.get("source_type") as ConnectionFormValues["source_type"],
             connection_string: formData.get("connection_string") as string,
-            user_session_id: "demo-session-123"
+            user_session_id: localStorage.getItem("joi_session_id") ?? "demo-session-123"
           };
           onSubmit(data);
         }} 

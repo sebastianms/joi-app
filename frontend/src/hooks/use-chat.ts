@@ -43,7 +43,16 @@ export function useChat(): UseChatResult {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionId] = useState<string>(generateId);
+  const [sessionId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const existing = localStorage.getItem("joi_session_id");
+      if (existing) return existing;
+      const id = generateId();
+      localStorage.setItem("joi_session_id", id);
+      return id;
+    }
+    return generateId();
+  });
   const sessionIdRef = useRef<string>(sessionId);
 
   const apiUrl = useMemo(

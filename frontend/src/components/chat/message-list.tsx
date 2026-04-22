@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/hooks/use-chat";
 import { AgentTraceBlock } from "./agent-trace-block";
@@ -48,6 +49,22 @@ export function MessageList({
   );
 }
 
+const ROUTE_RE = /(\/\w+)/g;
+const IS_ROUTE = /^\/\w+$/;
+
+function renderWithLinks(text: string) {
+  const parts = text.split(ROUTE_RE);
+  return parts.map((part, i) =>
+    IS_ROUTE.test(part) ? (
+      <Link key={i} href={part} className="underline hover:opacity-80">
+        {part}
+      </Link>
+    ) : (
+      part
+    )
+  );
+}
+
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   return (
@@ -66,7 +83,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         )}
         data-role={message.role}
       >
-        {message.content}
+        {isUser ? message.content : renderWithLinks(message.content)}
         {!isUser && message.trace && (
           <AgentTraceBlock
             trace={message.trace}
