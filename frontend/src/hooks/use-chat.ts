@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import type { AgentTrace, DataExtraction } from "@/types/extraction";
 
 export type ChatRole = "user" | "assistant";
 export type IntentType = "simple" | "complex";
@@ -10,11 +11,15 @@ export interface ChatMessage {
   role: ChatRole;
   content: string;
   intentType?: IntentType;
+  extraction?: DataExtraction;
+  trace?: AgentTrace;
 }
 
 interface ChatResponsePayload {
   response: string;
   intent_type: IntentType;
+  extraction?: DataExtraction;
+  trace?: AgentTrace;
 }
 
 interface UseChatResult {
@@ -83,6 +88,8 @@ export function useChat(): UseChatResult {
           role: "assistant",
           content: data.response,
           intentType: data.intent_type,
+          extraction: data.extraction,
+          trace: data.trace,
         };
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (err) {

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/hooks/use-chat";
+import { AgentTraceBlock } from "./agent-trace-block";
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -66,6 +67,12 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         data-role={message.role}
       >
         {message.content}
+        {!isUser && message.trace && (
+          <AgentTraceBlock
+            trace={message.trace}
+            extraction={message.extraction}
+          />
+        )}
       </div>
     </div>
   );
