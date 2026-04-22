@@ -88,7 +88,7 @@ async def test_chat_complex_intent_returns_extraction_contract():
     assert data["extraction"]["status"] == "error"
     assert data["extraction"]["error"]["code"] == "NO_CONNECTION"
     assert data["trace"]["pipeline"] == "sql"
-    assert data["response"] == "No hay una fuente de datos activa."
+    assert "No hay una fuente de datos activa" in data["response"]
 
 
 @pytest.mark.asyncio

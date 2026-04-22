@@ -149,10 +149,10 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 *El manejo técnico vive en `SqlAgentAdapter` (T019) y `JsonAgentAdapter` (T026). Estas tareas validan y refinan.*
 
-- [ ] **T037** [US4] Revisar mapeo de excepciones a `ErrorCode` en ambos adapters (T019, T026). Casos requeridos: `asyncio.TimeoutError`→`TIMEOUT`, `sqlalchemy.exc.OperationalError` con `no such table`→`TARGET_NOT_FOUND`, `sqlalchemy.exc.ProgrammingError`→`QUERY_SYNTAX`, `PermissionError`/driver permission errors→`PERMISSION_DENIED`, `ConnectionError`→`SOURCE_UNAVAILABLE`.
-- [ ] **T038** [US4] Verificar que tras un error, `ChatManagerService` NO levanta excepción: el error va dentro de `extraction.error` con HTTP 200. El historial del `Message` se escribe aun cuando `status="error"`.
-- [ ] **T039** [US4] [P] Agregar test [backend/tests/integration/test_error_recovery.py](backend/tests/integration/test_error_recovery.py): tras error, enviar un segundo prompt simple en la misma sesión y verificar que responde.
-- [ ] **T040** [US4] [P] Mejorar `response` textual en `ChatManagerService` (T022) para que los mensajes de error sean informativos: p.ej. `error.code == "TARGET_NOT_FOUND"` → `"No encontré una tabla llamada 'X'. ¿Querías referirte a una de estas: [lista]?"` (la lista puede ser best-effort; si es costoso, dejar mensaje genérico).
+- [x] **T037** [US4] Revisar mapeo de excepciones a `ErrorCode` en ambos adapters (T019, T026). Casos requeridos: `asyncio.TimeoutError`→`TIMEOUT`, `sqlalchemy.exc.OperationalError` con `no such table`→`TARGET_NOT_FOUND`, `sqlalchemy.exc.ProgrammingError`→`QUERY_SYNTAX`, `PermissionError`/driver permission errors→`PERMISSION_DENIED`, `ConnectionError`→`SOURCE_UNAVAILABLE`.
+- [x] **T038** [US4] Verificar que tras un error, `ChatManagerService` NO levanta excepción: el error va dentro de `extraction.error` con HTTP 200. El historial del `Message` se escribe aun cuando `status="error"`.
+- [x] **T039** [US4] [P] Agregar test [backend/tests/integration/test_error_recovery.py](backend/tests/integration/test_error_recovery.py): tras error, enviar un segundo prompt simple en la misma sesión y verificar que responde.
+- [x] **T040** [US4] [P] Mejorar `response` textual en `ChatManagerService` (T022) para que los mensajes de error sean informativos: p.ej. `error.code == "TARGET_NOT_FOUND"` → `"No encontré una tabla llamada 'X'. ¿Querías referirte a una de estas: [lista]?"` (la lista puede ser best-effort; si es costoso, dejar mensaje genérico).
 
 **Checkpoint US4**: Escenarios 4 y 5 de `quickstart.md` pasan.
 

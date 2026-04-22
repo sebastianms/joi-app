@@ -290,6 +290,8 @@ def _classify_sqlalchemy_error(exc: SQLAlchemyError) -> tuple[ErrorCode, str]:
     if isinstance(exc, OperationalError):
         if "no such table" in orig_text or "no such table" in text:
             return ErrorCode.TARGET_NOT_FOUND, "La tabla referenciada no existe en la fuente."
+        if "no such column" in orig_text or "no such column" in text:
+            return ErrorCode.TARGET_NOT_FOUND, "La columna referenciada no existe en la tabla."
         if "permission denied" in orig_text or "access denied" in orig_text:
             return ErrorCode.PERMISSION_DENIED, "Permiso denegado por el motor de base de datos."
         if any(s in orig_text for s in ("connection", "could not connect", "timeout")):

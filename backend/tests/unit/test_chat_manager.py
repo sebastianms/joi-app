@@ -126,7 +126,7 @@ async def test_complex_intent_error_uses_error_message(manager: ChatManagerServi
     response = await manager.handle(
         ChatRequest(session_id="s1", message="dame las ventas"), agent
     )
-    assert response.response == "No hay una fuente de datos activa."
+    assert "No hay una fuente de datos activa" in response.response
     assert response.extraction.status == "error"
 
 
