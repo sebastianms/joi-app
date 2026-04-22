@@ -66,14 +66,14 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 - [x] **T017** [US1] Crear [backend/app/services/agents/__init__.py](backend/app/services/agents/__init__.py) (package marker).
 - [x] **T018** [US1] ~~Crear `LiteLLMVannaService(vanna.core.llm.base.LlmService)`~~ — **REDEFINIDO por ADL-009**: Vanna eliminado del stack. `SqlAgentAdapter` (T019) consume `litellm_client.acompletion(..., purpose="sql")` directamente. No se crea archivo dedicado; `backend/app/services/litellm_client.py` ya expone `acompletion` (commit donde se agregó).
-- [ ] **T019** [US1] Crear [backend/app/services/agents/sql_agent_adapter.py](backend/app/services/agents/sql_agent_adapter.py) con `SqlAgentAdapter.extract(prompt, connection, session_id) -> DataExtraction` (parámetro `rag_enabled` removido — ver ADL-010):
+- [x] **T019** [US1] Crear [backend/app/services/agents/sql_agent_adapter.py](backend/app/services/agents/sql_agent_adapter.py) con `SqlAgentAdapter.extract(prompt, connection, session_id) -> DataExtraction` (parámetro `rag_enabled` removido — ver ADL-010):
   1. Construir prompt NL→SQL con `system_prompt` que incluya dialecto (`POSTGRESQL`/`MYSQL`/`SQLITE`) y schema de la conexión (tablas + columnas + tipos).
   2. Llamar `litellm_client.acompletion(messages, purpose="sql")` para generar SQL. Extraer el string SQL del response OpenAI-style.
   3. Pasar por `ReadOnlySqlGuard` (T012). Si rechaza → devuelve `DataExtraction(status="error", error.code="SECURITY_REJECTION", query_plan.expression=<sql rechazada>)`.
   4. Ejecutar con SQLAlchemy (`create_engine(connection_string).connect().execute(text(sql))`) envuelto en `asyncio.wait_for(asyncio.to_thread(...), QUERY_TIMEOUT_SECONDS)`. Mapear excepciones de driver a `ErrorCode` (ver T037).
   5. Truncar a `MAX_ROWS_PER_EXTRACTION`; setear `truncated=True` si aplica.
   6. Construir `DataExtraction` poblado (columns, rows, row_count, query_plan con `generated_by_model = settings.LLM_MODEL_SQL`).
-- [ ] **T020** [US1] [P] Crear [backend/tests/unit/test_sql_agent_adapter.py](backend/tests/unit/test_sql_agent_adapter.py): mockear `litellm_client.acompletion` y la ejecución SQLAlchemy; casos: éxito con filas, rechazo por guard, timeout, target inexistente, truncación.
+- [x] **T020** [US1] [P] Crear [backend/tests/unit/test_sql_agent_adapter.py](backend/tests/unit/test_sql_agent_adapter.py): mockear `litellm_client.acompletion` y la ejecución SQLAlchemy; casos: éxito con filas, rechazo por guard, timeout, target inexistente, truncación.
 
 ### Fachada y wiring al chat (US1)
 
