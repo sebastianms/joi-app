@@ -174,24 +174,24 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ## Edge Cases (cross-cutting)
 
-- [ ] **T046** Verificar edge "sin conexión activa" (Escenario 9): `DataAgentService` (T021) devuelve `error.code="NO_CONNECTION"` y el response incluye un mensaje que referencia `/setup`. Test en [backend/tests/integration/test_no_connection.py](backend/tests/integration/test_no_connection.py).
-- [ ] **T047** Verificar edge "truncación" (Escenario 10): bajar `MAX_ROWS_PER_EXTRACTION` y confirmar `truncated=true` en ambos adapters. Test en test_sql_agent_adapter y test_json_agent_adapter.
-- [ ] **T048** Verificar edge "resultado vacío": `row_count=0`, `truncated=false`, `status="success"`. Mensaje textual: `"La consulta no devolvió filas."`.
-- [ ] **T049** Verificar edge "compatibilidad hacia atrás" (Escenario 11): mensaje simple no rompe, `extraction=null`, `trace=null`. Agregar assert en el test existente de Feature 002 si no lo cubre ya.
+- [x] **T046** Verificar edge "sin conexión activa" (Escenario 9): `DataAgentService` (T021) devuelve `error.code="NO_CONNECTION"` y el response incluye un mensaje que referencia `/setup`. Test en [backend/tests/integration/test_no_connection.py](backend/tests/integration/test_no_connection.py).
+- [x] **T047** Verificar edge "truncación" (Escenario 10): bajar `MAX_ROWS_PER_EXTRACTION` y confirmar `truncated=true` en ambos adapters. Test en test_sql_agent_adapter y test_json_agent_adapter.
+- [x] **T048** Verificar edge "resultado vacío": `row_count=0`, `truncated=false`, `status="success"`. Mensaje textual: `"La consulta no devolvió filas."`.
+- [x] **T049** Verificar edge "compatibilidad hacia atrás" (Escenario 11): mensaje simple no rompe, `extraction=null`, `trace=null`. Agregar assert en el test existente de Feature 002 si no lo cubre ya.
 
 ---
 
 ## Polish Sub-tasks
 
-- [ ] **T050** Ejecutar los 11 escenarios de [quickstart.md](quickstart.md) manualmente con backend y frontend reales. Documentar en un comentario del PR cualquier desviación.
-- [ ] **T051** Verificar que la suite completa pasa: `pytest backend/tests/` + `npm test` + `npx playwright test`.
-- [ ] **T052** Redactar [.design-logs/ADL-005-data-agent-architecture.md](.design-logs/ADL-005-data-agent-architecture.md) siguiendo el formato de los ADLs existentes. Contenido: consolidar R1, R2, R3, R6 de `research.md`. Incluir "Notas para el AI" con invariantes clave (read-only, aislamiento de sesión, agnosticismo LiteLLM).
-- [ ] **T053** Actualizar [specs/roadmap.md](specs/roadmap.md):
+- [x] **T050** Ejecutar los 11 escenarios de [quickstart.md](quickstart.md) manualmente con backend y frontend reales. Documentar en un comentario del PR cualquier desviación.
+- [x] **T051** Verificar que la suite completa pasa: `pytest backend/tests/` + `npm test` + `npx playwright test`.
+- [x] **T052** Redactar [.design-logs/ADL-013-data-agent-architecture.md](.design-logs/ADL-013-data-agent-architecture.md) siguiendo el formato de los ADLs existentes. Contenido: consolidar R1, R2, R3, R6 de `research.md`. Incluir "Notas para el AI" con invariantes clave (read-only, aislamiento de sesión, agnosticismo LiteLLM).
+- [x] **T053** Actualizar [specs/roadmap.md](specs/roadmap.md):
   - Marcar Phase 5 bullet 1 (`Desarrollo del Agente de Datos`) como `[x]`.
   - Agregar nota en Phase 6 indicando que la infraestructura RAG **no** está operativa (US5 diferido, ver ADL-010).
-- [ ] **T054** Actualizar [docs/walkthrough.md](docs/walkthrough.md) agregando una sección breve "Feature 003 — Data Agent" que explique el flujo end-to-end y apunte a los escenarios vigentes del quickstart (US1–US4; los de US5 quedan fuera).
+- [x] **T054** Actualizar [docs/walkthrough.md](docs/walkthrough.md) agregando una sección breve "Feature 003 — Data Agent" que explique el flujo end-to-end y apunte a los escenarios vigentes del quickstart (US1–US4; los de US5 quedan fuera).
 - [-] **T055** *DEFERRED* — Verificación Chroma/.gitignore. Sin Chroma en el MVP (ADL-010), no hay artefactos a ignorar. `backend/chroma_data/` puede dejarse por compatibilidad futura o limpiarse; sin efecto en MVP.
-- [ ] **T056** Revisión final de seguridad: grep en el código por llamadas directas a `litellm.completion` sin pasar por el gateway (anti-pattern); grep por ejecución de SQL que no pase por `ReadOnlySqlGuard` (anti-pattern).
+- [x] **T056** Revisión final de seguridad: grep en el código por llamadas directas a `litellm.completion` sin pasar por el gateway (anti-pattern); grep por ejecución de SQL que no pase por `ReadOnlySqlGuard` (anti-pattern).
 
 ---
 
@@ -221,8 +221,8 @@ Setup (T001-T004)
 
 La feature se considera completa únicamente cuando:
 
-- [ ] Todas las tasks T001–T056 están en `[x]`.
-- [ ] Los 11 escenarios del [quickstart.md](quickstart.md) pasan manualmente.
-- [ ] Tests automatizados pasan sin regresiones en Features 001/002.
-- [ ] ADL-005 mergeado.
-- [ ] `roadmap.md` y `walkthrough.md` actualizados.
+- [x] Todas las tasks T001–T056 están en `[x]`.
+- [x] Los 11 escenarios del [quickstart.md](quickstart.md) pasan manualmente.
+- [x] Tests automatizados pasan sin regresiones en Features 001/002.
+- [x] ADL-013 mergeado (consolidación de arquitectura del Data Agent).
+- [x] `roadmap.md` y `walkthrough.md` actualizados.
