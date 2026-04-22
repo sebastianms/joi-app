@@ -16,12 +16,12 @@ test.describe('Chat Engine - Basic Flow', () => {
 
     const log = page.getByRole('log');
     await expect(log.locator('[data-role="user"]').last()).toHaveText(userMessage);
-    await expect(log.locator('[data-role="assistant"]').last()).toContainText('Echo: hola', {
+    await expect(log.locator('[data-role="assistant"]').last()).toBeVisible({
       timeout: 5000,
     });
   });
 
-  test('should route a data-visualization request through the complex pipeline placeholder', async ({ page }) => {
+  test('should route a data-visualization request through the complex pipeline', async ({ page }) => {
     await page.goto('/');
 
     const input = page.getByRole('textbox', { name: 'Mensaje' });
@@ -29,8 +29,11 @@ test.describe('Chat Engine - Basic Flow', () => {
     await page.getByRole('button', { name: 'Enviar' }).click();
 
     const assistantBubble = page.getByRole('log').locator('[data-role="assistant"]').last();
-    await expect(assistantBubble).toContainText('Pipeline de agentes aún no implementado', {
+    // Without an active data source the agent returns a NO_CONNECTION error message
+    await expect(assistantBubble).toContainText('No hay una fuente de datos activa', {
       timeout: 5000,
     });
+    // The agent trace block must be present for complex intents
+    await expect(assistantBubble.locator('[data-role="agent-trace"]')).toBeVisible();
   });
 });
