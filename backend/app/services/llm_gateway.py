@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from app.models.chat import Message
+from app.services.litellm_client import chat_completion
 
 
 class LLMGateway(ABC):
@@ -12,13 +13,11 @@ class LLMGateway(ABC):
         ...
 
 
-class EchoLLMGateway(LLMGateway):
-    """Stub LLM implementation used until a real provider is wired in."""
-
-    _PLACEHOLDER_PREFIX = "Echo:"
+class LiteLLMGateway(LLMGateway):
+    """Chat gateway backed by the LiteLLM singleton (purpose='chat')."""
 
     def complete(self, history: list[Message]) -> str:
         if not history:
             return "Hola, ¿en qué puedo ayudarte?"
-        last_message = history[-1]
-        return f"{self._PLACEHOLDER_PREFIX} {last_message.content}"
+        messages = [{"role": m.role.value, "content": m.content} for m in history]
+        return chat_completion(messages, purpose="chat")

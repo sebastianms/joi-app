@@ -1,7 +1,29 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 
+from app.api.endpoints.chat import get_chat_manager
 from app.main import app
+from app.models.chat import Message
+from app.services.chat_manager import ChatManagerService
+from app.services.llm_gateway import LLMGateway
+from app.services.triage_engine import TriageEngineService
+
+
+class _EchoStubLLM(LLMGateway):
+    def complete(self, history: list[Message]) -> str:
+        if not history:
+            return "Echo: "
+        return f"Echo: {history[-1].content}"
+
+
+@pytest.fixture(autouse=True)
+def _override_chat_manager():
+    app.dependency_overrides[get_chat_manager] = lambda: ChatManagerService(
+        triage=TriageEngineService(),
+        llm=_EchoStubLLM(),
+    )
+    yield
+    app.dependency_overrides.pop(get_chat_manager, None)
 
 
 @pytest.mark.asyncio

@@ -58,9 +58,9 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ### LLM Gateway (bloqueante de US1)
 
-- [ ] **T014** [US1] Crear [backend/app/services/litellm_client.py](backend/app/services/litellm_client.py) con un singleton que configura LiteLLM a partir de env vars (keys + modelos). Exponer función `get_client() -> LiteLLMClient` y `chat_completion(messages, purpose: Literal["sql", "json", "chat"]) -> str`.
-- [ ] **T015** [US1] Reemplazar el contenido de [backend/app/services/llm_gateway.py](backend/app/services/llm_gateway.py): `EchoLLMGateway` → `LiteLLMGateway` que usa el cliente del T014 con `purpose="chat"`. Mantener la interfaz `LLMGateway` para no romper `ChatManagerService`.
-- [ ] **T016** [US1] [P] Crear [backend/tests/unit/test_litellm_gateway.py](backend/tests/unit/test_litellm_gateway.py): mockear `litellm.completion`; verificar que `LiteLLMGateway.complete(history)` llama con los mensajes correctos y routing por purpose.
+- [x] **T014** [US1] Crear [backend/app/services/litellm_client.py](backend/app/services/litellm_client.py) con un singleton que configura LiteLLM a partir de env vars (keys + modelos). Exponer función `get_client() -> LiteLLMClient` y `chat_completion(messages, purpose: Literal["sql", "json", "chat"]) -> str`.
+- [x] **T015** [US1] Reemplazar el contenido de [backend/app/services/llm_gateway.py](backend/app/services/llm_gateway.py): `EchoLLMGateway` → `LiteLLMGateway` que usa el cliente del T014 con `purpose="chat"`. Mantener la interfaz `LLMGateway` para no romper `ChatManagerService`.
+- [x] **T016** [US1] [P] Crear [backend/tests/unit/test_litellm_gateway.py](backend/tests/unit/test_litellm_gateway.py): mockear `litellm.completion`; verificar que `LiteLLMGateway.complete(history)` llama con los mensajes correctos y routing por purpose.
 
 ### SQL Pipeline (US1)
 

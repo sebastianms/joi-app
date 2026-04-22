@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, status
 
 from app.models.chat import ChatRequest, ChatResponse
 from app.services.chat_manager import ChatManagerService
-from app.services.llm_gateway import EchoLLMGateway
+from app.services.llm_gateway import LiteLLMGateway
 from app.services.triage_engine import TriageEngineService
 
 router = APIRouter()
 
 _chat_manager_singleton = ChatManagerService(
     triage=TriageEngineService(),
-    llm=EchoLLMGateway(),
+    llm=LiteLLMGateway(),
 )
 
 
