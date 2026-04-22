@@ -1,7 +1,7 @@
 # ADL-006: Adopción de LiteLLM + Vanna como Stack del Data Agent
 
 **Fecha:** 2026-04-22
-**Estado:** Activo
+**Estado:** Parcialmente superseded por ADL-009 (Vanna removido; LiteLLM se mantiene)
 **Área:** Arquitectura
 **Autor:** AI Session
 

@@ -1,7 +1,7 @@
 # ADL-007: Chroma Local como Memoria RAG con Aislamiento por Sesión
 
 **Fecha:** 2026-04-22
-**Estado:** Activo
+**Estado:** Archivado por ADL-010 (US5/RAG diferido post-MVP; stack a re-decidir cuando se reactive)
 **Área:** Arquitectura
 **Autor:** AI Session
 

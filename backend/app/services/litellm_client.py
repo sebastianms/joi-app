@@ -55,6 +55,16 @@ class LiteLLMClient:
         response = litellm.completion(model=model, messages=messages, **kwargs)
         return response["choices"][0]["message"]["content"]
 
+    async def acompletion(
+        self,
+        messages: list[ChatMessage],
+        *,
+        purpose: Purpose,
+        **kwargs: Any,
+    ) -> Any:
+        model = self.model_for(purpose)
+        return await litellm.acompletion(model=model, messages=messages, **kwargs)
+
 
 _client: LiteLLMClient | None = None
 _lock = Lock()
@@ -110,6 +120,15 @@ def chat_completion(
     **kwargs: Any,
 ) -> str:
     return get_client().chat_completion(messages, purpose=purpose, **kwargs)
+
+
+async def acompletion(
+    messages: list[ChatMessage],
+    *,
+    purpose: Purpose,
+    **kwargs: Any,
+) -> Any:
+    return await get_client().acompletion(messages, purpose=purpose, **kwargs)
 
 
 def reset_client_for_tests() -> None:

@@ -7,9 +7,7 @@ pydantic-settings==2.9.0
 python-multipart==0.0.20
 
 # Data Agent
-vanna==0.7.9
 litellm==1.66.3
-chromadb==1.0.21
 jsonpath-ng==1.7.0
 sqlparse==0.5.3
 

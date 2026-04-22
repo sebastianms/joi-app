@@ -64,22 +64,22 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ### SQL Pipeline (US1)
 
-- [ ] **T017** [US1] Crear [backend/app/services/agents/__init__.py](backend/app/services/agents/__init__.py) (package marker).
-- [ ] **T018** [US1] Crear [backend/app/services/agents/litellm_vanna_service.py](backend/app/services/agents/litellm_vanna_service.py) con `LiteLLMVannaService(vanna.core.llm.base.LlmService)`. Implementar `send_request`, `stream_request`, `validate_tools` delegando al cliente LiteLLM del T014 con `purpose="sql"`.
-- [ ] **T019** [US1] Crear [backend/app/services/agents/sql_agent_adapter.py](backend/app/services/agents/sql_agent_adapter.py) con `SqlAgentAdapter.extract(prompt, connection, session_id, rag_enabled) -> DataExtraction`:
-  1. Instancia `vanna.Agent` con `LiteLLMVannaService` + `SqlRunner` apropiado por `source_type` (`PostgresRunner`/`MysqlRunner`/`SqliteRunner`).
-  2. Genera SQL via `vanna.Agent`.
-  3. Pasa por `ReadOnlySqlGuard` (T012). Si rechaza → devuelve `DataExtraction(status="error", error.code="SECURITY_REJECTION", query_plan.expression=<sql rechazada>)`.
-  4. Ejecuta con timeout `QUERY_TIMEOUT_SECONDS`; mapea errores del driver a `ErrorCode` correcto.
-  5. Trunca a `MAX_ROWS_PER_EXTRACTION`; setea `truncated=True` si aplica.
-  6. Construye `DataExtraction` poblado.
-- [ ] **T020** [US1] [P] Crear [backend/tests/unit/test_sql_agent_adapter.py](backend/tests/unit/test_sql_agent_adapter.py): mockear `vanna.Agent` y `SqlRunner`; casos: éxito con filas, rechazo por guard, timeout, target inexistente, truncación.
+- [x] **T017** [US1] Crear [backend/app/services/agents/__init__.py](backend/app/services/agents/__init__.py) (package marker).
+- [x] **T018** [US1] ~~Crear `LiteLLMVannaService(vanna.core.llm.base.LlmService)`~~ — **REDEFINIDO por ADL-009**: Vanna eliminado del stack. `SqlAgentAdapter` (T019) consume `litellm_client.acompletion(..., purpose="sql")` directamente. No se crea archivo dedicado; `backend/app/services/litellm_client.py` ya expone `acompletion` (commit donde se agregó).
+- [ ] **T019** [US1] Crear [backend/app/services/agents/sql_agent_adapter.py](backend/app/services/agents/sql_agent_adapter.py) con `SqlAgentAdapter.extract(prompt, connection, session_id) -> DataExtraction` (parámetro `rag_enabled` removido — ver ADL-010):
+  1. Construir prompt NL→SQL con `system_prompt` que incluya dialecto (`POSTGRESQL`/`MYSQL`/`SQLITE`) y schema de la conexión (tablas + columnas + tipos).
+  2. Llamar `litellm_client.acompletion(messages, purpose="sql")` para generar SQL. Extraer el string SQL del response OpenAI-style.
+  3. Pasar por `ReadOnlySqlGuard` (T012). Si rechaza → devuelve `DataExtraction(status="error", error.code="SECURITY_REJECTION", query_plan.expression=<sql rechazada>)`.
+  4. Ejecutar con SQLAlchemy (`create_engine(connection_string).connect().execute(text(sql))`) envuelto en `asyncio.wait_for(asyncio.to_thread(...), QUERY_TIMEOUT_SECONDS)`. Mapear excepciones de driver a `ErrorCode` (ver T037).
+  5. Truncar a `MAX_ROWS_PER_EXTRACTION`; setear `truncated=True` si aplica.
+  6. Construir `DataExtraction` poblado (columns, rows, row_count, query_plan con `generated_by_model = settings.LLM_MODEL_SQL`).
+- [ ] **T020** [US1] [P] Crear [backend/tests/unit/test_sql_agent_adapter.py](backend/tests/unit/test_sql_agent_adapter.py): mockear `litellm_client.acompletion` y la ejecución SQLAlchemy; casos: éxito con filas, rechazo por guard, timeout, target inexistente, truncación.
 
 ### Fachada y wiring al chat (US1)
 
 - [ ] **T021** [US1] Crear [backend/app/services/data_agent_service.py](backend/app/services/data_agent_service.py) con `DataAgentService.extract(session_id, prompt) -> tuple[DataExtraction, AgentTrace]`:
   1. Resolver `DataSourceConnection` activa para `session_id` via `ConnectionRepository`. Si no hay → retornar extraction con `error.code="NO_CONNECTION"`.
-  2. Resolver `UserSession` (T007) para obtener `rag_enabled`.
+  2. Resolver `UserSession` (T007) — el campo `rag_enabled` se lee pero **no se usa** en MVP (ADL-010); se mantiene forward-compat.
   3. Rutear: `source_type in {POSTGRESQL, MYSQL, SQLITE}` → `SqlAgentAdapter` (T019); `source_type == JSON` → `JsonAgentAdapter` (T026, pero el stub vacío es suficiente aquí — completa US1 solo con SQL).
   4. Construir `AgentTrace` desde la `DataExtraction` devuelta (preview primeras `TRACE_PREVIEW_ROWS`, `query_display` desde `query_plan.expression`, `pipeline` según adapter).
   5. Retornar tupla.
@@ -102,7 +102,7 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 *Aunque el spec organiza por US1–US5, el pipeline JSON es una rama arquitectónica distinta y merece sus propias tareas. Se etiqueta como `[US1]` por ser parte de "extracción determinística" para fuentes JSON.*
 
-- [ ] **T026** [US1] Crear [backend/app/services/agents/json_agent_adapter.py](backend/app/services/agents/json_agent_adapter.py) con `JsonAgentAdapter.extract(prompt, connection, session_id, rag_enabled) -> DataExtraction`:
+- [ ] **T026** [US1] Crear [backend/app/services/agents/json_agent_adapter.py](backend/app/services/agents/json_agent_adapter.py) con `JsonAgentAdapter.extract(prompt, connection, session_id) -> DataExtraction` (parámetro `rag_enabled` removido — ver ADL-010):
   1. Leer el archivo JSON desde `connection.file_path` (ya validado ≤10MB por ADL-001).
   2. Construir un prompt para LiteLLM con `purpose="json"` que pida un JSONPath o filtro estructurado dado el schema observado.
   3. Parsear y ejecutar el JSONPath con `jsonpath-ng` sobre el contenido cargado.
@@ -158,19 +158,17 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ---
 
-## User Story 5 — Memoria RAG activable por sesión (P2)
+## User Story 5 — Memoria RAG activable por sesión (P2) — **DIFERIDO POST-MVP**
 
-**Objetivo**: con `rag_enabled=true`, la segunda consulta se beneficia de la primera; con `false`, no.
+> **ADL-010**: US5 queda fuera del alcance del MVP. Stack RAG se re-decide cuando US5 se reactive (ADL-007 queda archivada; Chroma/Vanna ya no son deps). El campo `UserSession.rag_enabled` (T007) se mantiene en el modelo como forward-compat pero **no se consulta en ningún pipeline activo**.
 
-- [ ] **T041** [US5] Crear [backend/app/services/rag_memory.py](backend/app/services/rag_memory.py) con `build_agent_memory(session_id, enabled: bool) -> vanna.AgentMemory | None`:
-  - Si `enabled=False` → retorna `None` (o un `NullAgentMemory` si Vanna lo requiere).
-  - Si `enabled=True` → crea Chroma client apuntando a `./backend/chroma_data/`, colección `session_{session_id}`, y envuelve en `AgentMemory` compatible con Vanna.
-- [ ] **T042** [US5] Integrar `rag_memory` en `SqlAgentAdapter` (T019): al instanciar `vanna.Agent`, pasar `agent_memory=build_agent_memory(session_id, rag_enabled)`.
-- [ ] **T043** [US5] [P] Crear [backend/tests/unit/test_rag_memory_isolation.py](backend/tests/unit/test_rag_memory_isolation.py): dos `session_id` distintas, escribir documentos en cada una, verificar que `session_{A}` no retorna documentos de `session_{B}` al consultar. Cubre SC-007.
-- [ ] **T044** [US5] [P] Crear test [backend/tests/integration/test_rag_toggle.py](backend/tests/integration/test_rag_toggle.py): con `rag_enabled=false`, verificar que no se escribe en Chroma tras una extracción exitosa (inspección directa de la colección).
-- [ ] **T045** [US5] Extender `UserSessionRepository` (T007) con un endpoint administrativo **opcional** (no UI, solo API) para modificar `rag_enabled` por sesión: p.ej. `PATCH /api/sessions/{session_id}` con body `{"rag_enabled": bool}`. Útil para tests manuales; puede omitirse si los tests lo setean directamente en DB.
+- [-] **T041** [US5] *DEFERRED* — Implementar `build_agent_memory(...)`. Stack a definir en nueva ADL cuando US5 se reactive.
+- [-] **T042** [US5] *DEFERRED* — Integrar RAG en `SqlAgentAdapter`. Punto de integración: paso `generate` del adapter (inyectar few-shot en el prompt), no un `Agent` externo.
+- [-] **T043** [US5] *DEFERRED* — Tests de aislamiento cross-session.
+- [-] **T044** [US5] *DEFERRED* — Tests de toggle `rag_enabled`.
+- [-] **T045** [US5] *DEFERRED* — Endpoint admin `PATCH /api/sessions/{session_id}`.
 
-**Checkpoint US5**: Escenarios 7 y 8 de `quickstart.md` pasan.
+**Checkpoint US5**: N/A para MVP. Se cierra cuando se reactive US5.
 
 ---
 
@@ -190,9 +188,9 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 - [ ] **T052** Redactar [.design-logs/ADL-005-data-agent-architecture.md](.design-logs/ADL-005-data-agent-architecture.md) siguiendo el formato de los ADLs existentes. Contenido: consolidar R1, R2, R3, R6 de `research.md`. Incluir "Notas para el AI" con invariantes clave (read-only, aislamiento de sesión, agnosticismo LiteLLM).
 - [ ] **T053** Actualizar [specs/roadmap.md](specs/roadmap.md):
   - Marcar Phase 5 bullet 1 (`Desarrollo del Agente de Datos`) como `[x]`.
-  - Agregar nota en Phase 6 indicando que la infraestructura RAG ya está operativa (reducido el scope original).
-- [ ] **T054** Actualizar [docs/walkthrough.md](docs/walkthrough.md) agregando una sección breve "Feature 003 — Data Agent" que explique el flujo end-to-end y apunte a los 11 escenarios del quickstart.
-- [ ] **T055** Verificar que `.gitignore` incluye `backend/chroma_data/` y que no se commitea ningún artefacto de Chroma.
+  - Agregar nota en Phase 6 indicando que la infraestructura RAG **no** está operativa (US5 diferido, ver ADL-010).
+- [ ] **T054** Actualizar [docs/walkthrough.md](docs/walkthrough.md) agregando una sección breve "Feature 003 — Data Agent" que explique el flujo end-to-end y apunte a los escenarios vigentes del quickstart (US1–US4; los de US5 quedan fuera).
+- [-] **T055** *DEFERRED* — Verificación Chroma/.gitignore. Sin Chroma en el MVP (ADL-010), no hay artefactos a ignorar. `backend/chroma_data/` puede dejarse por compatibilidad futura o limpiarse; sin efecto en MVP.
 - [ ] **T056** Revisión final de seguridad: grep en el código por llamadas directas a `litellm.completion` sin pasar por el gateway (anti-pattern); grep por ejecución de SQL que no pase por `ReadOnlySqlGuard` (anti-pattern).
 
 ---

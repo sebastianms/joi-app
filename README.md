@@ -12,9 +12,9 @@ Plataforma de generación dinámica de UI con IA. El sistema interpreta datos y 
 | Capa | Tecnología |
 |---|---|
 | Frontend | Next.js + Tailwind CSS + shadcn/ui |
-| Backend | Python + FastAPI + LangChain |
+| Backend | Python + FastAPI + LiteLLM (LLM agnóstico) |
 | DB Secundaria | SQLite (vía SQLAlchemy async) |
-| Cache Vectorial | LangChain Vector Store (Chroma local) |
+| Cache Vectorial | Diferido post-MVP (ver ADL-010) |
 | Tests | pytest + pytest-asyncio + Playwright (e2e) |
 
 ## Estructura
