@@ -53,8 +53,8 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ### Seguridad (bloqueante de US1)
 
-- [ ] **T012** [US1] Crear [backend/app/services/read_only_sql_guard.py](backend/app/services/read_only_sql_guard.py) con `ReadOnlySqlGuard.validate(sql: str) -> None | raises SecurityRejectionError`. Implementación: whitelist primer token (`SELECT`, `WITH`, `SHOW`, `EXPLAIN`) + blacklist de tokens peligrosos (ver lista en `research.md` R4). Opcionalmente tokenizar con `sqlparse`.
-- [ ] **T013** [US1] [P] Crear [backend/tests/unit/test_read_only_sql_guard.py](backend/tests/unit/test_read_only_sql_guard.py): casos permitidos (SELECT simple, WITH CTE, SELECT con subquery, EXPLAIN), casos rechazados (cada token de la blacklist al menos una vez, incluyendo variantes: `DELETE`, `DROP TABLE`, `; DELETE FROM`, `PRAGMA writable_schema=ON`, SQL multi-statement).
+- [x] **T012** [US1] Crear [backend/app/services/read_only_sql_guard.py](backend/app/services/read_only_sql_guard.py) con `ReadOnlySqlGuard.validate(sql: str) -> None | raises SecurityRejectionError`. Implementación: whitelist primer token (`SELECT`, `WITH`, `SHOW`, `EXPLAIN`) + blacklist de tokens peligrosos (ver lista en `research.md` R4). Opcionalmente tokenizar con `sqlparse`.
+- [x] **T013** [US1] [P] Crear [backend/tests/unit/test_read_only_sql_guard.py](backend/tests/unit/test_read_only_sql_guard.py): casos permitidos (SELECT simple, WITH CTE, SELECT con subquery, EXPLAIN), casos rechazados (cada token de la blacklist al menos una vez, incluyendo variantes: `DELETE`, `DROP TABLE`, `; DELETE FROM`, `PRAGMA writable_schema=ON`, SQL multi-statement).
 
 ### LLM Gateway (bloqueante de US1)
 
