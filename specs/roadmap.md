@@ -23,11 +23,13 @@
 - [ ] Capa probabilística (LLM classifier) — diferida a Feature 003.
 
 ## Phase 5: Multi-Agent Pipeline & Rendering Canvas (Shippable Slice 3)
-- Desarrollo del Agente de Datos (Text-to-SQL y Extracción a JSON).
-- Desarrollo del Agente Arquitecto/Generador para la creación de código del widget.
-- Motor de sanitización e inyección dinámica del widget en el Canvas derecho.
+- [x] Desarrollo del Agente de Datos (Text-to-SQL y Extracción a JSON) — Feature 003 (US1–US4). Pipelines SQL y JSON operativos con guard read-only, manejo de errores graceful y Agent Trace en el chat.
+- [ ] Desarrollo del Agente Arquitecto/Generador para la creación de código del widget.
+- [ ] Motor de sanitización e inyección dinámica del widget en el Canvas derecho.
 
 ## Phase 6: Dashboards, Collections & RAG Cache (Shippable Slice 4)
-- Funcionalidad para etiquetar y guardar widgets en colecciones.
-- Implementación de Dashboards personalizados reordenables.
-- Integración final del sistema RAG como memoria caché de widgets.
+- [ ] Funcionalidad para etiquetar y guardar widgets en colecciones.
+- [ ] Implementación de Dashboards personalizados reordenables.
+- [ ] Integración final del sistema RAG como memoria caché de widgets.
+
+> **Nota**: La infraestructura RAG (US5 — memoria activable por sesión) **no está operativa en el MVP**. El campo `UserSession.rag_enabled` se mantiene como forward-compat. El stack RAG (vector store, few-shot memory) se decide cuando US5 se reactive — ver ADL-010.

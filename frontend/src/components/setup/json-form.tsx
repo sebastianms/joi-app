@@ -62,7 +62,7 @@ export function JSONUploadForm() {
         body: formData,
       })
 
-      const data = await response.json()
+      const data = await response.json() as { detail?: string }
 
       if (!response.ok) {
         throw new Error(data.detail || "Failed to upload JSON file")
@@ -76,8 +76,8 @@ export function JSONUploadForm() {
       const form = e.target as HTMLFormElement
       form.reset()
       
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }

@@ -62,9 +62,9 @@ export function SQLConnectionForm() {
       const result = await response.json();
       setTestResult("success");
       console.log("Connection saved:", result);
-    } catch (error: any) {
+    } catch (error) {
       setTestResult("error");
-      setErrorMessage(error.message);
+      setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred");
     }
   }
 
@@ -96,7 +96,7 @@ export function SQLConnectionForm() {
           const formData = new FormData(e.currentTarget);
           const data = {
             name: formData.get("name") as string,
-            source_type: formData.get("source_type") as any,
+            source_type: formData.get("source_type") as ConnectionFormValues["source_type"],
             connection_string: formData.get("connection_string") as string,
             user_session_id: "demo-session-123"
           };

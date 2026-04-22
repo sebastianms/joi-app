@@ -43,7 +43,8 @@ export function useChat(): UseChatResult {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const sessionIdRef = useRef<string>(generateId());
+  const [sessionId] = useState<string>(generateId);
+  const sessionIdRef = useRef<string>(sessionId);
 
   const apiUrl = useMemo(
     () => process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL,
@@ -102,11 +103,5 @@ export function useChat(): UseChatResult {
     [apiUrl, isSending]
   );
 
-  return {
-    messages,
-    isSending,
-    error,
-    sendMessage,
-    sessionId: sessionIdRef.current,
-  };
+  return { messages, isSending, error, sendMessage, sessionId };
 }

@@ -32,5 +32,37 @@ Estado: completada.
 - El historial es efímero (en memoria del proceso). Se perderá al reiniciar el backend o refrescar el frontend.
 - Intenciones complejas aún no invocan pipeline real de agentes; devuelven placeholder.
 
-## Próximo slice — Feature 003 (Phase 5 del roadmap)
-Multi-Agent Pipeline & Rendering Canvas: agente de datos (Text-to-SQL), agente arquitecto/generador de widgets, sanitización e inyección dinámica en el canvas derecho.
+## Feature 003 — Data Agent
+Estado: completada (US1–US4). Ruta: `POST /api/chat/messages` (mismo endpoint de chat).
+
+### Flujo end-to-end
+
+1. El usuario envía un mensaje con intención compleja (p.ej. "muéstrame las ventas por mes").
+2. `TriageEngineService` clasifica la intención como `complex`.
+3. `DataAgentService` resuelve la conexión activa para la sesión y enruta al adapter según el tipo de fuente:
+   - **SQL** (`SqlAgentAdapter`): genera SQL con LiteLLM → valida con `ReadOnlySqlGuard` → ejecuta con SQLAlchemy.
+   - **JSON** (`JsonAgentAdapter`): genera un JSONPath con LiteLLM → ejecuta con `jsonpath-ng`.
+4. El resultado se empaqueta como `DataExtraction` (contrato `data_extraction.v1`) y un `AgentTrace`.
+5. `ChatManagerService` formatea el response textual y devuelve `extraction` + `trace` en el payload HTTP.
+6. El frontend renderiza un `AgentTraceBlock` colapsable debajo del mensaje del asistente.
+
+### Seguridad
+`ReadOnlySqlGuard` bloquea cualquier SQL que no sea `SELECT`/`WITH`/`SHOW`/`EXPLAIN`. Si el LLM genera una sentencia de mutación, el trace registra `security_rejection=true` y la fuente no se modifica.
+
+### Manejo de errores
+Los errores (sin conexión, tabla inexistente, timeout, rechazo de seguridad) nunca levantan una excepción HTTP: van dentro de `extraction.error` con `status="error"` y HTTP 200. La sesión permanece funcional después de cualquier error.
+
+### Escenarios verificados
+Los escenarios 1–5 y 9–11 del `specs/003-data-agent/quickstart.md` están cubiertos por tests automatizados. Los escenarios de US5 (RAG) quedan pendientes hasta que se reactive esa User Story.
+
+### Tests
+- `backend/tests/unit/` — `test_sql_agent_adapter.py`, `test_json_agent_adapter.py`, `test_chat_manager.py`, `test_read_only_sql_guard.py`, `test_extraction_models.py`.
+- `backend/tests/integration/` — `test_chat_with_data_agent.py`, `test_security_rejection.py`, `test_error_recovery.py`.
+- `frontend/e2e/` — flujo "prompt complejo → Agent Trace colapsado → expandir".
+
+### Limitaciones
+- US5 (memoria RAG activable por sesión) diferida post-MVP. `UserSession.rag_enabled` existe en el modelo pero no está activo. Ver ADL-010.
+- La capa probabilística del triage (LLM classifier) sigue diferida; el clasificador actual es determinístico (regex + keywords).
+
+## Próximo slice — Phase 5 continuación
+Agente Arquitecto/Generador de widgets, sanitización e inyección dinámica en el canvas derecho.
