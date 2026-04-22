@@ -102,14 +102,14 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 *Aunque el spec organiza por US1–US5, el pipeline JSON es una rama arquitectónica distinta y merece sus propias tareas. Se etiqueta como `[US1]` por ser parte de "extracción determinística" para fuentes JSON.*
 
-- [ ] **T026** [US1] Crear [backend/app/services/agents/json_agent_adapter.py](backend/app/services/agents/json_agent_adapter.py) con `JsonAgentAdapter.extract(prompt, connection, session_id) -> DataExtraction` (parámetro `rag_enabled` removido — ver ADL-010):
+- [x] **T026** [US1] Crear [backend/app/services/agents/json_agent_adapter.py](backend/app/services/agents/json_agent_adapter.py) con `JsonAgentAdapter.extract(prompt, connection, session_id) -> DataExtraction` (parámetro `rag_enabled` removido — ver ADL-010):
   1. Leer el archivo JSON desde `connection.file_path` (ya validado ≤10MB por ADL-001).
   2. Construir un prompt para LiteLLM con `purpose="json"` que pida un JSONPath o filtro estructurado dado el schema observado.
   3. Parsear y ejecutar el JSONPath con `jsonpath-ng` sobre el contenido cargado.
   4. Mapear el resultado a `rows` con columnas detectadas automáticamente (inspección de keys del primer elemento).
   5. Trunca + construir `DataExtraction` (idéntico contrato que el SQL pipeline).
-- [ ] **T027** [US1] [P] Crear [backend/tests/unit/test_json_agent_adapter.py](backend/tests/unit/test_json_agent_adapter.py): mockear LLM; usar fixture `products_sample.json`; casos: filtro por categoría, top-N, JSONPath inválido, target inexistente, truncación.
-- [ ] **T028** [US1] Ajustar el routing en `DataAgentService` (T021) para invocar `JsonAgentAdapter` cuando `source_type == JSON`. Verificar test de routing.
+- [x] **T027** [US1] [P] Crear [backend/tests/unit/test_json_agent_adapter.py](backend/tests/unit/test_json_agent_adapter.py): mockear LLM; usar fixture `products_sample.json`; casos: filtro por categoría, top-N, JSONPath inválido, target inexistente, truncación.
+- [x] **T028** [US1] Ajustar el routing en `DataAgentService` (T021) para invocar `JsonAgentAdapter` cuando `source_type == JSON`. Verificar test de routing.
 
 **Checkpoint JSON pipeline**: Escenario 6 de `quickstart.md` pasa manualmente.
 

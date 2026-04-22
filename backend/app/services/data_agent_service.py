@@ -22,6 +22,7 @@ from app.models.extraction import (
 )
 from app.repositories.connection_repository import SQLiteConnectionRepository
 from app.repositories.user_session_repository import UserSessionRepository
+from app.services.agents.json_agent_adapter import JsonAgentAdapter
 from app.services.agents.sql_agent_adapter import SqlAgentAdapter
 
 _SQL_TYPES = {
@@ -39,10 +40,12 @@ class DataAgentService:
         connection_repo: SQLiteConnectionRepository,
         session_repo: UserSessionRepository,
         sql_adapter: SqlAgentAdapter,
+        json_adapter: JsonAgentAdapter | None = None,
     ) -> None:
         self._connections = connection_repo
         self._sessions = session_repo
         self._sql_adapter = sql_adapter
+        self._json_adapter = json_adapter or JsonAgentAdapter()
 
     async def extract(
         self, session_id: str, prompt: str
@@ -58,8 +61,7 @@ class DataAgentService:
             extraction = await self._sql_adapter.extract(prompt, connection)
             return extraction, self._build_trace(extraction, pipeline="sql")
 
-        # JSON pipeline aún no implementado (T026). Devolvemos un error controlado.
-        extraction = self._unsupported_source_extraction(session_id, connection)
+        extraction = await self._json_adapter.extract(prompt, connection)
         return extraction, self._build_trace(extraction, pipeline="json")
 
     async def _resolve_active_connection(
@@ -83,23 +85,6 @@ class DataAgentService:
                     "No hay una fuente de datos activa para esta sesión. "
                     "Configura una conexión en /setup antes de continuar."
                 ),
-            ),
-        )
-
-    def _unsupported_source_extraction(
-        self, session_id: str, connection: DataSourceConnection
-    ) -> DataExtraction:
-        query_plan = QueryPlan(language="jsonpath", expression="")
-        return DataExtraction(
-            session_id=session_id,
-            connection_id=connection.id,
-            source_type=SourceType.JSON,
-            query_plan=query_plan,
-            row_count=0,
-            status="error",
-            error=ExtractionError(
-                code=ErrorCode.UNKNOWN,
-                message="El pipeline JSON aún no está disponible.",
             ),
         )
 
