@@ -1,0 +1,131 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Joi-App Widget Generation API extensions",
+    "version": "0.4.0",
+    "description": "Extensiones retrocompatibles al endpoint de chat y nuevos endpoints de configuración de framework visual introducidos por Feature 004."
+  },
+  "paths": {
+    "/api/chat/messages": {
+      "post": {
+        "summary": "Envío de mensaje al chat (extendido: ahora puede retornar widget_spec).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta del chat con posible WidgetSpec adjunta.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/render-mode/profile": {
+      "get": {
+        "summary": "Obtiene el RenderModeProfile de la sesión actual. Devuelve default si no existe.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "session_id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RenderModeProfile" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Guarda o actualiza el RenderModeProfile de la sesión (usado por el Setup Wizard).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RenderModeProfile" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RenderModeProfile" }
+              }
+            }
+          },
+          "400": {
+            "description": "mode=design_system es inválido en MVP."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChatRequest": {
+        "type": "object",
+        "required": ["session_id", "content"],
+        "properties": {
+          "session_id": { "type": "string" },
+          "content": { "type": "string" }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": { "$ref": "#/components/schemas/Message" },
+          "extraction": { "type": ["object", "null"], "description": "data_extraction.v1" },
+          "trace": { "type": ["object", "null"], "description": "AgentTrace extendido con widget_generation" },
+          "widget_spec": { "type": ["object", "null"], "description": "widget_spec.v1" },
+          "render_mode_profile": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/RenderModeProfile" },
+              { "type": "null" }
+            ]
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "required": ["id", "role", "content", "created_at"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "role": { "type": "string", "enum": ["user", "assistant"] },
+          "content": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "RenderModeProfile": {
+        "type": "object",
+        "required": ["session_id", "mode"],
+        "properties": {
+          "session_id": { "type": "string" },
+          "mode": {
+            "type": "string",
+            "enum": ["ui_framework", "free_code"]
+          },
+          "ui_library": {
+            "type": ["string", "null"],
+            "enum": ["shadcn", "bootstrap", "heroui", null]
+          }
+        }
+      }
+    }
+  }
+}

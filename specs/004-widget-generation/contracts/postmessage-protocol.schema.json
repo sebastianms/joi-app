@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://joi-app.local/schemas/postmessage_protocol.v1.json",
+  "title": "Canvas ↔ Iframe postMessage Protocol v1",
+  "description": "Contrato del protocolo postMessage entre la app principal y el iframe sandbox que renderiza widgets (FR-008a). Cada mensaje lleva 'type' versionado y payload tipado. Mensajes no conformes DEBEN ser ignorados por ambas partes.",
+  "oneOf": [
+    { "$ref": "#/$defs/widget_init" },
+    { "$ref": "#/$defs/widget_ready" },
+    { "$ref": "#/$defs/widget_error" },
+    { "$ref": "#/$defs/widget_resize" }
+  ],
+  "$defs": {
+    "widget_init": {
+      "type": "object",
+      "description": "App → iframe. Enviado una sola vez tras el load del iframe. Contiene la spec + datos.",
+      "required": ["type", "protocol_version", "widget_spec", "data_rows"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "widget:init" },
+        "protocol_version": { "const": "v1" },
+        "widget_spec": {
+          "description": "Objeto conforme a widget_spec.v1.json.",
+          "type": "object"
+        },
+        "data_rows": {
+          "type": "array",
+          "items": { "type": "object", "additionalProperties": true }
+        },
+        "theme": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Tokens de tema (colores, radios, fuentes) heredados de la app principal."
+        }
+      }
+    },
+    "widget_ready": {
+      "type": "object",
+      "description": "Iframe → App. Confirma que el widget completó su render inicial.",
+      "required": ["type", "protocol_version", "extraction_id"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "widget:ready" },
+        "protocol_version": { "const": "v1" },
+        "extraction_id": { "type": "string", "format": "uuid" },
+        "bootstrap_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tiempo desde widget:init hasta ready, medido en el iframe."
+        }
+      }
+    },
+    "widget_error": {
+      "type": "object",
+      "description": "Iframe → App. Error durante el render o ejecución del widget.",
+      "required": ["type", "protocol_version", "extraction_id", "code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "widget:error" },
+        "protocol_version": { "const": "v1" },
+        "extraction_id": { "type": "string", "format": "uuid" },
+        "code": {
+          "type": "string",
+          "enum": [
+            "SPEC_INVALID",
+            "RUNTIME_ERROR",
+            "DATA_MISMATCH",
+            "UNKNOWN"
+          ]
+        },
+        "message": { "type": "string" }
+      }
+    },
+    "widget_resize": {
+      "type": "object",
+      "description": "Iframe → App. Solicita ajuste de altura del contenedor.",
+      "required": ["type", "protocol_version", "extraction_id", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "widget:resize" },
+        "protocol_version": { "const": "v1" },
+        "extraction_id": { "type": "string", "format": "uuid" },
+        "height": {
+          "type": "integer",
+          "minimum": 80,
+          "maximum": 4000
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://joi-app.local/schemas/widget_spec.v1.json",
+  "title": "WidgetSpec v1",
+  "description": "Contrato de salida del Agente Arquitecto/Generador (Feature 004). Consumido por el motor de Canvas del frontend y por el runtime bundle del iframe. Independiente del tipo de fuente; se construye a partir de una DataExtraction v1 previa.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "widget_id",
+    "extraction_id",
+    "session_id",
+    "render_mode",
+    "widget_type",
+    "selection_source",
+    "bindings",
+    "data_reference",
+    "truncation_badge",
+    "generated_by_model",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "v1"
+    },
+    "widget_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "extraction_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Referencia a data_extraction.v1 origen."
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "render_mode": {
+      "type": "string",
+      "enum": ["ui_framework", "free_code"],
+      "description": "design_system está reservado para post-MVP y no se emite."
+    },
+    "ui_library": {
+      "type": ["string", "null"],
+      "enum": ["shadcn", "bootstrap", "heroui", null],
+      "description": "NOT NULL cuando render_mode=ui_framework."
+    },
+    "widget_type": {
+      "type": "string",
+      "enum": [
+        "table",
+        "bar_chart",
+        "line_chart",
+        "pie_chart",
+        "kpi",
+        "scatter_plot",
+        "heatmap",
+        "area_chart"
+      ]
+    },
+    "selection_source": {
+      "type": "string",
+      "enum": ["deterministic", "user_preference", "fallback"],
+      "description": "deterministic: heurística sobre forma de datos; user_preference: extraído del chat; fallback: tras error del generador."
+    },
+    "bindings": {
+      "type": "object",
+      "description": "Mapping de columnas a roles visuales. La forma depende del widget_type. Ver ejemplos en quickstart.md.",
+      "additionalProperties": true
+    },
+    "visual_options": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "x_axis_label": { "type": "string" },
+        "y_axis_label": { "type": "string" },
+        "format_hints": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["currency", "percent", "integer", "decimal", "datetime", "string"]
+          }
+        }
+      }
+    },
+    "code": {
+      "type": ["object", "null"],
+      "description": "Bundle ejecutable para el iframe. NULL si el tipo se renderiza con el runtime nativo (ej. tabla fallback).",
+      "required": ["html"],
+      "additionalProperties": false,
+      "properties": {
+        "html": { "type": "string" },
+        "css": { "type": ["string", "null"] },
+        "js": { "type": ["string", "null"] }
+      }
+    },
+    "data_reference": {
+      "type": "object",
+      "required": ["extraction_id", "columns", "row_count"],
+      "additionalProperties": false,
+      "properties": {
+        "extraction_id": { "type": "string", "format": "uuid" },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["string", "integer", "float", "boolean", "datetime", "null", "unknown"]
+              }
+            }
+          }
+        },
+        "row_count": { "type": "integer", "minimum": 0 }
+      },
+      "description": "Las filas NO se incluyen en el WidgetSpec; se inyectan por postMessage al iframe para evitar duplicación en el chat."
+    },
+    "truncation_badge": {
+      "type": "boolean",
+      "description": "Hereda data_extraction.truncated."
+    },
+    "generated_by_model": {
+      "type": "string",
+      "description": "Alias del modelo LLM usado; 'deterministic' si el widget es fallback sin LLM."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "description": "Cuando render_mode=ui_framework, ui_library es requerida.",
+      "if": { "properties": { "render_mode": { "const": "ui_framework" } } },
+      "then": { "required": ["ui_library"], "properties": { "ui_library": { "not": { "const": null } } } }
+    },
+    {
+      "description": "Cuando widget_type=table y selection_source=fallback, code puede ser NULL.",
+      "if": {
+        "properties": {
+          "widget_type": { "const": "table" },
+          "selection_source": { "const": "fallback" }
+        }
+      },
+      "then": {}
+    }
+  ]
+}
