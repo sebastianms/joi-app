@@ -21,10 +21,10 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 - [x] **T001** Crear archivo `backend/chroma_data/.gitkeep` y agregar `backend/chroma_data/` al `.gitignore` del repo.
 - [x] **T002** [P] Agregar dependencias nuevas al `backend/requirements.txt` (o `pyproject.toml` equivalente): `vanna`, `litellm`, `chromadb`, `jsonpath-ng`, `sqlparse`. Ejecutar `pip install -r requirements.txt` y verificar instalación limpia.
-- [ ] **T003** [P] Crear fixtures de datos de prueba para tests e2e:
+- [x] **T003** [P] Crear fixtures de datos de prueba para tests e2e:
   - `backend/tests/fixtures/sales_sample.db` (SQLite con tabla `sales(id, region, amount, sold_at)` y ~50 filas).
   - `backend/tests/fixtures/products_sample.json` (array de ~30 productos con `{id, name, category, price, stock}`).
-- [ ] **T004** [P] Extender `.env.example` del backend con: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` (todas opcionales), `RAG_DEFAULT_ENABLED=true`, `QUERY_TIMEOUT_SECONDS=10`, `MAX_ROWS_PER_EXTRACTION=1000`, `TRACE_PREVIEW_ROWS=10`, `LLM_MODEL_SQL`, `LLM_MODEL_JSON`.
+- [x] **T004** [P] Extender `.env.example` del backend con: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` (todas opcionales), `RAG_DEFAULT_ENABLED=true`, `QUERY_TIMEOUT_SECONDS=10`, `MAX_ROWS_PER_EXTRACTION=1000`, `TRACE_PREVIEW_ROWS=10`, `LLM_MODEL_SQL`, `LLM_MODEL_JSON`.
 
 ---
 
@@ -34,16 +34,16 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ### Data model base (persistencia + Pydantic)
 
-- [ ] **T005** Crear [backend/app/models/user_session.py](backend/app/models/user_session.py) con el SQLAlchemy model `UserSession` según `data-model.md` (campos: `session_id` PK, `rag_enabled` default `true`, `created_at`, `updated_at`).
-- [ ] **T006** Registrar `UserSession` en el `lifespan` de [backend/app/main.py](backend/app/main.py) para que `Base.metadata.create_all()` lo incluya al startup.
-- [ ] **T007** Crear [backend/app/repositories/user_session_repository.py](backend/app/repositories/user_session_repository.py) con métodos: `get_or_create(session_id) -> UserSession`, `get_by_id(session_id) -> UserSession | None`, `set_rag_enabled(session_id, enabled: bool) -> UserSession`.
-- [ ] **T008** [P] Crear [backend/app/models/extraction.py](backend/app/models/extraction.py) con los Pydantic models: `SourceType` enum, `ErrorCode` enum, `ColumnDescriptor`, `QueryPlan`, `ExtractionError`, `DataExtraction`, `AgentTrace`. Todos son modelos en memoria (Pydantic BaseModel), **no** SQLAlchemy. Incluir `contract_version: Literal["v1"] = "v1"`.
-- [ ] **T009** Extender [backend/app/models/chat.py](backend/app/models/chat.py): agregar campos opcionales `extraction: Optional[DataExtraction] = None` y `trace: Optional[AgentTrace] = None` a `Message` y `ChatResponse`. Asegurar retrocompatibilidad (defaults a `None`).
+- [x] **T005** Crear [backend/app/models/user_session.py](backend/app/models/user_session.py) con el SQLAlchemy model `UserSession` según `data-model.md` (campos: `session_id` PK, `rag_enabled` default `true`, `created_at`, `updated_at`).
+- [x] **T006** Registrar `UserSession` en el `lifespan` de [backend/app/main.py](backend/app/main.py) para que `Base.metadata.create_all()` lo incluya al startup.
+- [x] **T007** Crear [backend/app/repositories/user_session_repository.py](backend/app/repositories/user_session_repository.py) con métodos: `get_or_create(session_id) -> UserSession`, `get_by_id(session_id) -> UserSession | None`, `set_rag_enabled(session_id, enabled: bool) -> UserSession`.
+- [x] **T008** [P] Crear [backend/app/models/extraction.py](backend/app/models/extraction.py) con los Pydantic models: `SourceType` enum, `ErrorCode` enum, `ColumnDescriptor`, `QueryPlan`, `ExtractionError`, `DataExtraction`, `AgentTrace`. Todos son modelos en memoria (Pydantic BaseModel), **no** SQLAlchemy. Incluir `contract_version: Literal["v1"] = "v1"`.
+- [x] **T009** Extender [backend/app/models/chat.py](backend/app/models/chat.py): agregar campos opcionales `extraction: Optional[DataExtraction] = None` y `trace: Optional[AgentTrace] = None` a `Message` y `ChatResponse`. Asegurar retrocompatibilidad (defaults a `None`).
 
 ### Tests de modelos (fundacional)
 
-- [ ] **T010** [P] Crear [backend/tests/unit/test_user_session_repository.py](backend/tests/unit/test_user_session_repository.py): cubrir `get_or_create` idempotente, `set_rag_enabled` y `updated_at` que cambia.
-- [ ] **T011** [P] Crear [backend/tests/unit/test_extraction_models.py](backend/tests/unit/test_extraction_models.py): validar que `DataExtraction` con `status="error"` fuerza `error` no-null, serialización JSON cumple el schema `data_extraction.v1`.
+- [x] **T010** [P] Crear [backend/tests/unit/test_user_session_repository.py](backend/tests/unit/test_user_session_repository.py): cubrir `get_or_create` idempotente, `set_rag_enabled` y `updated_at` que cambia.
+- [x] **T011** [P] Crear [backend/tests/unit/test_extraction_models.py](backend/tests/unit/test_extraction_models.py): validar que `DataExtraction` con `status="error"` fuerza `error` no-null, serialización JSON cumple el schema `data_extraction.v1`.
 
 ---
 
