@@ -135,9 +135,9 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 *La mayoría del trabajo ya está hecho en T012–T013 (guard) y T019 (integración en SqlAgentAdapter). Estas tareas cierran el ciclo UX + observabilidad.*
 
-- [ ] **T034** [US3] Verificar en `SqlAgentAdapter` (T019) que cuando el guard rechaza, la `DataExtraction` emitida tiene `query_plan.expression = <sql rechazada>` (no vacía) para que el trace la muestre. Si falta, ajustar.
-- [ ] **T035** [US3] Verificar que `AgentTraceBlock` (T030) resalta visualmente cuando `security_rejection=true` (badge rojo o similar). Si falta, ajustar.
-- [ ] **T036** [US3] [P] Agregar test de integración [backend/tests/integration/test_security_rejection.py](backend/tests/integration/test_security_rejection.py): prompt adversarial (via mock de LiteLLM que devuelve `DELETE FROM sales`) → verificar que la fuente SQLite fixture NO cambia (conteo filas antes=después) y el response tiene `error.code=SECURITY_REJECTION`.
+- [x] **T034** [US3] Verificar en `SqlAgentAdapter` (T019) que cuando el guard rechaza, la `DataExtraction` emitida tiene `query_plan.expression = <sql rechazada>` (no vacía) para que el trace la muestre. Si falta, ajustar.
+- [x] **T035** [US3] Verificar que `AgentTraceBlock` (T030) resalta visualmente cuando `security_rejection=true` (badge rojo o similar). Si falta, ajustar.
+- [x] **T036** [US3] [P] Agregar test de integración [backend/tests/integration/test_security_rejection.py](backend/tests/integration/test_security_rejection.py): prompt adversarial (via mock de LiteLLM que devuelve `DELETE FROM sales`) → verificar que la fuente SQLite fixture NO cambia (conteo filas antes=después) y el response tiene `error.code=SECURITY_REJECTION`.
 
 **Checkpoint US3**: Escenario 3 de `quickstart.md` pasa.
 
