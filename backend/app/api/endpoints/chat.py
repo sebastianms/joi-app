@@ -34,7 +34,12 @@ def get_data_agent(db: AsyncSession = Depends(get_db)) -> DataAgentService:
     )
 
 
-@router.post("/messages", response_model=ChatResponse, status_code=status.HTTP_200_OK)
+@router.post(
+    "/messages",
+    response_model=ChatResponse,
+    response_model_exclude_none=True,
+    status_code=status.HTTP_200_OK,
+)
 async def send_message(
     request: ChatRequest,
     manager: ChatManagerService = Depends(get_chat_manager),

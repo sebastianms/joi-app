@@ -88,7 +88,7 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
   - En rama `COMPLEX`: invocar `DataAgentService.extract(session_id, message)`. Popular `response` con un mensaje natural (p.ej. `f"Encontré {row_count} filas…"` o el `error.message` si falló). Popular `extraction` y `trace` en el `ChatResponse` y en el `Message` del asistente.
   - ~~Inyectar `DataAgentService` por constructor.~~ `DataAgentService` se inyecta por parámetro en `handle()` porque depende de `AsyncSession` por request; `ChatManagerService` se mantiene singleton para preservar el historial en memoria.
 - [x] **T023** [US1] Actualizar [backend/app/api/endpoints/chat.py](backend/app/api/endpoints/chat.py) si la dependency injection de `ChatManagerService` requiere pasar el `DataAgentService` nuevo (probablemente vía `Depends`).
-- [ ] **T024** [US1] [P] Crear [backend/tests/integration/test_chat_with_data_agent.py](backend/tests/integration/test_chat_with_data_agent.py): llamada end-to-end a `POST /api/chat/messages` con mock de LiteLLM y fuente SQLite fixture. Verifica que el response cumple el contrato `data_extraction.v1`.
+- [x] **T024** [US1] [P] Crear [backend/tests/integration/test_chat_with_data_agent.py](backend/tests/integration/test_chat_with_data_agent.py): llamada end-to-end a `POST /api/chat/messages` con mock de LiteLLM y fuente SQLite fixture. Verifica que el response cumple el contrato `data_extraction.v1`.
 
 ### Frontend — recepción del contrato (US1)
 

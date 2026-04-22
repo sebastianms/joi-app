@@ -71,8 +71,8 @@ async def test_chat_simple_intent():
     data = response.json()
     assert data["intent_type"] == "simple"
     assert data["response"] == "Echo: hola"
-    assert data["extraction"] is None
-    assert data["trace"] is None
+    assert "extraction" not in data
+    assert "trace" not in data
 
 
 @pytest.mark.asyncio
