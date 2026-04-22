@@ -1,9 +1,17 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from app.api.endpoints.chat import get_chat_manager
+from app.api.endpoints.chat import get_chat_manager, get_data_agent
 from app.main import app
 from app.models.chat import Message
+from app.models.extraction import (
+    AgentTrace,
+    DataExtraction,
+    ErrorCode,
+    ExtractionError,
+    QueryPlan,
+    SourceType,
+)
 from app.services.chat_manager import ChatManagerService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
@@ -16,14 +24,40 @@ class _EchoStubLLM(LLMGateway):
         return f"Echo: {history[-1].content}"
 
 
+class _StubDataAgent:
+    async def extract(
+        self, session_id: str, prompt: str
+    ) -> tuple[DataExtraction, AgentTrace]:
+        extraction = DataExtraction(
+            session_id=session_id,
+            connection_id="__none__",
+            source_type=SourceType.SQL_SQLITE,
+            query_plan=QueryPlan(language="sql", expression=""),
+            row_count=0,
+            status="error",
+            error=ExtractionError(
+                code=ErrorCode.NO_CONNECTION,
+                message="No hay una fuente de datos activa.",
+            ),
+        )
+        trace = AgentTrace(
+            extraction_id=extraction.extraction_id,
+            pipeline="sql",
+            query_display="",
+        )
+        return extraction, trace
+
+
 @pytest.fixture(autouse=True)
-def _override_chat_manager():
+def _override_dependencies():
     app.dependency_overrides[get_chat_manager] = lambda: ChatManagerService(
         triage=TriageEngineService(),
         llm=_EchoStubLLM(),
     )
+    app.dependency_overrides[get_data_agent] = lambda: _StubDataAgent()
     yield
     app.dependency_overrides.pop(get_chat_manager, None)
+    app.dependency_overrides.pop(get_data_agent, None)
 
 
 @pytest.mark.asyncio
@@ -37,10 +71,12 @@ async def test_chat_simple_intent():
     data = response.json()
     assert data["intent_type"] == "simple"
     assert data["response"] == "Echo: hola"
+    assert data["extraction"] is None
+    assert data["trace"] is None
 
 
 @pytest.mark.asyncio
-async def test_chat_complex_intent():
+async def test_chat_complex_intent_returns_extraction_contract():
     payload = {"session_id": "s2", "message": "muéstrame las ventas por mes"}
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -49,7 +85,10 @@ async def test_chat_complex_intent():
     assert response.status_code == 200
     data = response.json()
     assert data["intent_type"] == "complex"
-    assert "agentes" in data["response"] or "Pipeline" in data["response"]
+    assert data["extraction"]["status"] == "error"
+    assert data["extraction"]["error"]["code"] == "NO_CONNECTION"
+    assert data["trace"]["pipeline"] == "sql"
+    assert data["response"] == "No hay una fuente de datos activa."
 
 
 @pytest.mark.asyncio

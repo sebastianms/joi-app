@@ -77,17 +77,17 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ### Fachada y wiring al chat (US1)
 
-- [ ] **T021** [US1] Crear [backend/app/services/data_agent_service.py](backend/app/services/data_agent_service.py) con `DataAgentService.extract(session_id, prompt) -> tuple[DataExtraction, AgentTrace]`:
+- [x] **T021** [US1] Crear [backend/app/services/data_agent_service.py](backend/app/services/data_agent_service.py) con `DataAgentService.extract(session_id, prompt) -> tuple[DataExtraction, AgentTrace]`:
   1. Resolver `DataSourceConnection` activa para `session_id` via `ConnectionRepository`. Si no hay → retornar extraction con `error.code="NO_CONNECTION"`.
   2. Resolver `UserSession` (T007) — el campo `rag_enabled` se lee pero **no se usa** en MVP (ADL-010); se mantiene forward-compat.
   3. Rutear: `source_type in {POSTGRESQL, MYSQL, SQLITE}` → `SqlAgentAdapter` (T019); `source_type == JSON` → `JsonAgentAdapter` (T026, pero el stub vacío es suficiente aquí — completa US1 solo con SQL).
   4. Construir `AgentTrace` desde la `DataExtraction` devuelta (preview primeras `TRACE_PREVIEW_ROWS`, `query_display` desde `query_plan.expression`, `pipeline` según adapter).
   5. Retornar tupla.
-- [ ] **T022** [US1] Modificar [backend/app/services/chat_manager.py:23-41](backend/app/services/chat_manager.py#L23-L41):
+- [x] **T022** [US1] Modificar [backend/app/services/chat_manager.py:23-41](backend/app/services/chat_manager.py#L23-L41):
   - Eliminar `_COMPLEX_INTENT_PLACEHOLDER` y la rama que lo usa.
   - En rama `COMPLEX`: invocar `DataAgentService.extract(session_id, message)`. Popular `response` con un mensaje natural (p.ej. `f"Encontré {row_count} filas…"` o el `error.message` si falló). Popular `extraction` y `trace` en el `ChatResponse` y en el `Message` del asistente.
-  - Inyectar `DataAgentService` por constructor.
-- [ ] **T023** [US1] Actualizar [backend/app/api/endpoints/chat.py](backend/app/api/endpoints/chat.py) si la dependency injection de `ChatManagerService` requiere pasar el `DataAgentService` nuevo (probablemente vía `Depends`).
+  - ~~Inyectar `DataAgentService` por constructor.~~ `DataAgentService` se inyecta por parámetro en `handle()` porque depende de `AsyncSession` por request; `ChatManagerService` se mantiene singleton para preservar el historial en memoria.
+- [x] **T023** [US1] Actualizar [backend/app/api/endpoints/chat.py](backend/app/api/endpoints/chat.py) si la dependency injection de `ChatManagerService` requiere pasar el `DataAgentService` nuevo (probablemente vía `Depends`).
 - [ ] **T024** [US1] [P] Crear [backend/tests/integration/test_chat_with_data_agent.py](backend/tests/integration/test_chat_with_data_agent.py): llamada end-to-end a `POST /api/chat/messages` con mock de LiteLLM y fuente SQLite fixture. Verifica que el response cumple el contrato `data_extraction.v1`.
 
 ### Frontend — recepción del contrato (US1)
