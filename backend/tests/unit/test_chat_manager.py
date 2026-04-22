@@ -118,6 +118,17 @@ async def test_complex_intent_truncated_mentions_limit(manager: ChatManagerServi
 
 
 @pytest.mark.asyncio
+async def test_complex_intent_empty_result_specific_message(manager: ChatManagerService):
+    agent = StubDataAgent(_success_extraction(row_count=0))
+    response = await manager.handle(
+        ChatRequest(session_id="s1", message="dame las ventas del año pasado"), agent
+    )
+    assert response.response == "La consulta no devolvió filas."
+    assert response.extraction.row_count == 0
+    assert response.extraction.status == "success"
+
+
+@pytest.mark.asyncio
 async def test_complex_intent_error_uses_error_message(manager: ChatManagerService):
     extraction = _error_extraction(
         ErrorCode.NO_CONNECTION, "No hay una fuente de datos activa."

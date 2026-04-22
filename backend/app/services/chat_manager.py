@@ -105,6 +105,8 @@ _ERROR_MESSAGES: dict[ErrorCode, str] = {
 
 def _format_extraction_response(extraction: DataExtraction) -> str:
     if extraction.status == "success":
+        if extraction.row_count == 0:
+            return "La consulta no devolvió filas."
         if extraction.truncated:
             return (
                 f"Encontré {extraction.row_count} filas (resultado truncado al "
