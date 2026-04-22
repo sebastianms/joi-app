@@ -92,7 +92,7 @@ Regla de progreso: antes de iniciar una tarea, marcarla `[/]`. Tras validación 
 
 ### Frontend — recepción del contrato (US1)
 
-- [ ] **T025** [US1] [P] Crear [frontend/src/types/extraction.ts](frontend/src/types/extraction.ts) con los tipos TypeScript del contrato (`DataExtraction`, `AgentTrace`, `QueryPlan`, `ColumnDescriptor`, `ExtractionError`, enums). Mantener alineación 1:1 con el JSON Schema [contracts/data-extraction-v1.schema.json](contracts/data-extraction-v1.schema.json).
+- [x] **T025** [US1] [P] Crear [frontend/src/types/extraction.ts](frontend/src/types/extraction.ts) con los tipos TypeScript del contrato (`DataExtraction`, `AgentTrace`, `QueryPlan`, `ColumnDescriptor`, `ExtractionError`, enums). Mantener alineación 1:1 con el JSON Schema [contracts/data-extraction-v1.schema.json](contracts/data-extraction-v1.schema.json).
 
 **Checkpoint US1**: T012→T024 completos y validados. Escenario 1 de `quickstart.md` pasa manualmente antes de avanzar.
 
