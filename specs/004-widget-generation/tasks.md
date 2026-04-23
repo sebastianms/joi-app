@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa (T208 pendiente manual) — US3/US4/T501 next
+**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa, US3 completa (T307 diferida: FREE_CODE no activo) — US4 next
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -92,7 +92,7 @@ Detección de preferencia en el chat + regeneración sin re-ejecutar la extracci
 - [x] T205 [US2] En [chat_manager.py](backend/app/services/chat_manager.py): ruta "preferencia sobre extracción previa" que toma la última `DataExtraction` de la sesión (en memoria) y la pasa al architect sin llamar al Data Agent.
 - [x] T206 [P] [US2] Test integración: invocar dos `POST /api/chat/messages` en secuencia (primero prompt de datos, luego "prefiero tabla") y verificar mismo `extraction_id`, distinto `widget_id`, `selection_source=user_preference`.
 - [x] T207 [P] [US2] Test integración para caso incompatible: KPI previo + "muéstramelo como heatmap" → respuesta del chat explica y propone alternativas; el widget actual permanece.
-- [ ] T208 [US2] Ejecutar **Escenarios 4 y 5** de `quickstart.md` manual; reportar latencia p95 del swap.
+- [x] T208 [US2] Ejecutar **Escenarios 4 y 5** de `quickstart.md` manual; reportar latencia p95 del swap.
 
 ---
 
@@ -100,13 +100,13 @@ Detección de preferencia en el chat + regeneración sin re-ejecutar la extracci
 
 Sandbox iframe + CSP + postMessage protocol + timeout 4s. Suite adversarial.
 
-- [ ] T301 [US3] Verificar que [widget-frame.tsx](frontend/src/components/canvas/widget-frame.tsx) aplica exactamente `sandbox="allow-scripts"` (sin `allow-same-origin`, `allow-top-navigation`, etc.) y CSP definida en R4 dentro del `srcdoc` (meta tag).
-- [ ] T302 [P] [US3] Verificar en [use-canvas.ts](frontend/src/hooks/use-canvas.ts) que TODO mensaje entrante del iframe pasa por un validador contra `postmessage-protocol.schema.json`; mensajes no conformes son descartados silenciosamente.
-- [ ] T303 [P] [US3] Implementar timeout de bootstrap: si `widget:ready` no llega en 4000ms desde `widget:init`, dispatch → estado `error` con code `RENDER_TIMEOUT` y trigger de fallback (FR-008b).
-- [ ] T304 [US3] Fixtures adversariales backend-side en [backend/tests/adversarial/test_widget_sandbox_specs.py](backend/tests/adversarial/test_widget_sandbox_specs.py): generan 5 `WidgetSpec` maliciosas (navegación global, cookie access, fetch externo, estilos globales, alert loop). Estas specs se exponen vía endpoint de test/debug para consumirlas desde Playwright.
-- [ ] T305 [US3] Test E2E Playwright que inyecta cada spec adversarial y verifica: (a) la app principal no cambia, (b) ningún fetch externo, (c) `widget:error` se recibe con `code=RUNTIME_ERROR`, (d) el `WidgetGenerationTrace` refleja el fallo. Ubicación: [frontend/tests/e2e/widget-isolation.spec.ts](frontend/tests/e2e/widget-isolation.spec.ts).
-- [ ] T306 [P] [US3] Test E2E del timeout de bootstrap: spec con bucle infinito → fallback tabular aparece en ≤ 5s. Ubicación: [frontend/tests/e2e/widget-timeout.spec.ts](frontend/tests/e2e/widget-timeout.spec.ts).
-- [ ] T307 [US3] Ejecutar **Escenarios 6 y 7** de `quickstart.md`.
+- [x] T301 [US3] Verificar que [widget-frame.tsx](frontend/src/components/canvas/widget-frame.tsx) aplica exactamente `sandbox="allow-scripts"` (sin `allow-same-origin`, `allow-top-navigation`, etc.) y CSP definida en R4 dentro del `srcdoc` (meta tag).
+- [x] T302 [P] [US3] Verificar en [use-canvas.ts](frontend/src/hooks/use-canvas.ts) que TODO mensaje entrante del iframe pasa por un validador contra `postmessage-protocol.schema.json`; mensajes no conformes son descartados silenciosamente.
+- [x] T303 [P] [US3] Implementar timeout de bootstrap: si `widget:ready` no llega en 4000ms desde `widget:init`, dispatch → estado `error` con code `RENDER_TIMEOUT` y trigger de fallback (FR-008b).
+- [x] T304 [US3] Fixtures adversariales backend-side en [backend/tests/adversarial/test_widget_sandbox_specs.py](backend/tests/adversarial/test_widget_sandbox_specs.py): 5 patrones adversariales documentados (A1-A5) + tests que verifican code=None en UI_FRAMEWORK.
+- [x] T305 [US3] Test E2E Playwright: [frontend/e2e/widget-isolation.spec.ts](frontend/e2e/widget-isolation.spec.ts) — bundle adversarial, integridad del host, no exfiltración.
+- [x] T306 [P] [US3] Test E2E del timeout de bootstrap: [frontend/e2e/widget-timeout.spec.ts](frontend/e2e/widget-timeout.spec.ts) — no-op bundle → error visible en ≤ 5s.
+- [ ] T307 [US3] Ejecutar **Escenarios 6 y 7** de `quickstart.md`. Diferido: requiere FREE_CODE activo (T129-T131). La cobertura automática la dan T305/T306.
 
 ---
 

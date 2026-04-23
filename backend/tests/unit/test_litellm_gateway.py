@@ -27,6 +27,8 @@ def reset_singleton():
 
 @pytest.fixture
 def fake_client(reset_singleton, monkeypatch):
+    # Disable mock router so tests can assert real litellm.completion calls.
+    monkeypatch.setattr(litellm_client.settings, "MOCK_LLM_RESPONSES", False)
     client = LiteLLMClient(models={
         "sql": "provider/sql-model",
         "json": "provider/json-model",
@@ -40,6 +42,7 @@ def fake_client(reset_singleton, monkeypatch):
 # --- get_client() fail-closed behavior ---
 
 def test_get_client_raises_without_any_credentials(reset_singleton, monkeypatch):
+    monkeypatch.setattr(litellm_client.settings, "MOCK_LLM_RESPONSES", False)
     for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setattr(litellm_client.settings, "ANTHROPIC_API_KEY", None)
