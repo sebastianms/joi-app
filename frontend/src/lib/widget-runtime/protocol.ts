@@ -22,6 +22,48 @@ export function isWidgetInitMessage(raw: unknown): raw is WidgetInitMessage {
   );
 }
 
+const ERROR_CODES: ReadonlySet<WidgetMessageErrorCode> = new Set([
+  "SPEC_INVALID",
+  "RUNTIME_ERROR",
+  "DATA_MISMATCH",
+  "UNKNOWN",
+]);
+
+export function isWidgetReadyMessage(raw: unknown): raw is WidgetReadyMessage {
+  if (!raw || typeof raw !== "object") return false;
+  const msg = raw as Record<string, unknown>;
+  return (
+    msg.type === "widget:ready" &&
+    msg.protocol_version === PROTOCOL_VERSION &&
+    typeof msg.extraction_id === "string"
+  );
+}
+
+export function isWidgetErrorMessage(raw: unknown): raw is WidgetErrorMessage {
+  if (!raw || typeof raw !== "object") return false;
+  const msg = raw as Record<string, unknown>;
+  return (
+    msg.type === "widget:error" &&
+    msg.protocol_version === PROTOCOL_VERSION &&
+    typeof msg.extraction_id === "string" &&
+    typeof msg.code === "string" &&
+    ERROR_CODES.has(msg.code as WidgetMessageErrorCode) &&
+    typeof msg.message === "string"
+  );
+}
+
+export function isWidgetResizeMessage(raw: unknown): raw is WidgetResizeMessage {
+  if (!raw || typeof raw !== "object") return false;
+  const msg = raw as Record<string, unknown>;
+  return (
+    msg.type === "widget:resize" &&
+    msg.protocol_version === PROTOCOL_VERSION &&
+    typeof msg.extraction_id === "string" &&
+    typeof msg.height === "number" &&
+    Number.isFinite(msg.height)
+  );
+}
+
 export function makeReadyMessage(
   extractionId: string,
   bootstrapMs: number,

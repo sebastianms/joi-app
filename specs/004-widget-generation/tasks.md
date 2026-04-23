@@ -68,7 +68,7 @@ Ciclo completo "extracción exitosa → widget visible". Modelos → servicios �
 - [ ] T130 [P] [US1] Adaptador bootstrap en [adapters/bootstrap.tsx](frontend/src/lib/widget-runtime/adapters/bootstrap.tsx) (clases CSS inline).
 - [ ] T131 [P] [US1] Adaptador heroui en [adapters/heroui.tsx](frontend/src/lib/widget-runtime/adapters/heroui.tsx).
 - [ ] T132 [US1] Verificar el build `npm run build:widget-runtime` produce `public/widget-runtime.bundle.js` < 300KB gzipped (reporte en PR).
-- [ ] T133 [US1] Implementar hook [frontend/src/hooks/use-canvas.ts](frontend/src/hooks/use-canvas.ts): maneja `CanvasState`, monta iframe con `srcdoc`, envía `widget:init`, escucha `ready/error/resize`, aplica timeout de 4s.
+- [x] T133 [US1] Implementar hook [frontend/src/hooks/use-canvas.ts](frontend/src/hooks/use-canvas.ts): maneja `CanvasState`, monta iframe con `srcdoc`, envía `widget:init`, escucha `ready/error/resize`, aplica timeout de 4s.
 - [x] T134 [US1] Implementar [frontend/src/components/canvas/widget-frame.tsx](frontend/src/components/canvas/widget-frame.tsx): `<iframe sandbox="allow-scripts" srcdoc={...}>` con CSP inyectada (R4). `aria-label`/`data-role` estables (ADL-002).
 - [x] T135 [US1] Implementar [frontend/src/components/canvas/widget-loading.tsx](frontend/src/components/canvas/widget-loading.tsx): skeleton para `generating` y `bootstrapping`.
 - [x] T136 [P] [US1] [frontend/src/components/canvas/widget-empty-state.tsx](frontend/src/components/canvas/widget-empty-state.tsx) para `row_count=0`.
