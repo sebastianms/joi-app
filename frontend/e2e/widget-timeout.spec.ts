@@ -4,10 +4,15 @@
  * Covers:
  *   T303 — RENDER_TIMEOUT se dispara si widget:ready no llega en 4000ms
  *   T306 — spec con bucle infinito → fallback visible en ≤ 5s
+ *   T303b — RENDER_ERROR persiste cuando el bundle falla (red/abort) y llega spec
  *
- * Strategy: intercept /widget-runtime.bundle.js before page load and return
- * a no-op bundle that never emits widget:ready. The host useCanvas hook will
- * fire the 4s timer and transition loading_stage → "error" (RENDER_TIMEOUT).
+ * Strategy A (T303/T306): intercept /widget-runtime.bundle.js and return a
+ * no-op bundle (status 200, empty JS). bundleCode is set, iframe renders,
+ * widget:init is sent, but widget:ready never arrives → RENDER_TIMEOUT fires.
+ *
+ * Strategy B (T303b): abort the bundle request entirely. bundleCode stays null.
+ * Verifies that the RENDER_ERROR from bundle load failure is preserved even
+ * after a widget spec arrives (regression caught by manual testing).
  *
  * Prerequisites: backend at http://127.0.0.1:8000 with MOCK_LLM_RESPONSES=true,
  * fixture connection seeded for E2E_SESSION_ID.
@@ -101,5 +106,35 @@ test.describe("T306 — Chat sigue operativo tras timeout (FR-009)", () => {
     await sendMessage(page, "dame el total de ventas");
     const log = page.getByRole("log");
     await expect(log.locator('[data-role="assistant"]')).toHaveCount(2, { timeout: 15000 });
+  });
+});
+
+// ─── T303b — Bundle fetch failure persists after spec arrives ─────────────────
+
+test.describe("T303b — RENDER_ERROR persiste cuando el fetch del bundle falla (scout fix)", () => {
+  // This test caught a regression where the spec-change effect was overwriting
+  // the bundle load error with loading_stage="bootstrapping", causing an
+  // infinite spinner instead of showing the error to the user.
+  test("error de bundle permanece visible tras recibir widget_spec", async ({ page }) => {
+    // Abort the bundle request entirely — bundleCode stays null
+    await page.route("**/widget-runtime.bundle.js", (route) => route.abort("failed"));
+
+    await page.addInitScript((sid) => {
+      window.localStorage.setItem("joi_session_id", sid);
+    }, `${E2E_SESSION_ID}`);
+    await page.goto("/");
+
+    await page.getByRole("textbox", { name: "Mensaje" }).fill("muéstrame las ventas por mes");
+    await page.getByRole("button", { name: "Enviar" }).click();
+
+    // Wait for the backend to respond (spec arrives)
+    const log = page.getByRole("log");
+    await expect(log.locator('[data-role="assistant"]').last()).toBeVisible({ timeout: 15000 });
+
+    // The canvas must show the bundle error, NOT an infinite bootstrapping spinner
+    await expect(page.locator('[data-role="widget-error"]')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('[data-role="widget-error"]')).toContainText(
+      /no se pudo cargar|runtime|fetch/i,
+    );
   });
 });

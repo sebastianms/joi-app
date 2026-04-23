@@ -98,6 +98,9 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
   const frameRef = useRef<WidgetFrameHandle | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const lastSpecIdRef = useRef<string | null>(null);
+  // Tracks the last spec for which widget:init was actually sent, so we can
+  // send it when the bundle loads after the spec has already arrived.
+  const initSentForSpecRef = useRef<string | null>(null);
 
   const setStage = useCallback((stage: CanvasLoadingStage, error: CanvasError | null = null) => {
     setState((prev) => ({ ...prev, loading_stage: stage, last_error: error }));
@@ -110,32 +113,59 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
     }
   }, []);
 
+  const sendInit = useCallback(
+    (spec: WidgetSpec) => {
+      const iframeWindow = frameRef.current?.contentWindow;
+      if (!iframeWindow) return;
+      initSentForSpecRef.current = spec.widget_id;
+      iframeWindow.postMessage(buildInitMessage(spec, dataRows), "*");
+      clearTimer();
+      timeoutRef.current = window.setTimeout(() => {
+        setStage("error", {
+          code: "RENDER_TIMEOUT",
+          message: `El widget no respondió en ${BOOTSTRAP_TIMEOUT_MS / 1000}s.`,
+        });
+      }, BOOTSTRAP_TIMEOUT_MS);
+    },
+    [dataRows, clearTimer, setStage],
+  );
+
+  // Effect A: react to spec changes.
+  // When spec changes we update canvas state and, if the bundle is already
+  // loaded, send widget:init immediately. If the bundle isn't ready yet we
+  // keep loading_stage="bootstrapping" and wait for Effect B to fire.
+  // Bundle load errors (RENDER_ERROR with no bundleCode) are preserved so
+  // the error panel remains visible even after a new spec arrives.
   useEffect(() => {
     const specId = widgetSpec?.widget_id ?? null;
     if (specId === lastSpecIdRef.current) return;
     lastSpecIdRef.current = specId;
     clearTimer();
-    setState((prev) => ({
-      ...prev,
-      previous_widget_spec: prev.current_widget_spec,
-      current_widget_spec: widgetSpec,
-      loading_stage: widgetSpec ? "bootstrapping" : "idle",
-      last_error: null,
-    }));
+    setState((prev) => {
+      const bundleFailedPreviously =
+        prev.last_error?.code === "RENDER_ERROR" && !bundleCode;
+      return {
+        ...prev,
+        previous_widget_spec: prev.current_widget_spec,
+        current_widget_spec: widgetSpec,
+        // Keep error visible if the bundle never loaded; otherwise start bootstrapping.
+        loading_stage: bundleFailedPreviously ? "error" : widgetSpec ? "bootstrapping" : "idle",
+        last_error: bundleFailedPreviously ? prev.last_error : null,
+      };
+    });
 
-    if (!widgetSpec) return;
-    // Post widget:init whenever the spec changes. The iframe doesn't reload
-    // between specs (srcdoc is stable) so we cannot rely on onLoad alone.
-    const iframeWindow = frameRef.current?.contentWindow;
-    if (!iframeWindow) return;
-    iframeWindow.postMessage(buildInitMessage(widgetSpec, dataRows), "*");
-    timeoutRef.current = window.setTimeout(() => {
-      setStage("error", {
-        code: "RENDER_TIMEOUT",
-        message: `El widget no respondió en ${BOOTSTRAP_TIMEOUT_MS / 1000}s.`,
-      });
-    }, BOOTSTRAP_TIMEOUT_MS);
-  }, [widgetSpec, dataRows, clearTimer, setStage]);
+    if (!widgetSpec || !bundleCode) return;
+    sendInit(widgetSpec);
+  }, [widgetSpec, bundleCode, sendInit, clearTimer]);
+
+  // Effect B: react to bundle becoming available.
+  // If the spec arrived before the bundle, init hasn't been sent yet.
+  // Fire it now so the widget can bootstrap without requiring another spec change.
+  useEffect(() => {
+    if (!bundleCode || !widgetSpec) return;
+    if (initSentForSpecRef.current === widgetSpec.widget_id) return;
+    sendInit(widgetSpec);
+  }, [bundleCode, widgetSpec, sendInit]);
 
   useEffect(() => {
     loadBundle()
