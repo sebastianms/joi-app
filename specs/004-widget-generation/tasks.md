@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa, US3 completa (T307 diferida), US4 completa (T407 pendiente review manual) — Polish next
+**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa, US3 completa (T307 diferida), US4 completa (T407+T408 fix aplicado) — Polish next
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -120,7 +120,8 @@ Fallback universal + error banner + continuidad del chat.
 - [x] T404 [US4] En [canvas-panel.tsx](frontend/src/components/canvas/canvas-panel.tsx): al recibir error de render, preservar `previous_widget_spec` visible junto al banner de error (FR-014).
 - [x] T405 [P] [US4] Test integración: mock de LiteLLM devuelve respuesta no parseable → `ChatResponse.widget_spec.widget_type=table`, `selection_source=fallback`, chat response exitoso 200. Ubicación: [backend/tests/integration/test_chat_with_widget.py](backend/tests/integration/test_chat_with_widget.py) (ya existente, verificado pasa).
 - [x] T406 [P] [US4] Test E2E Playwright: forzar mock generador fallido → tabla aparece → enviar nuevo prompt → widget normal aparece (sesión operativa). Ubicación: [frontend/e2e/widget-fallback.spec.ts](frontend/e2e/widget-fallback.spec.ts).
-- [ ] T407 [US4] Ejecutar **Escenarios 3, 8, 9, 10** de `quickstart.md`. Pendiente review manual.
+- [x] T407 [US4] Ejecutar **Escenarios 3, 8, 9, 10** de `quickstart.md`. Escenarios 3, 9, 10 OK. Escenario 8 expuso bug de bindings semánticamente inválidos → fix en T408.
+- [x] T408 [US4] Bindings semantic validator (bug fix descubierto via T407 Esc 8). Backend: [bindings_validator.py](backend/app/services/widget/bindings_validator.py) corre tras parsing Pydantic; `InvalidBindingsError` → `SPEC_INVALID` → architect fallback tabla. Frontend: [bindings-validator.ts](frontend/src/lib/widget-runtime/bindings-validator.ts) espejo del backend; el runtime en [entry.tsx](frontend/src/lib/widget-runtime/entry.tsx) emite `widget:error` al host si faltan bindings. Tests: [test_bindings_validator.py](backend/tests/unit/test_bindings_validator.py) + regression en [test_widget_generator.py](backend/tests/unit/test_widget_generator.py).
 
 ---
 
