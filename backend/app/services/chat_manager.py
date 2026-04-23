@@ -58,7 +58,12 @@ class ChatManagerService:
         has_prior = request.session_id in self._last_extraction
         triage_result = self._triage.classify(request.message, has_prior_extraction=has_prior)
 
-        if triage_result.suggested_route == "widget_preference" and has_prior:
+        # US2: when the user expresses a widget-type preference AND we have a prior
+        # extraction, regenerate the widget from cache without re-querying the data
+        # source. This covers both the pure preference path (suggested_route =
+        # widget_preference) and the mixed path where a complex keyword co-occurs
+        # with a preference phrase (e.g. "muéstralo como tabla").
+        if has_prior and triage_result.preferred_widget_type is not None:
             return await self._respond_with_widget_preference(
                 request, session, triage_result.preferred_widget_type
             )
@@ -148,12 +153,14 @@ class ChatManagerService:
         assistant_message = Message(
             role=Role.ASSISTANT,
             content=response_text,
+            extraction=prior_extraction,
             trace=stub_trace,
         )
         session.append(assistant_message)
         return ChatResponse(
             response=response_text,
             intent_type=IntentType.COMPLEX,
+            extraction=prior_extraction,
             trace=stub_trace,
             widget_spec=outcome.spec,
         )

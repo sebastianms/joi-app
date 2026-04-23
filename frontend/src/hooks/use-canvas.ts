@@ -95,24 +95,9 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
   const [state, setState] = useState<CanvasState>(() => initialState(sessionId));
   const [bundleCode, setBundleCode] = useState<string | null>(null);
   const [frameHeight, setFrameHeight] = useState<number>(DEFAULT_FRAME_HEIGHT);
-  const [lastAppliedSpec, setLastAppliedSpec] = useState<WidgetSpec | null>(null);
-
   const frameRef = useRef<WidgetFrameHandle | null>(null);
   const timeoutRef = useRef<number | null>(null);
-
-  // React-recommended "adjust state during render" pattern (ver docs de React:
-  // "You Might Not Need an Effect"): sincroniza un estado derivado de una prop
-  // sin programar un efecto extra que causaría renders en cascada.
-  if (lastAppliedSpec !== widgetSpec) {
-    setLastAppliedSpec(widgetSpec);
-    setState((prev) => ({
-      ...prev,
-      previous_widget_spec: prev.current_widget_spec,
-      current_widget_spec: widgetSpec,
-      loading_stage: widgetSpec ? "bootstrapping" : "idle",
-      last_error: null,
-    }));
-  }
+  const lastSpecIdRef = useRef<string | null>(null);
 
   const setStage = useCallback((stage: CanvasLoadingStage, error: CanvasError | null = null) => {
     setState((prev) => ({ ...prev, loading_stage: stage, last_error: error }));
@@ -126,6 +111,33 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
   }, []);
 
   useEffect(() => {
+    const specId = widgetSpec?.widget_id ?? null;
+    if (specId === lastSpecIdRef.current) return;
+    lastSpecIdRef.current = specId;
+    clearTimer();
+    setState((prev) => ({
+      ...prev,
+      previous_widget_spec: prev.current_widget_spec,
+      current_widget_spec: widgetSpec,
+      loading_stage: widgetSpec ? "bootstrapping" : "idle",
+      last_error: null,
+    }));
+
+    if (!widgetSpec) return;
+    // Post widget:init whenever the spec changes. The iframe doesn't reload
+    // between specs (srcdoc is stable) so we cannot rely on onLoad alone.
+    const iframeWindow = frameRef.current?.contentWindow;
+    if (!iframeWindow) return;
+    iframeWindow.postMessage(buildInitMessage(widgetSpec, dataRows), "*");
+    timeoutRef.current = window.setTimeout(() => {
+      setStage("error", {
+        code: "RENDER_TIMEOUT",
+        message: `El widget no respondió en ${BOOTSTRAP_TIMEOUT_MS / 1000}s.`,
+      });
+    }, BOOTSTRAP_TIMEOUT_MS);
+  }, [widgetSpec, dataRows, clearTimer, setStage]);
+
+  useEffect(() => {
     loadBundle()
       .then(setBundleCode)
       .catch((err: unknown) => {
@@ -137,9 +149,9 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
   useEffect(() => {
     function onMessage(event: MessageEvent) {
       // With sandbox="allow-scripts" (no allow-same-origin) the browser assigns
-      // an opaque origin to the iframe, so event.source !== contentWindow always.
-      // We validate message shape instead; the protocol validators reject unknowns.
-      if (!frameRef.current?.contentWindow) return;
+      // an opaque origin, so source-identity checks are unreliable. Message shape
+      // validation via the protocol guards is sufficient — non-conforming messages
+      // are silently ignored by the validators.
       const data = event.data;
       if (isWidgetReadyMessage(data)) {
         clearTimer();
@@ -168,7 +180,6 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
     const spec = widgetSpec;
     const iframeWindow = frameRef.current?.contentWindow;
     if (!spec || !iframeWindow) return;
-
     iframeWindow.postMessage(buildInitMessage(spec, dataRows), "*");
 
     clearTimer();
