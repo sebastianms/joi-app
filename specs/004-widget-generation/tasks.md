@@ -56,8 +56,8 @@ Ciclo completo "extracción exitosa → widget visible". Modelos → servicios �
 - [x] T112 [P] [US1] Tests unitarios del architect: [backend/tests/unit/test_architect_service.py](backend/tests/unit/test_architect_service.py) — happy path, generator timeout → fallback, spec inválida → fallback.
 - [x] T113 [US1] Test integración: [backend/tests/integration/test_chat_with_widget.py](backend/tests/integration/test_chat_with_widget.py) — `POST /api/chat/messages` con prompt complejo retorna `ChatResponse` con `widget_spec` válida contra el schema.
 - [x] T120 [US1] Implementar runtime entry en [frontend/src/lib/widget-runtime/entry.tsx](frontend/src/lib/widget-runtime/entry.tsx): escucha `widget:init`, valida `protocol_version`, dispatch por `widget_type`, emite `widget:ready`/`widget:error`/`widget:resize`.
-- [ ] T121 [P] [US1] Renderer `table` en [frontend/src/lib/widget-runtime/renderers/table.tsx](frontend/src/lib/widget-runtime/renderers/table.tsx).
-- [ ] T122 [P] [US1] Renderer `bar_chart` en [renderers/bar-chart.tsx](frontend/src/lib/widget-runtime/renderers/bar-chart.tsx) usando Recharts.
+- [x] T121 [P] [US1] Renderer `table` en [frontend/src/lib/widget-runtime/renderers/table.tsx](frontend/src/lib/widget-runtime/renderers/table.tsx).
+- [x] T122 [P] [US1] Renderer `bar_chart` en [renderers/bar-chart.tsx](frontend/src/lib/widget-runtime/renderers/bar-chart.tsx) usando Recharts.
 - [ ] T123 [P] [US1] Renderer `line_chart` en [renderers/line-chart.tsx](frontend/src/lib/widget-runtime/renderers/line-chart.tsx).
 - [ ] T124 [P] [US1] Renderer `pie_chart` en [renderers/pie-chart.tsx](frontend/src/lib/widget-runtime/renderers/pie-chart.tsx).
 - [ ] T125 [P] [US1] Renderer `kpi` en [renderers/kpi.tsx](frontend/src/lib/widget-runtime/renderers/kpi.tsx).
