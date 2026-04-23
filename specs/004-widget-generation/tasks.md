@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa, US3 completa (T307 diferida), US4 completa (T407+T408 fix aplicado) — Polish next
+**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa, US2 completa, US3 completa, US4 completa — Polish next. Diferidas a Phase 7 (Feature 005 US6): T129–T131 (adaptadores UI), T307 (Esc 6–7), T501–T507 (Setup Wizard render-mode).
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -64,9 +64,9 @@ Ciclo completo "extracción exitosa → widget visible". Modelos → servicios �
 - [x] T126 [P] [US1] Renderer `scatter_plot` en [renderers/scatter.tsx](frontend/src/lib/widget-runtime/renderers/scatter.tsx).
 - [x] T127 [P] [US1] Renderer `heatmap` en [renderers/heatmap.tsx](frontend/src/lib/widget-runtime/renderers/heatmap.tsx) (SVG custom, R5).
 - [x] T128 [P] [US1] Renderer `area_chart` en [renderers/area-chart.tsx](frontend/src/lib/widget-runtime/renderers/area-chart.tsx).
-- [ ] T129 [P] [US1] Adaptador shadcn en [frontend/src/lib/widget-runtime/adapters/shadcn.tsx](frontend/src/lib/widget-runtime/adapters/shadcn.tsx) (wrappers de Card/Table/etc. sin dependencia de red).
-- [ ] T130 [P] [US1] Adaptador bootstrap en [adapters/bootstrap.tsx](frontend/src/lib/widget-runtime/adapters/bootstrap.tsx) (clases CSS inline).
-- [ ] T131 [P] [US1] Adaptador heroui en [adapters/heroui.tsx](frontend/src/lib/widget-runtime/adapters/heroui.tsx).
+- [ ] T129 [P] [US1] Adaptador shadcn → **diferido a Feature 005 US6** (solo relevante en modo FREE_CODE, activado por T501–T507).
+- [ ] T130 [P] [US1] Adaptador bootstrap → **diferido a Feature 005 US6**.
+- [ ] T131 [P] [US1] Adaptador heroui → **diferido a Feature 005 US6**.
 - [x] T132 [US1] Verificar el build `npm run build:widget-runtime` produce `public/widget-runtime.bundle.js` < 300KB gzipped (reporte en PR). **Resultado: 614 KB minified / 181.2 KB gzipped.**
 - [x] T133 [US1] Implementar hook [frontend/src/hooks/use-canvas.ts](frontend/src/hooks/use-canvas.ts): maneja `CanvasState`, monta iframe con `srcdoc`, envía `widget:init`, escucha `ready/error/resize`, aplica timeout de 4s.
 - [x] T134 [US1] Implementar [frontend/src/components/canvas/widget-frame.tsx](frontend/src/components/canvas/widget-frame.tsx): `<iframe sandbox="allow-scripts" srcdoc={...}>` con CSP inyectada (R4). `aria-label`/`data-role` estables (ADL-002).
@@ -106,7 +106,7 @@ Sandbox iframe + CSP + postMessage protocol + timeout 4s. Suite adversarial.
 - [x] T304 [US3] Fixtures adversariales backend-side en [backend/tests/adversarial/test_widget_sandbox_specs.py](backend/tests/adversarial/test_widget_sandbox_specs.py): 5 patrones adversariales documentados (A1-A5) + tests que verifican code=None en UI_FRAMEWORK.
 - [x] T305 [US3] Test E2E Playwright: [frontend/e2e/widget-isolation.spec.ts](frontend/e2e/widget-isolation.spec.ts) — bundle adversarial, integridad del host, no exfiltración.
 - [x] T306 [P] [US3] Test E2E del timeout de bootstrap: [frontend/e2e/widget-timeout.spec.ts](frontend/e2e/widget-timeout.spec.ts) — no-op bundle → error visible en ≤ 5s.
-- [ ] T307 [US3] Ejecutar **Escenarios 6 y 7** de `quickstart.md`. Diferido: requiere FREE_CODE activo (T129-T131). La cobertura automática la dan T305/T306.
+- [ ] T307 [US3] Ejecutar **Escenarios 6 y 7** de `quickstart.md` → **diferido a Feature 005 US6** (requiere FREE_CODE activo via T501–T507). Cobertura automática: T305/T306.
 
 ---
 
@@ -125,17 +125,17 @@ Fallback universal + error banner + continuidad del chat.
 
 ---
 
-## Setup Wizard — extensión (soporta US1–US2)
+## Setup Wizard — extensión (soporta US1–US2) → **diferido a Feature 005 US6**
 
-Paso nuevo "Framework visual" + endpoints `/api/render-mode/profile`. Se puede avanzar en paralelo con US1 porque no bloquea el flujo por defecto (lazy default).
+Paso nuevo "Framework visual" + endpoints `/api/render-mode/profile`. Movido a Phase 7 porque la selección de UI framework es parte de la identidad visual y el rediseño del Setup Wizard. Los modelos de datos (`RenderModeProfile`, `T010–T012`) ya están implementados — solo falta la UI y los endpoints.
 
-- [ ] T501 Implementar endpoints [backend/app/api/endpoints/render_mode.py](backend/app/api/endpoints/render_mode.py): `GET /api/render-mode/profile?session_id=...` y `PUT /api/render-mode/profile`. Registrar el router en [backend/app/api/api.py](backend/app/api/api.py).
-- [ ] T502 [P] Tests unitarios del repo: [backend/tests/unit/test_render_mode_repository.py](backend/tests/unit/test_render_mode_repository.py) — `get_or_create` idempotente, update, rechazo de `design_system`.
-- [ ] T503 [P] Test integración del endpoint: [backend/tests/integration/test_render_mode_api.py](backend/tests/integration/test_render_mode_api.py) — GET default, PUT válido, PUT `design_system` → 400.
-- [ ] T504 Implementar [frontend/src/components/setup-wizard/render-mode-step.tsx](frontend/src/components/setup-wizard/render-mode-step.tsx): 4 opciones (shadcn default seleccionada, Bootstrap, HeroUI, Design System deshabilitado con badge "próximamente"). Usa el endpoint PUT.
-- [ ] T505 Insertar el step en el flujo del wizard ya existente (posterior a conexión de datos). Verificar que sesiones existentes siguen funcionando con el default lazy.
-- [ ] T506 Test E2E Playwright del wizard: [frontend/tests/e2e/render-mode-wizard.spec.ts](frontend/tests/e2e/render-mode-wizard.spec.ts) — cambiar a Bootstrap → generar widget → `widget_spec.ui_library=bootstrap` verificable.
-- [ ] T507 Ejecutar **Escenarios 11 y 12** de `quickstart.md`.
+- [ ] T501 Implementar endpoints `GET/PUT /api/render-mode/profile` → **Feature 005 US6**.
+- [ ] T502 [P] Tests unitarios del repo render_mode → **Feature 005 US6**.
+- [ ] T503 [P] Test integración del endpoint render_mode → **Feature 005 US6**.
+- [ ] T504 Implementar `render-mode-step.tsx` en el wizard → **Feature 005 US6**.
+- [ ] T505 Insertar el step en el flujo del wizard → **Feature 005 US6**.
+- [ ] T506 Test E2E Playwright del wizard → **Feature 005 US6**.
+- [ ] T507 Ejecutar **Escenarios 11 y 12** de `quickstart.md` → **Feature 005 US6**.
 
 ---
 

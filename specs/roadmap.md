@@ -14,7 +14,7 @@
 ## Phase 3: Setup Wizard & Data Connectors [DONE]
 - [x] UI y lógica para el asistente de configuración.
 - [x] Conectores de base de datos (PostgreSQL, MySQL, SQLite, JSON) interactivos.
-- [ ] Módulo de selección de framework UI y carga de Design System (Diferido - Ver Spec 001).
+- [ ] Módulo de selección de framework UI y carga de Design System — diferido a Phase 7 US6.
 
 ## Phase 4: Chat Engine & Hybrid Triage (Shippable Slice 2) [DONE]
 - [x] Implementación del sistema de chat interactivo.
@@ -39,5 +39,7 @@
 - [ ] Canvas con estados visuales ricos: idle, generating, bootstrapping, error (US4).
 - [ ] Onboarding wizard de primera vez: modal 3 pasos, activación automática (US5).
 - [ ] Setup page rediseñada con la identidad visual de la app (US6).
+  - Incluye selector de render-mode (shadcn/bootstrap/heroui + Design System deshabilitado) — Feature 004 T501–T507 diferidas.
+  - Incluye implementación de adaptadores UI para el runtime del widget (T129–T131) y cobertura de Escenarios 6–7 y 11–12 del quickstart de Feature 004 (T307, T507).
 
 > **Nota**: La infraestructura RAG (US5 — memoria activable por sesión) **no está operativa en el MVP**. El campo `UserSession.rag_enabled` se mantiene como forward-compat. El stack RAG (vector store, few-shot memory) se decide cuando US5 se reactive — ver ADL-010.
