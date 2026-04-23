@@ -13,8 +13,11 @@ Behavior:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Optional
+
+_logger = logging.getLogger(__name__)
 
 from app.models.extraction import DataExtraction
 from app.models.render_mode import UILibrary
@@ -165,6 +168,26 @@ async def build_widget(request: ArchitectRequest) -> ArchitectOutcome:
     if request.extraction.row_count == 0:
         return ArchitectOutcome(spec=None, trace=None)
 
+    try:
+        return await _build_widget_inner(request)
+    except Exception as exc:
+        _logger.exception("Unexpected error in build_widget: %s", exc)
+        try:
+            fallback_spec = _fallback_with_source(request, SelectionSource.FALLBACK)
+        except Exception:
+            return ArchitectOutcome(spec=None, trace=None)
+        trace = _trace_fallback(
+            fallback_spec,
+            _FallbackTraceInfo(
+                attempted=WidgetType.TABLE,
+                generation_ms=0,
+                error_code=WidgetErrorCode.UNKNOWN,
+            ),
+        )
+        return ArchitectOutcome(spec=fallback_spec, trace=trace)
+
+
+async def _build_widget_inner(request: ArchitectRequest) -> ArchitectOutcome:
     widget_type, selection_source, hint = _resolve_widget_type(request)
     if hint is not None:
         return ArchitectOutcome(spec=None, trace=None, preference_hint=hint)

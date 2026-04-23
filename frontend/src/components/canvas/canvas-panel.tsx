@@ -1,9 +1,6 @@
 // Canvas panel (T138). Orquesta use-canvas y decide qué renderizar según
 // el estado: skeleton de generación, skeleton de bootstrap, iframe con el
-// widget, empty state o error inline.
-//
-// El WidgetErrorBanner completo (T403) llega con US4; mientras tanto el
-// estado "error" usa un bloque inline mínimo.
+// widget, empty state o error banner (T403/T404).
 
 "use client";
 
@@ -14,6 +11,7 @@ import { WidgetFrame } from "./widget-frame";
 import { WidgetLoading } from "./widget-loading";
 import { WidgetEmptyState } from "./widget-empty-state";
 import { TruncationBadge } from "./truncation-badge";
+import { WidgetErrorBanner } from "./widget-error-banner";
 
 interface CanvasPanelProps {
   sessionId: string;
@@ -70,18 +68,35 @@ export function CanvasPanel({
     );
   }
 
+  // Error with a previously-rendered widget: keep the frame visible (FR-014) and
+  // overlay the error banner so the user sees the last good state.
   if (state.loading_stage === "error" && state.last_error) {
+    const hasPrevious = state.previous_widget_spec !== null && bundleCode;
+    if (hasPrevious) {
+      return (
+        <PanelShell>
+          <div className="flex flex-col gap-2 p-3">
+            <WidgetErrorBanner error={state.last_error} />
+            <div
+              className="relative w-full overflow-hidden rounded-lg border border-border bg-background"
+              style={{ height: frameHeight }}
+              data-role="widget-container"
+            >
+              <WidgetFrame
+                ref={frameRef}
+                bundleCode={bundleCode}
+                title={title}
+                onLoad={handleFrameLoad}
+              />
+            </div>
+          </div>
+        </PanelShell>
+      );
+    }
     return (
       <PanelShell>
-        <div
-          className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center"
-          role="alert"
-          data-role="widget-error"
-        >
-          <p className="text-sm font-medium text-destructive">
-            No se pudo renderizar el widget
-          </p>
-          <p className="max-w-xs text-xs text-muted-foreground">{state.last_error.message}</p>
+        <div className="flex h-full flex-col items-center justify-center">
+          <WidgetErrorBanner error={state.last_error} />
         </div>
       </PanelShell>
     );
