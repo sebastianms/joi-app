@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-22 | **Status**: Ready for Implement
+**Branch**: `004-widget-generation` | **Date**: 2026-04-22 | **Status**: In Progress — US1 next (T101)
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -12,13 +12,13 @@
 
 ## Setup (bloque inicial)
 
-- [ ] T001 Añadir `recharts` al frontend: `cd frontend && npm install recharts` (verificar que no rompe el lockfile actual).
-- [ ] T002 [P] Crear directorio del runtime bundle: `frontend/src/lib/widget-runtime/` (vacío, placeholder `.gitkeep`).
-- [ ] T003 [P] Crear directorio de contracts iframe: `frontend/src/types/` ya existe — añadir `widget.ts`, `render-mode.ts`, `postmessage.ts` como archivos vacíos con `// generated from specs/004-widget-generation/contracts/*`.
-- [ ] T004 [P] Añadir variable de entorno `LLM_MODEL_WIDGET` al `backend/.env.example` con comentario apuntando a R6 de `specs/004-widget-generation/research.md`.
-- [ ] T005 [P] Añadir `frontend/public/widget-runtime.bundle.js` a `.gitignore` (output del build dedicado; nunca se commitea).
-- [ ] T006 [P] Crear directorio `backend/app/services/widget/` y `backend/app/services/widget/manifests/` con `__init__.py`.
-- [ ] T007 Añadir script `build:widget-runtime` a `frontend/package.json` que empaquete `src/lib/widget-runtime/entry.tsx` → `public/widget-runtime.bundle.js` (usa esbuild o el bundler ya disponible en el repo). Documentar el comando.
+- [x] T001 Añadir `recharts` al frontend: `cd frontend && npm install recharts` (verificar que no rompe el lockfile actual).
+- [x] T002 [P] Crear directorio del runtime bundle: `frontend/src/lib/widget-runtime/` (vacío, placeholder `.gitkeep`).
+- [x] T003 [P] Crear directorio de contracts iframe: `frontend/src/types/` ya existe — añadir `widget.ts`, `render-mode.ts`, `postmessage.ts` como archivos vacíos con `// generated from specs/004-widget-generation/contracts/*`.
+- [x] T004 [P] Añadir variable de entorno `LLM_MODEL_WIDGET` al `backend/.env.example` con comentario apuntando a R6 de `specs/004-widget-generation/research.md`.
+- [x] T005 [P] Añadir `frontend/public/widget-runtime.bundle.js` a `.gitignore` (output del build dedicado; nunca se commitea).
+- [x] T006 [P] Crear directorio `backend/app/services/widget/` y `backend/app/services/widget/manifests/` con `__init__.py`.
+- [x] T007 Añadir script `build:widget-runtime` a `frontend/package.json` que empaquete `src/lib/widget-runtime/entry.tsx` → `public/widget-runtime.bundle.js` (usa esbuild o el bundler ya disponible en el repo). Documentar el comando.
 
 ---
 
@@ -26,15 +26,15 @@
 
 Estos elementos son prerequisito para cualquier flujo de US1–US4. **Completar antes de avanzar a user stories.**
 
-- [ ] T010 Definir `RenderModeProfile` Pydantic + `RenderModeProfileORM` (SQLAlchemy) en [backend/app/models/render_mode.py](backend/app/models/render_mode.py) siguiendo el esquema de [data-model.md](specs/004-widget-generation/data-model.md). Incluir validador que rechace `mode=design_system`.
-- [ ] T011 Registrar la tabla `render_mode_profiles` en el `Base.metadata` y asegurar que `main.lifespan()` la crea junto a las existentes.
-- [ ] T012 Implementar [backend/app/repositories/render_mode_repository.py](backend/app/repositories/render_mode_repository.py) con `get_or_create(session_id)` (default `ui_framework` + `shadcn`) y `update(session_id, profile)`.
-- [ ] T013 [P] Definir los modelos Pydantic `WidgetSpec`, `WidgetBindings`, `VisualOptions`, `WidgetCode`, `WidgetGenerationTrace` en [backend/app/models/widget.py](backend/app/models/widget.py). Validar con el schema `contracts/widget-spec-v1.schema.json` en tests.
-- [ ] T014 [P] Extender `AgentTrace` en [backend/app/models/extraction.py](backend/app/models/extraction.py) con campo opcional `widget_generation: WidgetGenerationTrace | None = None`.
-- [ ] T015 [P] Extender `ChatResponse` en [backend/app/models/chat.py](backend/app/models/chat.py) con campos opcionales `widget_spec: WidgetSpec | None = None` y `render_mode_profile: RenderModeProfile | None = None`. Serializar con `exclude_none=True` (ADL-012).
-- [ ] T016 Añadir `Purpose="widget"` al routing de [backend/app/services/litellm_client.py](backend/app/services/litellm_client.py), leyendo `LLM_MODEL_WIDGET` con fallback al default. No romper purposes existentes (`sql`, `json`, `chat`).
-- [ ] T017 [P] Añadir los 3 manifests estáticos en [backend/app/services/widget/manifests/shadcn.md](backend/app/services/widget/manifests/shadcn.md), [bootstrap.md](backend/app/services/widget/manifests/bootstrap.md), [heroui.md](backend/app/services/widget/manifests/heroui.md) (≤ 2KB cada uno, auditar en review).
-- [ ] T018 [P] Crear tipos TypeScript del contrato en [frontend/src/types/widget.ts](frontend/src/types/widget.ts), [render-mode.ts](frontend/src/types/render-mode.ts), [postmessage.ts](frontend/src/types/postmessage.ts) generados/sincronizados con los schemas JSON.
+- [x] T010 Definir `RenderModeProfile` Pydantic + `RenderModeProfileORM` (SQLAlchemy) en [backend/app/models/render_mode.py](backend/app/models/render_mode.py) siguiendo el esquema de [data-model.md](specs/004-widget-generation/data-model.md). Incluir validador que rechace `mode=design_system`.
+- [x] T011 Registrar la tabla `render_mode_profiles` en el `Base.metadata` y asegurar que `main.lifespan()` la crea junto a las existentes.
+- [x] T012 Implementar [backend/app/repositories/render_mode_repository.py](backend/app/repositories/render_mode_repository.py) con `get_or_create(session_id)` (default `ui_framework` + `shadcn`) y `update(session_id, profile)`.
+- [x] T013 [P] Definir los modelos Pydantic `WidgetSpec`, `WidgetBindings`, `VisualOptions`, `WidgetCode`, `WidgetGenerationTrace` en [backend/app/models/widget.py](backend/app/models/widget.py). Validar con el schema `contracts/widget-spec-v1.schema.json` en tests.
+- [x] T014 [P] Extender `AgentTrace` en [backend/app/models/extraction.py](backend/app/models/extraction.py) con campo opcional `widget_generation: WidgetGenerationTrace | None = None`.
+- [x] T015 [P] Extender `ChatResponse` en [backend/app/models/chat.py](backend/app/models/chat.py) con campos opcionales `widget_spec: WidgetSpec | None = None` y `render_mode_profile: RenderModeProfile | None = None`. Serializar con `exclude_none=True` (ADL-012).
+- [x] T016 Añadir `Purpose="widget"` al routing de [backend/app/services/litellm_client.py](backend/app/services/litellm_client.py), leyendo `LLM_MODEL_WIDGET` con fallback al default. No romper purposes existentes (`sql`, `json`, `chat`).
+- [x] T017 [P] Añadir los 3 manifests estáticos en [backend/app/services/widget/manifests/shadcn.md](backend/app/services/widget/manifests/shadcn.md), [bootstrap.md](backend/app/services/widget/manifests/bootstrap.md), [heroui.md](backend/app/services/widget/manifests/heroui.md) (≤ 2KB cada uno, auditar en review).
+- [x] T018 [P] Crear tipos TypeScript del contrato en [frontend/src/types/widget.ts](frontend/src/types/widget.ts), [render-mode.ts](frontend/src/types/render-mode.ts), [postmessage.ts](frontend/src/types/postmessage.ts) generados/sincronizados con los schemas JSON.
 
 ---
 
