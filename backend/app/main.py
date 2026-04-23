@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
 import app.models.user_session  # noqa: F401 — registra UserSession en Base.metadata
+import app.models.render_mode  # noqa: F401 — registra RenderModeProfileORM en Base.metadata
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

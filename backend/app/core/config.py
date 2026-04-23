@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     LLM_MODEL_SQL: str = "anthropic/claude-haiku-4-5-20251001"
     LLM_MODEL_JSON: str = "anthropic/claude-haiku-4-5-20251001"
     LLM_MODEL_CHAT: str = "anthropic/claude-haiku-4-5-20251001"
+    LLM_MODEL_WIDGET: str = "anthropic/claude-haiku-4-5-20251001"
 
     RAG_DEFAULT_ENABLED: bool = True
     QUERY_TIMEOUT_SECONDS: int = 10

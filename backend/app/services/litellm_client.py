@@ -16,7 +16,7 @@ import litellm
 
 from app.core.config import settings
 
-Purpose = Literal["sql", "json", "chat"]
+Purpose = Literal["sql", "json", "chat", "widget"]
 
 ChatMessage = dict[str, str]
 
@@ -27,6 +27,7 @@ def _mock_sql_response() -> str:
 _MOCK_STATIC: dict[str, str] = {
     "json": "$.products[*]",
     "chat": "Hola, ¿en qué puedo ayudarte?",
+    "widget": '{"widget_type":"table","bindings":{}}',
 }
 
 
@@ -47,18 +48,8 @@ class LiteLLMConfigurationError(RuntimeError):
 class LiteLLMClient:
     """Thin wrapper around `litellm.completion` with routing by purpose."""
 
-    def __init__(
-        self,
-        *,
-        model_sql: str,
-        model_json: str,
-        model_chat: str,
-    ) -> None:
-        self._models: dict[Purpose, str] = {
-            "sql": model_sql,
-            "json": model_json,
-            "chat": model_chat,
-        }
+    def __init__(self, *, models: dict[str, str]) -> None:
+        self._models: dict[Purpose, str] = models
 
     def model_for(self, purpose: Purpose) -> str:
         return self._models[purpose]
@@ -128,11 +119,12 @@ def get_client() -> LiteLLMClient:
                 "OPENAI_API_KEY, or GEMINI_API_KEY in the environment."
             )
         _apply_provider_env()
-        _client = LiteLLMClient(
-            model_sql=settings.LLM_MODEL_SQL,
-            model_json=settings.LLM_MODEL_JSON,
-            model_chat=settings.LLM_MODEL_CHAT,
-        )
+        _client = LiteLLMClient(models={
+            "sql": settings.LLM_MODEL_SQL,
+            "json": settings.LLM_MODEL_JSON,
+            "chat": settings.LLM_MODEL_CHAT,
+            "widget": settings.LLM_MODEL_WIDGET,
+        })
         return _client
 
 
