@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa, US3 completa (T307 diferida: FREE_CODE no activo) — US4 next
+**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa, US3 completa (T307 diferida), US4 completa (T407 pendiente review manual) — Polish next
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -114,13 +114,13 @@ Sandbox iframe + CSP + postMessage protocol + timeout 4s. Suite adversarial.
 
 Fallback universal + error banner + continuidad del chat.
 
-- [ ] T401 [US4] En [architect_service.py](backend/app/services/widget/architect_service.py), asegurar que CUALQUIER excepción del generador (timeout, parse error, schema invalid, LiteLLM 5xx) se captura y dispara `fallback_builder`. Nunca propaga al endpoint.
-- [ ] T402 [P] [US4] En `WidgetGenerationTrace`, setear `status=fallback` + `error_code` apropiado (`GENERATOR_TIMEOUT`, `SPEC_INVALID`, `UNKNOWN`).
-- [ ] T403 [US4] Implementar [frontend/src/components/canvas/widget-error-banner.tsx](frontend/src/components/canvas/widget-error-banner.tsx) para mostrar error contenido dentro del Canvas cuando `last_error` está presente (render error en el iframe, no fallas del generador — esas usan fallback tabular).
-- [ ] T404 [US4] En [use-canvas.ts](frontend/src/hooks/use-canvas.ts): al recibir `widget:error`, preservar `previous_widget_spec` visible hasta que el usuario haga nuevo prompt (FR-014).
-- [ ] T405 [P] [US4] Test integración: mock de LiteLLM devuelve respuesta no parseable → `ChatResponse.widget_spec.widget_type=table`, `selection_source=fallback`, chat response exitoso 200. Ubicación: [backend/tests/integration/test_chat_with_widget.py](backend/tests/integration/test_chat_with_widget.py) (extender).
-- [ ] T406 [P] [US4] Test E2E Playwright: forzar mock generador fallido → tabla aparece → enviar nuevo prompt → widget normal aparece (sesión operativa). Ubicación: [frontend/tests/e2e/widget-fallback.spec.ts](frontend/tests/e2e/widget-fallback.spec.ts).
-- [ ] T407 [US4] Ejecutar **Escenarios 3, 8, 9, 10** de `quickstart.md`.
+- [x] T401 [US4] En [architect_service.py](backend/app/services/widget/architect_service.py), asegurar que CUALQUIER excepción del generador (timeout, parse error, schema invalid, LiteLLM 5xx) se captura y dispara `fallback_builder`. Nunca propaga al endpoint.
+- [x] T402 [P] [US4] En `WidgetGenerationTrace`, setear `status=fallback` + `error_code` apropiado (`GENERATOR_TIMEOUT`, `SPEC_INVALID`, `UNKNOWN`).
+- [x] T403 [US4] Implementar [frontend/src/components/canvas/widget-error-banner.tsx](frontend/src/components/canvas/widget-error-banner.tsx) para mostrar error contenido dentro del Canvas cuando `last_error` está presente (render error en el iframe, no fallas del generador — esas usan fallback tabular).
+- [x] T404 [US4] En [canvas-panel.tsx](frontend/src/components/canvas/canvas-panel.tsx): al recibir error de render, preservar `previous_widget_spec` visible junto al banner de error (FR-014).
+- [x] T405 [P] [US4] Test integración: mock de LiteLLM devuelve respuesta no parseable → `ChatResponse.widget_spec.widget_type=table`, `selection_source=fallback`, chat response exitoso 200. Ubicación: [backend/tests/integration/test_chat_with_widget.py](backend/tests/integration/test_chat_with_widget.py) (ya existente, verificado pasa).
+- [x] T406 [P] [US4] Test E2E Playwright: forzar mock generador fallido → tabla aparece → enviar nuevo prompt → widget normal aparece (sesión operativa). Ubicación: [frontend/e2e/widget-fallback.spec.ts](frontend/e2e/widget-fallback.spec.ts).
+- [ ] T407 [US4] Ejecutar **Escenarios 3, 8, 9, 10** de `quickstart.md`. Pendiente review manual.
 
 ---
 
