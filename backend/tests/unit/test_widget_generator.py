@@ -59,7 +59,7 @@ def _valid_spec_payload(extraction: DataExtraction) -> dict:
         "data_reference": {
             "extraction_id": extraction.extraction_id,
             "columns": [{"name": "cat", "type": "string"}, {"name": "v", "type": "integer"}],
-            "rows": [],
+            "row_count": extraction.row_count,
         },
         "truncation_badge": False,
         "generated_by_model": "stub",

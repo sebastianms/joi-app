@@ -66,8 +66,16 @@ def _override_spec_invariants(spec: WidgetSpec, request: GenerationRequest) -> W
     """Force fields the LLM must not decide (IDs, source, render mode).
 
     The model is allowed to produce `bindings`, `visual_options`, `code`,
-    but identity fields and render-mode context come from the caller.
+    but identity fields and render-mode context come from the caller. The
+    `data_reference.extraction_id` and `row_count` are also forced so the
+    widget never references a phantom dataset.
     """
+    data_reference = spec.data_reference.model_copy(
+        update={
+            "extraction_id": request.extraction.extraction_id,
+            "row_count": request.extraction.row_count,
+        }
+    )
     return spec.model_copy(
         update={
             "extraction_id": request.extraction.extraction_id,
@@ -77,6 +85,7 @@ def _override_spec_invariants(spec: WidgetSpec, request: GenerationRequest) -> W
             "selection_source": SelectionSource.DETERMINISTIC,
             "widget_type": request.widget_type,
             "truncation_badge": request.extraction.truncated,
+            "data_reference": data_reference,
         }
     )
 

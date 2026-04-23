@@ -55,7 +55,7 @@ def _valid_payload(extraction: DataExtraction, widget_type: str) -> dict:
         "data_reference": {
             "extraction_id": extraction.extraction_id,
             "columns": [{"name": c.name, "type": c.type} for c in extraction.columns],
-            "rows": [],
+            "row_count": extraction.row_count,
         },
         "truncation_badge": False,
         "generated_by_model": "stub",

@@ -61,8 +61,8 @@ def test_fallback_preserves_extraction_and_session_ids():
     assert spec.session_id == extraction.session_id
 
 
-def test_fallback_data_reference_carries_columns_but_no_rows():
-    """Rows travel via postMessage, not in the spec (contract schema)."""
+def test_fallback_data_reference_carries_columns_and_row_count_no_rows():
+    """Rows travel via postMessage; spec carries shape metadata only (contract schema)."""
     extraction = _extraction(
         [("a", "integer"), ("b", "string")],
         [{"a": 1, "b": "x"}, {"a": 2, "b": "y"}],
@@ -71,7 +71,8 @@ def test_fallback_data_reference_carries_columns_but_no_rows():
 
     assert len(spec.data_reference.columns) == 2
     assert spec.data_reference.columns[0]["name"] == "a"
-    assert spec.data_reference.rows == []
+    assert spec.data_reference.row_count == 2
+    assert not hasattr(spec.data_reference, "rows") or getattr(spec.data_reference, "rows", None) is None
 
 
 def test_fallback_inherits_truncation_flag():

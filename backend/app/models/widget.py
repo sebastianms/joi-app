@@ -64,9 +64,13 @@ class WidgetCode(BaseModel):
 
 
 class DataReference(BaseModel):
+    """Per widget-spec-v1 schema: rows are NOT embedded; they travel via
+    postMessage from the Canvas host into the iframe. The spec only carries
+    shape metadata so the chat transcript stays compact."""
+
     extraction_id: str
     columns: list[dict[str, Any]] = Field(default_factory=list)
-    rows: list[dict[str, Any]] = Field(default_factory=list)
+    row_count: int = Field(ge=0, default=0)
 
 
 class WidgetSpec(BaseModel):

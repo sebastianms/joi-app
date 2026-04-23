@@ -55,7 +55,7 @@ def build_table_fallback(
     data_reference = DataReference(
         extraction_id=extraction.extraction_id,
         columns=[{"name": c.name, "type": c.type} for c in extraction.columns],
-        rows=[],
+        row_count=extraction.row_count,
     )
     ui_library = (
         context.ui_library if context.render_mode == WidgetRenderMode.UI_FRAMEWORK else None
