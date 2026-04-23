@@ -16,6 +16,7 @@ export function AgentTraceBlock({ trace, extraction }: AgentTraceBlockProps) {
     <details
       className="mt-1 w-full rounded-md border border-border bg-background text-xs"
       data-role="agent-trace"
+      data-extraction-id={trace.extraction_id}
       aria-label="Agent trace"
     >
       <summary className="flex cursor-pointer select-none items-center gap-2 px-3 py-2 font-mono text-muted-foreground hover:text-foreground">
@@ -61,6 +62,7 @@ function WidgetGenerationSection({ wg }: { wg: WidgetGenerationTrace }) {
       className="rounded border border-border bg-muted/40 p-2 font-mono text-[11px] leading-relaxed"
       data-role="widget-generation-trace"
       data-status={wg.status}
+      data-widget-type={wg.widget_type_attempted}
     >
       <div className="mb-1 flex flex-wrap items-center gap-2">
         <span className="font-semibold text-foreground">Widget Generation</span>

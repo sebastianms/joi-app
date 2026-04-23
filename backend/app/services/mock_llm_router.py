@@ -39,6 +39,13 @@ class _PurposeRules:
 _DEFAULT_SQL = "SELECT id, region, amount, sold_at FROM sales LIMIT 50"
 
 _SQL_RULES: list[tuple[str, str]] = [
+    # Order matters: more specific patterns first (no-results before region/month).
+    # No-results case (Escenario 3)
+    (r"\b(ant[aá]rtida|antarctica|marte|mars)\b",
+     "SELECT * FROM sales WHERE region = '__no_match__'"),
+    # Destructive prompt → still a SELECT (read-only guard rejects server-side)
+    (r"\b(borra|delete|drop|truncate)\b",
+     "DELETE FROM sales"),
     # Aggregations → KPI-shaped single-row result
     (r"\btotal\b|\bsum(a)?\b|\bkpi\b",
      "SELECT SUM(amount) AS total_sales FROM sales"),
@@ -49,12 +56,6 @@ _SQL_RULES: list[tuple[str, str]] = [
     # Sales by region → categorical + numeric
     (r"\b(regi[oó]n|region)\b",
      "SELECT region, SUM(amount) AS total_sales FROM sales GROUP BY region"),
-    # No-results case (Escenario 3)
-    (r"\b(ant[aá]rtida|antarctica|marte|mars)\b",
-     "SELECT * FROM sales WHERE region = '__no_match__'"),
-    # Destructive prompt → still a SELECT (read-only guard rejects server-side)
-    (r"\b(borra|delete|drop|truncate)\b",
-     "DELETE FROM sales"),
 ]
 
 
