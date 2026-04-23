@@ -38,29 +38,47 @@ docker-compose up --build
 - Backend API: [http://localhost:8000/api](http://localhost:8000/api)
 - Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## Feature 004 — Widget Generation & Canvas
+## Capacidades del sistema
 
-El sistema convierte automáticamente cualquier consulta en una visualización interactiva:
+### Conexión a datos
+
+El Setup Wizard conecta la app a cualquier fuente de datos en segundos. Soporta **PostgreSQL, MySQL, SQLite y JSON**. La conexión queda guardada en sesión — no hace falta reconectar en cada visita.
+
+### Chat con inteligencia contextual
+
+El motor de triage interpreta el mensaje del usuario y decide en tiempo real si puede responderlo de forma directa o si requiere consultar la base de datos. Las consultas simples (saludos, ayuda, preferencias de visualización) se resuelven sin tocar la DB — sin latencia, sin costos LLM innecesarios.
+
+### Pipeline multi-agente Text-to-SQL
+
+Para consultas de datos, tres agentes trabajan en secuencia:
 
 ```
 Usuario: "muéstrame las ventas por región"
       ↓
-Data Agent ejecuta SQL → DataExtraction (columnas + filas)
+Data Agent: genera SQL → guard read-only → ejecuta → DataExtraction
       ↓
-Agente Arquitecto: selector determinístico → bar_chart
+Agente Arquitecto: selector determinístico → tipo de widget óptimo
       ↓
 Agente Generador (LLM): WidgetSpec con bindings validados
       ↓
-Canvas: iframe sandboxed con CSP + Recharts → widget visible
+Canvas: iframe sandboxed + Recharts → widget visible
 ```
 
-**Tipos soportados**: `table` · `bar_chart` · `line_chart` · `area_chart` · `pie_chart` · `kpi` · `scatter_plot` · `heatmap`
+El guard SQL garantiza que solo se ejecuten sentencias `SELECT` — ninguna operación de escritura puede llegar a la base de datos del usuario.
+
+### Visualizaciones automáticas
+
+El sistema elige el tipo de widget más adecuado según la forma de los datos, sin intervención del usuario:
+
+`table` · `bar_chart` · `line_chart` · `area_chart` · `pie_chart` · `kpi` · `scatter_plot` · `heatmap`
+
+**Preferencia explícita**: el usuario puede pedir un tipo distinto ("prefiero verlo como tabla") y el sistema reutiliza la extracción anterior sin re-ejecutar la consulta SQL.
 
 **Fallback universal**: cualquier fallo del generador (timeout, spec inválida, crash del renderer) produce automáticamente una tabla con los datos crudos. La sesión nunca se interrumpe.
 
-**Preferencia explícita**: el usuario puede pedir un tipo distinto en el chat ("prefiero verlo como tabla") — el sistema reutiliza la extracción anterior sin re-ejecutar la consulta.
+### Aislamiento de seguridad
 
-**Aislamiento**: cada widget corre en un `<iframe sandbox="allow-scripts">` con CSP que bloquea `connect-src` — el código del widget no puede acceder al DOM del host ni hacer peticiones de red.
+Cada widget corre en un `<iframe sandbox="allow-scripts">` con CSP que bloquea `connect-src`. El código del widget no puede acceder al DOM del host, leer cookies ni hacer peticiones de red.
 
 Para construir el bundle del runtime antes de levantar el frontend:
 
