@@ -47,3 +47,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Widget runtime bundle (output del build dedicado — nunca commitear)
+/public/widget-runtime.bundle.js
