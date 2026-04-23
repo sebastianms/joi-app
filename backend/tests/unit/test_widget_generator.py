@@ -202,6 +202,34 @@ async def test_generate_returns_spec_invalid_when_bindings_dont_match_widget_typ
 
 
 @pytest.mark.asyncio
+async def test_generate_spec_invalid_when_llm_type_differs_from_request_type(monkeypatch):
+    """T408 regression: LLM returns kpi bindings for a bar_chart request.
+
+    The architect requests bar_chart; the LLM confusingly replies with widget_type=kpi
+    and kpi-style bindings. validate_bindings must check the REQUEST type (bar_chart)
+    not the LLM type — otherwise the kpi bindings pass validation but the spec is
+    built as bar_chart with missing x/y, which reaches the renderer and crashes.
+    """
+    _patch_llm(
+        monkeypatch,
+        json.dumps(
+            {
+                "widget_type": "kpi",
+                "bindings": {"value": "total_sales"},
+                "visual_options": {"title": "Total"},
+            }
+        ),
+    )
+
+    result = await generate_widget(
+        GenerationRequest(widget_type=WidgetType.BAR_CHART, extraction=_extraction())
+    )
+
+    assert not result.ok
+    assert result.error_code == WidgetErrorCode.SPEC_INVALID
+
+
+@pytest.mark.asyncio
 async def test_generate_returns_timeout(monkeypatch):
     extraction = _extraction()
 

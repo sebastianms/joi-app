@@ -118,20 +118,24 @@ Referencia de FR/SC mapeados al final de cada escenario.
 
 ---
 
-## Escenario 8 — Falla del Agente Generador
+## Escenario 8 — Falla del Agente Generador (bindings inválidos)
 
 **Pasos**:
-1. Configurar LiteLLM mock para devolver respuesta no parseable (texto sin JSON).
-2. Prompt: *"muéstrame las ventas por región"*.
+1. Usar LLM real (no mock). Prompt: *"muéstrame las ventas por región"*.
+2. Si el LLM genera un `WidgetSpec` con `widget_type=bar_chart` pero bindings semánticamente incorrectos (e.g. solo `value` sin `x`/`y`), el validador de bindings del backend lo rechaza.
+3. Para forzar el escenario con mock: registrar una regla en `MockLLMRouter` para `purpose="widget"` que devuelva JSON con bindings inválidos, e.g. `{"widget_type":"bar_chart","bindings":{"value":"total_sales"}}`.
 
 **Resultado esperado**:
 - La extracción se completa exitosamente (Data Agent independiente).
-- El Agente Generador falla a producir una WidgetSpec válida.
+- El generador rechaza el spec (backend `validate_bindings` lanza `InvalidBindingsError` → `SPEC_INVALID`).
 - El sistema sustituye automáticamente por una WidgetSpec fallback (`widget_type=table`, `selection_source=fallback`, `generated_by_model=deterministic`).
-- El Canvas muestra la tabla cruda.
+- El Canvas muestra la tabla con datos reales.
 - `WidgetGenerationTrace.status=fallback`, `error_code=SPEC_INVALID`.
+- **No aparece banner de error** — la tabla es una respuesta válida, no un estado de falla visible.
 
-**Valida**: US4 · FR-010 · SC-004 · R8.
+**Nota**: El caso de respuesta no parseable (texto sin JSON) está cubierto por el test unitario `test_generate_returns_spec_invalid_on_unparseable_json` y no requiere validación manual adicional.
+
+**Valida**: US4 · FR-009 · FR-010 · SC-004 · R8 · T408.
 
 ---
 

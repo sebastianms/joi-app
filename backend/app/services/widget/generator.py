@@ -106,7 +106,7 @@ async def _call_llm(request: GenerationRequest) -> str:
 def _parse_spec(raw: str, request: GenerationRequest) -> WidgetSpec:
     payload = json.loads(_strip_fences(raw))
     llm = _LLMPayload.model_validate(payload)
-    validate_bindings(llm.widget_type, llm.bindings)
+    validate_bindings(request.widget_type, llm.bindings)
     return _build_spec(llm, request)
 
 
