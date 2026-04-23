@@ -32,12 +32,21 @@ export interface WidgetBindings {
   extra?: Record<string, unknown>;
 }
 
+export type FormatHint =
+  | "currency"
+  | "percent"
+  | "integer"
+  | "decimal"
+  | "datetime"
+  | "string";
+
 export interface VisualOptions {
   title?: string;
   subtitle?: string;
   x_label?: string;
   y_label?: string;
   value_format?: string;
+  format_hints?: Record<string, FormatHint>;
 }
 
 export interface WidgetCode {
