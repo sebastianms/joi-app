@@ -191,9 +191,11 @@ test.describe("T305 — Bundle adversarial no puede escapar del sandbox (FR-008a
     // Give the iframe time to execute the adversarial bundle
     await page.waitForTimeout(500);
 
-    // A1: host DOM must not be 'PWNED_A1'
-    const bodyHtml = await page.evaluate(() => document.body.innerHTML);
-    expect(bodyHtml).not.toContain("PWNED_A1");
+    // A1: host DOM must not be 'PWNED_A1' in visible text.
+    // Use innerText (not innerHTML) — innerHTML includes the iframe's srcdoc attribute
+    // which contains the adversarial JS as a string literal, not as executed DOM.
+    const bodyText = await page.evaluate(() => document.body.innerText);
+    expect(bodyText).not.toContain("PWNED_A1");
 
     // A2: URL must still be on localhost (no top-navigation happened)
     expect(page.url()).toContain("127.0.0.1:3000");
