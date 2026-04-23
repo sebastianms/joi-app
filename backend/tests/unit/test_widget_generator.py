@@ -174,6 +174,34 @@ async def test_generate_returns_spec_invalid_on_schema_violation(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_generate_returns_spec_invalid_when_bindings_dont_match_widget_type(monkeypatch):
+    """T408 regression: bar_chart with only `value` binding → InvalidBindingsError → SPEC_INVALID.
+
+    The LLM can produce a syntactically valid payload that is semantically wrong
+    (e.g. a bar_chart with kpi-style bindings). The generator must reject it so
+    the architect falls back to a table instead of shipping an unrenderable spec.
+    """
+    _patch_llm(
+        monkeypatch,
+        json.dumps(
+            {
+                "widget_type": "bar_chart",
+                "bindings": {"value": "total_sales"},
+                "visual_options": {"title": "Ventas"},
+            }
+        ),
+    )
+
+    result = await generate_widget(
+        GenerationRequest(widget_type=WidgetType.BAR_CHART, extraction=_extraction())
+    )
+
+    assert not result.ok
+    assert result.error_code == WidgetErrorCode.SPEC_INVALID
+    assert "bar_chart" in (result.error_message or "")
+
+
+@pytest.mark.asyncio
 async def test_generate_returns_timeout(monkeypatch):
     extraction = _extraction()
 

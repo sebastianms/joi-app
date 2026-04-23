@@ -5,6 +5,7 @@
 
 import { createRoot, type Root } from "react-dom/client";
 import type { WidgetSpec } from "@/types/widget";
+import { findMissingBindings } from "./bindings-validator";
 import {
   isWidgetInitMessage,
   makeErrorMessage,
@@ -58,6 +59,18 @@ function renderWidget(
         spec.extraction_id,
         "SPEC_INVALID",
         `No renderer registered for widget_type=${spec.widget_type}`,
+      ),
+    );
+    return;
+  }
+
+  const missing = findMissingBindings(spec);
+  if (missing.length > 0) {
+    postToHost(
+      makeErrorMessage(
+        spec.extraction_id,
+        "SPEC_INVALID",
+        `${spec.widget_type} requires bindings [${missing.join(", ")}].`,
       ),
     );
     return;

@@ -41,6 +41,18 @@ def _extraction(
     )
 
 
+_BINDINGS_BY_TYPE: dict[str, dict[str, str]] = {
+    "table": {},
+    "bar_chart": {"x": "cat", "y": "v"},
+    "line_chart": {"x": "cat", "y": "v"},
+    "area_chart": {"x": "cat", "y": "v"},
+    "scatter_plot": {"x": "cat", "y": "v"},
+    "heatmap": {"x": "cat", "y": "v", "value": "v"},
+    "pie_chart": {"label": "cat", "value": "v"},
+    "kpi": {"value": "v"},
+}
+
+
 def _valid_payload(extraction: DataExtraction, widget_type: str) -> dict:
     return {
         "contract_version": "v1",
@@ -51,7 +63,7 @@ def _valid_payload(extraction: DataExtraction, widget_type: str) -> dict:
         "ui_library": "shadcn",
         "widget_type": widget_type,
         "selection_source": "deterministic",
-        "bindings": {"x": "cat", "y": "v"},
+        "bindings": _BINDINGS_BY_TYPE.get(widget_type, {"x": "cat", "y": "v"}),
         "data_reference": {
             "extraction_id": extraction.extraction_id,
             "columns": [{"name": c.name, "type": c.type} for c in extraction.columns],

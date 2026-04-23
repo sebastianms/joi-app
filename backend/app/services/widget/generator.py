@@ -35,6 +35,10 @@ from app.models.widget import (
     VisualOptions,
 )
 from app.services import litellm_client
+from app.services.widget.bindings_validator import (
+    InvalidBindingsError,
+    validate_bindings,
+)
 from app.services.widget.prompt_builder import (
     PromptContext,
     RenderSettings,
@@ -102,6 +106,7 @@ async def _call_llm(request: GenerationRequest) -> str:
 def _parse_spec(raw: str, request: GenerationRequest) -> WidgetSpec:
     payload = json.loads(_strip_fences(raw))
     llm = _LLMPayload.model_validate(payload)
+    validate_bindings(llm.widget_type, llm.bindings)
     return _build_spec(llm, request)
 
 
@@ -159,7 +164,7 @@ async def generate_widget(request: GenerationRequest) -> GenerationResult:
 
     try:
         spec = _parse_spec(raw, request)
-    except (json.JSONDecodeError, ValidationError, KeyError, TypeError) as exc:
+    except (json.JSONDecodeError, ValidationError, KeyError, TypeError, InvalidBindingsError) as exc:
         logger.warning("SPEC_INVALID — raw LLM output:\n%s\n\nError: %s", raw, exc)
         return GenerationResult(
             spec=None,

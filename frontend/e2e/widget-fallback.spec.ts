@@ -63,7 +63,7 @@ test.describe("T406a — fallback table: sesión operativa tras generador fallid
       }
       await route.fulfill({
         status: response.status(),
-        headers: Object.fromEntries(response.headers()),
+        headers: Object.fromEntries(Object.entries(response.headers())),
         body: JSON.stringify(json),
       });
     });
