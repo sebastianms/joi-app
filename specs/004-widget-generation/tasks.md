@@ -141,11 +141,11 @@ Paso nuevo "Framework visual" + endpoints `/api/render-mode/profile`. Movido a P
 
 ## Polish (cierre)
 
-- [ ] T901 Redactar [.design-logs/ADL-018-widget-generation-architecture.md](.design-logs/ADL-018-widget-generation-architecture.md) consolidando R2, R3, R6.
-- [ ] T902 [P] Redactar [.design-logs/ADL-019-canvas-iframe-sandbox.md](.design-logs/ADL-019-canvas-iframe-sandbox.md) consolidando R4, R5.
-- [ ] T903 [P] Redactar [.design-logs/ADL-020-deterministic-widget-selector.md](.design-logs/ADL-020-deterministic-widget-selector.md) consolidando R1.
-- [ ] T904 [P] Redactar [.design-logs/ADL-021-render-mode-profile-wizard.md](.design-logs/ADL-021-render-mode-profile-wizard.md) consolidando R7.
-- [ ] T905 Actualizar [specs/roadmap.md](specs/roadmap.md): marcar bullets 2 y 3 de Fase 5 como completados, mover referencia a Feature 004.
+- [x] T901 Redactar [.design-logs/ADL-019-widget-generation-architecture.md](.design-logs/ADL-019-widget-generation-architecture.md) consolidando R2, R3, R6. (ADL-016/017/018 ya existían; se continuó desde 019.)
+- [x] T902 [P] Redactar [.design-logs/ADL-020-canvas-iframe-sandbox.md](.design-logs/ADL-020-canvas-iframe-sandbox.md) consolidando R4, R5.
+- [x] T903 [P] Redactar [.design-logs/ADL-021-deterministic-widget-selector.md](.design-logs/ADL-021-deterministic-widget-selector.md) consolidando R1.
+- [x] T904 [P] Redactar [.design-logs/ADL-022-render-mode-profile-deferred.md](.design-logs/ADL-022-render-mode-profile-deferred.md) consolidando R7 (diferido a Feature 005 US6).
+- [x] T905 Actualizar [specs/roadmap.md](specs/roadmap.md): deferrals anclados a Phase 7 US6.
 - [ ] T906 [P] Añadir sección "Feature 004 — Widgets" al README con screenshot del Canvas y ejemplo de prompt → widget.
 - [ ] T907 Ejecutar suite completa de tests: backend (unit + integration + adversarial) + frontend (unit + E2E). Reportar tiempos.
 - [ ] T908 Verificar que las suites de Features 001/002/003 siguen pasando (no-regression).
