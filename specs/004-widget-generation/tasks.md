@@ -70,9 +70,9 @@ Ciclo completo "extracción exitosa → widget visible". Modelos → servicios �
 - [ ] T132 [US1] Verificar el build `npm run build:widget-runtime` produce `public/widget-runtime.bundle.js` < 300KB gzipped (reporte en PR).
 - [ ] T133 [US1] Implementar hook [frontend/src/hooks/use-canvas.ts](frontend/src/hooks/use-canvas.ts): maneja `CanvasState`, monta iframe con `srcdoc`, envía `widget:init`, escucha `ready/error/resize`, aplica timeout de 4s.
 - [ ] T134 [US1] Implementar [frontend/src/components/canvas/widget-frame.tsx](frontend/src/components/canvas/widget-frame.tsx): `<iframe sandbox="allow-scripts" srcdoc={...}>` con CSP inyectada (R4). `aria-label`/`data-role` estables (ADL-002).
-- [ ] T135 [US1] Implementar [frontend/src/components/canvas/widget-loading.tsx](frontend/src/components/canvas/widget-loading.tsx): skeleton para `generating` y `bootstrapping`.
-- [ ] T136 [P] [US1] [frontend/src/components/canvas/widget-empty-state.tsx](frontend/src/components/canvas/widget-empty-state.tsx) para `row_count=0`.
-- [ ] T137 [P] [US1] [frontend/src/components/canvas/truncation-badge.tsx](frontend/src/components/canvas/truncation-badge.tsx) (también usado en US1 cuando la extracción viene truncada — FR-013).
+- [x] T135 [US1] Implementar [frontend/src/components/canvas/widget-loading.tsx](frontend/src/components/canvas/widget-loading.tsx): skeleton para `generating` y `bootstrapping`.
+- [x] T136 [P] [US1] [frontend/src/components/canvas/widget-empty-state.tsx](frontend/src/components/canvas/widget-empty-state.tsx) para `row_count=0`.
+- [x] T137 [P] [US1] [frontend/src/components/canvas/truncation-badge.tsx](frontend/src/components/canvas/truncation-badge.tsx) (también usado en US1 cuando la extracción viene truncada — FR-013).
 - [ ] T138 [US1] Implementar [frontend/src/components/canvas/canvas-panel.tsx](frontend/src/components/canvas/canvas-panel.tsx): orquesta `use-canvas`, renderiza `WidgetFrame | WidgetLoading | WidgetEmptyState | WidgetErrorBanner` según estado.
 - [ ] T139 [US1] Reemplazar placeholder en [frontend/src/app/page.tsx](frontend/src/app/page.tsx) por `<CanvasPanel />`. Conectar con el `useChat` para recibir `widgetSpec` del último mensaje con extracción.
 - [ ] T140 [US1] Extender [frontend/src/hooks/use-chat.ts](frontend/src/hooks/use-chat.ts) con campo `widgetSpec` opcional en `Message`.
