@@ -39,10 +39,16 @@ class ChatResponse(BaseModel):
     intent_type: IntentType
     extraction: Optional["DataExtraction"] = None
     trace: Optional["AgentTrace"] = None
+    widget_spec: Optional["WidgetSpec"] = None
+    render_mode_profile: Optional["RenderModeProfileRef"] = None
+
+    model_config = {"populate_by_name": True}
 
 
 # Importación diferida para evitar ciclos; rebuild resuelve las forward references
 from app.models.extraction import AgentTrace, DataExtraction  # noqa: E402
+from app.models.widget import WidgetSpec  # noqa: E402
+from app.models.render_mode import RenderModeProfileRef  # noqa: E402
 
 Message.model_rebuild()
 ChatResponse.model_rebuild()

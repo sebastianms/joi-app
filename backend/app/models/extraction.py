@@ -77,3 +77,10 @@ class AgentTrace(BaseModel):
     security_rejection: bool = False
     collapsed: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    widget_generation: Optional["WidgetGenerationTrace"] = None
+
+
+# Importación diferida para evitar ciclos; rebuild resuelve la forward reference
+from app.models.widget import WidgetGenerationTrace  # noqa: E402
+
+AgentTrace.model_rebuild()
