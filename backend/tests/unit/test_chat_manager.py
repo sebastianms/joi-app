@@ -11,9 +11,15 @@ from app.models.extraction import (
     QueryPlan,
     SourceType,
 )
+from app.models.widget import SelectionSource, WidgetType
 from app.services.chat_manager import ChatManagerService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
+from app.services.widget.architect_service import (
+    ArchitectOutcome,
+    ArchitectRequest,
+)
+from app.services.widget.fallback_builder import build_table_fallback
 
 
 class StubLLM(LLMGateway):
@@ -74,9 +80,28 @@ def _trace_for(extraction: DataExtraction) -> AgentTrace:
     )
 
 
+class RecordingArchitect:
+    """Returns a deterministic table spec and records every invocation."""
+
+    def __init__(self) -> None:
+        self.calls: list[ArchitectRequest] = []
+
+    async def __call__(self, request: ArchitectRequest) -> ArchitectOutcome:
+        self.calls.append(request)
+        spec = build_table_fallback(request.extraction)
+        return ArchitectOutcome(spec=spec, trace=None)
+
+
 @pytest.fixture
-def manager() -> ChatManagerService:
-    return ChatManagerService(triage=TriageEngineService(), llm=StubLLM())
+def architect() -> RecordingArchitect:
+    return RecordingArchitect()
+
+
+@pytest.fixture
+def manager(architect: RecordingArchitect) -> ChatManagerService:
+    return ChatManagerService(
+        triage=TriageEngineService(), llm=StubLLM(), architect=architect
+    )
 
 
 # --- Routing ---
@@ -190,7 +215,9 @@ class HistoryCaptureLLM(LLMGateway):
 @pytest.mark.asyncio
 async def test_llm_receives_full_history_as_context():
     llm = HistoryCaptureLLM()
-    manager = ChatManagerService(triage=TriageEngineService(), llm=llm)
+    manager = ChatManagerService(
+        triage=TriageEngineService(), llm=llm, architect=RecordingArchitect()
+    )
     agent = StubDataAgent()
     await manager.handle(ChatRequest(session_id="ctx", message="hola"), agent)
     await manager.handle(ChatRequest(session_id="ctx", message="gracias"), agent)
@@ -209,3 +236,119 @@ async def test_assistant_message_carries_extraction_and_trace(manager: ChatManag
     assert assistant_msg.role == Role.ASSISTANT
     assert assistant_msg.extraction is not None
     assert assistant_msg.trace is not None
+
+
+# --- Widget integration (T107, FR-015) ---
+
+
+@pytest.mark.asyncio
+async def test_widget_generated_on_successful_extraction_with_rows(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    agent = StubDataAgent(_success_extraction(row_count=3))
+    response = await manager.handle(
+        ChatRequest(session_id="w1", message="ventas por región"), agent
+    )
+
+    assert response.widget_spec is not None
+    assert response.widget_spec.widget_type == WidgetType.TABLE
+    assert len(architect.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_widget_not_generated_on_extraction_error(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    """FR-015: error extractions must not trigger the architect."""
+    extraction = _error_extraction(ErrorCode.SECURITY_REJECTION, "bloqueado")
+    agent = StubDataAgent(extraction=extraction, trace=_trace_for(extraction))
+
+    response = await manager.handle(
+        ChatRequest(session_id="w2", message="drop table"), agent
+    )
+
+    assert response.widget_spec is None
+    assert architect.calls == []
+
+
+@pytest.mark.asyncio
+async def test_widget_not_generated_on_empty_result(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    agent = StubDataAgent(_success_extraction(row_count=0))
+    response = await manager.handle(
+        ChatRequest(session_id="w3", message="ventas del año 1800"), agent
+    )
+
+    assert response.widget_spec is None
+    assert architect.calls == []
+
+
+@pytest.mark.asyncio
+async def test_widget_not_generated_on_simple_intent(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    agent = StubDataAgent()
+    await manager.handle(ChatRequest(session_id="w4", message="hola"), agent)
+
+    assert architect.calls == []
+
+
+@pytest.mark.asyncio
+async def test_architect_receives_user_intent(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    agent = StubDataAgent(_success_extraction(row_count=2))
+    await manager.handle(
+        ChatRequest(session_id="w5", message="dame el top 5 de ventas"), agent
+    )
+
+    assert architect.calls[0].user_intent == "dame el top 5 de ventas"
+
+
+@pytest.mark.asyncio
+async def test_architect_failure_does_not_break_the_response():
+    """Architect exceptions must not bubble to the caller (FR-009)."""
+
+    async def failing_architect(request: ArchitectRequest) -> ArchitectOutcome:
+        raise RuntimeError("architect crashed")
+
+    manager = ChatManagerService(
+        triage=TriageEngineService(), llm=StubLLM(), architect=failing_architect
+    )
+    agent = StubDataAgent(_success_extraction(row_count=3))
+    response = await manager.handle(
+        ChatRequest(session_id="w6", message="ventas"), agent
+    )
+
+    assert response.extraction is not None
+    assert response.widget_spec is None
+
+
+@pytest.mark.asyncio
+async def test_widget_trace_attached_to_agent_trace():
+    from app.models.widget import WidgetGenerationTrace
+
+    async def fake_architect(request: ArchitectRequest) -> ArchitectOutcome:
+        spec = build_table_fallback(request.extraction)
+        trace = WidgetGenerationTrace(
+            extraction_id=spec.extraction_id,
+            widget_id=spec.widget_id,
+            widget_type_attempted=WidgetType.TABLE,
+            status="success",
+            message="ok",
+            generated_by_model="deterministic",
+            generation_ms=0,
+        )
+        return ArchitectOutcome(spec=spec, trace=trace)
+
+    manager = ChatManagerService(
+        triage=TriageEngineService(), llm=StubLLM(), architect=fake_architect
+    )
+    agent = StubDataAgent(_success_extraction(row_count=3))
+    response = await manager.handle(
+        ChatRequest(session_id="w7", message="ventas"), agent
+    )
+
+    assert response.trace.widget_generation is not None
+    assert response.trace.widget_generation.status == "success"

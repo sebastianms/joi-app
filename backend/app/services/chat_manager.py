@@ -1,23 +1,47 @@
 from collections import defaultdict
 import logging
+from dataclasses import dataclass
+from typing import Awaitable, Callable, Optional
 
 from app.models.chat import ChatRequest, ChatResponse, IntentType, Message, Role
-from app.models.extraction import DataExtraction, AgentTrace, ErrorCode, ExtractionError, QueryPlan, SourceType
+from app.models.extraction import AgentTrace, DataExtraction, ErrorCode, ExtractionError, QueryPlan, SourceType
+from app.models.widget import WidgetSpec
 from app.services.data_agent_service import DataAgentService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
+from app.services.widget.architect_service import (
+    ArchitectOutcome,
+    ArchitectRequest,
+    build_widget,
+)
 
 _logger = logging.getLogger(__name__)
 
 SessionHistory = dict[str, list[Message]]
 
+ArchitectFn = Callable[[ArchitectRequest], Awaitable[ArchitectOutcome]]
+
+
+@dataclass(frozen=True)
+class ExtractionTurn:
+    """Intermediate state carried from extraction → widget generation."""
+
+    extraction: DataExtraction
+    trace: AgentTrace
+
 
 class ChatManagerService:
     """Orchestrates triage classification, LLM responses and data agent extraction per session."""
 
-    def __init__(self, triage: TriageEngineService, llm: LLMGateway) -> None:
+    def __init__(
+        self,
+        triage: TriageEngineService,
+        llm: LLMGateway,
+        architect: ArchitectFn = build_widget,
+    ) -> None:
         self._triage = triage
         self._llm = llm
+        self._architect = architect
         self._history: SessionHistory = defaultdict(list)
 
     async def handle(
@@ -30,28 +54,8 @@ class ChatManagerService:
         triage_result = self._triage.classify(request.message)
 
         if triage_result.intent_type == IntentType.COMPLEX:
-            try:
-                extraction, trace = await data_agent.extract(
-                    request.session_id, request.message
-                )
-            except Exception as exc:
-                _logger.exception("Unexpected error in data_agent.extract: %s", exc)
-                extraction = _unknown_error_extraction(request.session_id)
-                trace = _unknown_error_trace(extraction)
-            response_text = _format_extraction_response(extraction)
-            assistant_message = Message(
-                role=Role.ASSISTANT,
-                content=response_text,
-                extraction=extraction,
-                trace=trace,
-            )
-            session.append(assistant_message)
-            return ChatResponse(
-                response=response_text,
-                intent_type=triage_result.intent_type,
-                extraction=extraction,
-                trace=trace,
-            )
+            turn = await self._run_extraction(request, data_agent)
+            return await self._respond_with_extraction(request, session, turn, triage_result.intent_type)
 
         response_text = self._llm.complete(list(session))
         assistant_message = Message(role=Role.ASSISTANT, content=response_text)
@@ -61,8 +65,68 @@ class ChatManagerService:
             intent_type=triage_result.intent_type,
         )
 
+    async def _run_extraction(
+        self, request: ChatRequest, data_agent: DataAgentService
+    ) -> ExtractionTurn:
+        try:
+            extraction, trace = await data_agent.extract(request.session_id, request.message)
+        except Exception as exc:
+            _logger.exception("Unexpected error in data_agent.extract: %s", exc)
+            extraction = _unknown_error_extraction(request.session_id)
+            trace = _unknown_error_trace(extraction)
+        return ExtractionTurn(extraction=extraction, trace=trace)
+
+    async def _respond_with_extraction(
+        self,
+        request: ChatRequest,
+        session: list[Message],
+        turn: ExtractionTurn,
+        intent_type: IntentType,
+    ) -> ChatResponse:
+        widget_spec = await self._maybe_build_widget(request, turn)
+        response_text = _format_extraction_response(turn.extraction)
+        assistant_message = Message(
+            role=Role.ASSISTANT,
+            content=response_text,
+            extraction=turn.extraction,
+            trace=turn.trace,
+        )
+        session.append(assistant_message)
+        return ChatResponse(
+            response=response_text,
+            intent_type=intent_type,
+            extraction=turn.extraction,
+            trace=turn.trace,
+            widget_spec=widget_spec,
+        )
+
+    async def _maybe_build_widget(
+        self, request: ChatRequest, turn: ExtractionTurn
+    ) -> Optional[WidgetSpec]:
+        if not _widget_eligible(turn.extraction):
+            return None
+        try:
+            outcome = await self._architect(
+                ArchitectRequest(
+                    extraction=turn.extraction,
+                    user_intent=request.message,
+                )
+            )
+        except Exception as exc:
+            _logger.exception("Unexpected error in architect: %s", exc)
+            return None
+        # attach the widget trace onto the agent trace in place
+        if outcome.trace is not None:
+            turn.trace.widget_generation = outcome.trace
+        return outcome.spec
+
     def get_history(self, session_id: str) -> list[Message]:
         return list(self._history[session_id])
+
+
+def _widget_eligible(extraction: DataExtraction) -> bool:
+    """FR-015: widget generation requires a successful extraction with data."""
+    return extraction.status == "success" and extraction.row_count > 0
 
 
 _ERROR_MESSAGES: dict[ErrorCode, str] = {
