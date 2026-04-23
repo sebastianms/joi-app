@@ -22,10 +22,10 @@
 - [x] Ruteo de intenciones simples vs complejas.
 - [ ] Capa probabilística (LLM classifier) — diferida a Feature 003.
 
-## Phase 5: Multi-Agent Pipeline & Rendering Canvas (Shippable Slice 3)
+## Phase 5: Multi-Agent Pipeline & Rendering Canvas (Shippable Slice 3) [DONE]
 - [x] Desarrollo del Agente de Datos (Text-to-SQL y Extracción a JSON) — Feature 003 (US1–US4). Pipelines SQL y JSON operativos con guard read-only, manejo de errores graceful y Agent Trace en el chat.
-- [ ] Desarrollo del Agente Arquitecto/Generador para la creación de código del widget.
-- [ ] Motor de sanitización e inyección dinámica del widget en el Canvas derecho.
+- [x] Desarrollo del Agente Arquitecto/Generador para la creación de código del widget — Feature 004 (US1–US2). Selector determinístico (R1), generador LLM, fallback tabular, preferencia explícita del usuario con triage extendido.
+- [x] Motor de sanitización e inyección dinámica del widget en el Canvas derecho — Feature 004 (US3–US4). iframe sandbox CSP (R4), protocolo postMessage, timeout 4s, fallback universal, error banner con continuidad de sesión. Polish pendiente (T901–T910).
 
 ## Phase 6: Dashboards, Collections & RAG Cache (Shippable Slice 4)
 - [ ] Funcionalidad para etiquetar y guardar widgets en colecciones.
