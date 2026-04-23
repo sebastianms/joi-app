@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     RAG_DEFAULT_ENABLED: bool = True
     QUERY_TIMEOUT_SECONDS: int = 10
+    WIDGET_GENERATION_TIMEOUT_SECONDS: int = 8
     MAX_ROWS_PER_EXTRACTION: int = 1000
     TRACE_PREVIEW_ROWS: int = 10
 
