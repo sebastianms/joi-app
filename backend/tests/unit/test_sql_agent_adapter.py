@@ -49,6 +49,7 @@ def _patch_llm(monkeypatch, sql: str) -> None:
 @pytest.mark.asyncio
 async def test_extract_returns_success_with_rows(monkeypatch, sqlite_db):
     _patch_llm(monkeypatch, "SELECT id, product, amount FROM sales ORDER BY id")
+    monkeypatch.setattr(sut.settings, "MAX_ROWS_PER_EXTRACTION", 100)
     adapter = SqlAgentAdapter()
 
     extraction = await adapter.extract("dame las ventas", _connection(sqlite_db))

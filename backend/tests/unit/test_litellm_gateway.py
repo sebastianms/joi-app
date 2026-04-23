@@ -27,11 +27,12 @@ def reset_singleton():
 
 @pytest.fixture
 def fake_client(reset_singleton, monkeypatch):
-    client = LiteLLMClient(
-        model_sql="provider/sql-model",
-        model_json="provider/json-model",
-        model_chat="provider/chat-model",
-    )
+    client = LiteLLMClient(models={
+        "sql": "provider/sql-model",
+        "json": "provider/json-model",
+        "chat": "provider/chat-model",
+        "widget": "provider/widget-model",
+    })
     monkeypatch.setattr(litellm_client, "_client", client)
     return client
 

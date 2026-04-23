@@ -64,6 +64,7 @@ async def test_all_items_returned(monkeypatch, tmp_path):
     db = tmp_path / "products.json"
     db.write_text(json.dumps(products))
 
+    monkeypatch.setattr(sut.settings, "MAX_ROWS_PER_EXTRACTION", len(products) + 1)
     _mock_llm(monkeypatch, "$[*]")
 
     adapter = sut.JsonAgentAdapter()
@@ -157,6 +158,7 @@ async def test_non_object_matches_wrapped(monkeypatch, tmp_path):
     db = tmp_path / "data.json"
     db.write_text(json.dumps({"prices": [10, 20, 30]}))
 
+    monkeypatch.setattr(sut.settings, "MAX_ROWS_PER_EXTRACTION", 100)
     _mock_llm(monkeypatch, "$.prices[*]")
 
     adapter = sut.JsonAgentAdapter()
