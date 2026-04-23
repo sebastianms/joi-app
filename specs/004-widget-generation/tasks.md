@@ -150,7 +150,7 @@ Paso nuevo "Framework visual" + endpoints `/api/render-mode/profile`. Movido a P
 - [x] T907 Ejecutar suite completa de tests: backend 314/314 (18s). TypeScript noEmit: limpio. E2E Playwright: 38 passed / 1 skipped / 0 failed (43s, con servidor activo). Fix aplicado en T305: `innerHTML` → `innerText` en aserción adversarial (el srcdoc del iframe incluía el string literal del bundle adversarial).
 - [x] T908 Verificar que las suites de Features 001/002/003 siguen pasando (no-regression). Incluidas en los 314 tests del backend — 0 regresiones.
 - [x] T909 Ejecutar los 12 escenarios de `quickstart.md`. Escenarios 1–5, 8–10 validados manualmente + E2E. Escenarios 6–7 y 11–12 diferidos a Feature 005 US6 (FREE_CODE y Setup Wizard no activos).
-- [ ] T910 Bump de versión en `frontend/package.json` y `backend/pyproject.toml` (minor), tag `v0.4.0-feature-004`.
+- [x] T910 Bump de versión: `frontend/package.json` 0.1.0 → 0.4.0. `backend/pyproject.toml` no tiene campo version. Tag: `v0.4.0-feature-004`.
 
 ---
 
