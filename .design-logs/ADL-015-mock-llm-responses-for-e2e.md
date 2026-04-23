@@ -64,4 +64,27 @@ El backend expone la env var `MOCK_LLM_RESPONSES`. Cuando su valor es `true`, el
 - Cuando se agregue una nueva feature que integre un LLM, **extender** el mismo mecanismo `MOCK_LLM_RESPONSES` con nuevas respuestas canned. No introducir flags paralelas por feature.
 - Si un test E2E depende de la adaptabilidad real del LLM (validar calidad del SQL generado, tolerancia a prompts ambiguos, etc.), **no** forzarlo en la suite E2E — moverlo a unit/integration tests del agente o a validación manual.
 - **Nunca** activar `MOCK_LLM_RESPONSES=true` en entornos productivos. Si se agrega un nuevo entorno, incluir una validación que rechace la flag fuera de dev/test.
-- Los mocks viven en `backend/app/services/litellm_client.py`; mantenerlos en sincronía con el contrato real del agente cuando cambien formatos de respuesta o códigos de error.
+- Los mocks viven en `backend/app/services/mock_llm_router.py`; mantenerlos en sincronía con el contrato real del agente cuando cambien formatos de respuesta o códigos de error.
+
+---
+
+## Extensión 2026-04-23 — Router contextual por regla
+
+La implementación original devolvía respuestas canned **estáticas** por propósito (un string por cada uno de `sql | json | chat | widget`). Al integrar la Feature 004 descubrimos que eso no alcanza: los escenarios del quickstart (Esc 1–5) requieren SQL distintos según el prompt (KPI vs por mes vs por región vs sin resultados) y WidgetSpec que reflejen la forma de los datos. Canned estático forzaría un único camino.
+
+### Evolución de la decisión
+Se introduce `MockLLMRouter` (`backend/app/services/mock_llm_router.py`): un registro thread-safe de reglas `(purpose, regex) → response` que el `litellm_client` consulta cuando `MOCK_LLM_RESPONSES=true`. Las respuestas pueden ser strings literales o callables que reciben el prompt.
+
+- **Reglas por defecto**: cubren los patrones de los escenarios 1–5 (total, mes, región, sin resultados, destructivo) + valores por defecto por propósito.
+- **Orden importa**: reglas más específicas antes que las genéricas (p.ej. "antártida" antes de "región"). El router aplica el primer match.
+- **Extensible desde tests**: `register_rule(purpose, pattern, response)` y `clear_rules(purpose)` permiten a tests específicos (ej. adversariales de US3) inyectar respuestas puntuales sin tocar el router global.
+
+### Invariantes preservados
+- El flag sigue siendo **un único punto de entrada** (`MOCK_LLM_RESPONSES`). Ninguna feature debe inventar su propio flag.
+- Las rutas del stack productivo no cambian: el router solo actúa cuando el flag está activo.
+- Costo cero y determinismo — ambos se mantienen; el router es puro in-memory.
+
+### Notas adicionales para el AI
+- Cuando un test necesite una respuesta que no esté cubierta por las reglas por defecto, preferir `register_rule` + `reset_router_for_tests` en el fixture antes que modificar los defaults globales. Los defaults son el contrato para la suite E2E.
+- Callables en las reglas son útiles cuando la respuesta depende del prompt (p.ej. widget KPI vs bar_chart según keywords). No abusar — si la lógica del callable crece, promover a una regla adicional con regex más específica.
+- El bundle `widget-runtime.bundle.js` del frontend NO conoce al router. El contrato del widget se mantiene idéntico entre mock y real — el router solo decide qué WidgetSpec se entrega desde el backend.
