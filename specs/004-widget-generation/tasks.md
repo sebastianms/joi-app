@@ -42,15 +42,15 @@ Estos elementos son prerequisito para cualquier flujo de US1–US4. **Completar 
 
 Ciclo completo "extracción exitosa → widget visible". Modelos → servicios → endpoint → runtime iframe → canvas.
 
-- [ ] T101 [US1] Implementar selector determinístico en [backend/app/services/widget/type_selector.py](backend/app/services/widget/type_selector.py) con las 7 reglas de R1 + fallback a `table`.
-- [ ] T102 [P] [US1] Implementar [backend/app/services/widget/applicability.py](backend/app/services/widget/applicability.py): validador que dado un `widget_type` + `data_extraction.columns/rows` devuelva compatible/incompatible + alternativas válidas.
+- [x] T101 [US1] Implementar selector determinístico en [backend/app/services/widget/type_selector.py](backend/app/services/widget/type_selector.py) con las 7 reglas de R1 + fallback a `table`.
+- [x] T102 [P] [US1] Implementar [backend/app/services/widget/applicability.py](backend/app/services/widget/applicability.py): validador que dado un `widget_type` + `data_extraction.columns/rows` devuelva compatible/incompatible + alternativas válidas.
 - [ ] T103 [P] [US1] Implementar [backend/app/services/widget/fallback_builder.py](backend/app/services/widget/fallback_builder.py): construye `WidgetSpec` tipo `table` desde una `DataExtraction` sin invocar LLM (R8).
 - [ ] T104 [US1] Implementar [backend/app/services/widget/prompt_builder.py](backend/app/services/widget/prompt_builder.py): ensambla system_prompt_base + manifest de la librería activa + target `widget_type` + descripción de datos. Prefix estable para prompt caching.
 - [ ] T105 [US1] Implementar [backend/app/services/widget/generator.py](backend/app/services/widget/generator.py): recibe contexto, invoca LiteLLM con `Purpose="widget"`, parsea respuesta, valida contra `widget_spec.v1` schema, retorna `WidgetSpec` o error estructurado. Timeout configurable (default ~8s interno, distinto del iframe timeout).
 - [ ] T106 [US1] Implementar fachada [backend/app/services/widget/architect_service.py](backend/app/services/widget/architect_service.py): orquesta (type_selector | applicability) → generator → fallback_builder. Emite `WidgetGenerationTrace` al AgentTrace. Inyectado por DI (ADL-011).
 - [ ] T107 [US1] Integrar `architect_service` en [backend/app/services/chat_manager.py](backend/app/services/chat_manager.py): tras extracción con `status=success` Y `row_count > 0`, invocar arquitecto y adjuntar `widget_spec` al `ChatResponse`. Respetar FR-015 (no invocar si `status=error`).
-- [ ] T108 [P] [US1] Tests unitarios del selector: [backend/tests/unit/test_type_selector.py](backend/tests/unit/test_type_selector.py) — un caso por tipo del catálogo + fallback + row_count=0.
-- [ ] T109 [P] [US1] Tests unitarios de applicability: [backend/tests/unit/test_applicability.py](backend/tests/unit/test_applicability.py) — incompatibilidades (ej. heatmap con KPI) + alternativas sugeridas.
+- [x] T108 [P] [US1] Tests unitarios del selector: [backend/tests/unit/test_type_selector.py](backend/tests/unit/test_type_selector.py) — un caso por tipo del catálogo + fallback + row_count=0.
+- [x] T109 [P] [US1] Tests unitarios de applicability: [backend/tests/unit/test_applicability.py](backend/tests/unit/test_applicability.py) — incompatibilidades (ej. heatmap con KPI) + alternativas sugeridas.
 - [ ] T110 [P] [US1] Tests unitarios de fallback_builder: [backend/tests/unit/test_fallback_builder.py](backend/tests/unit/test_fallback_builder.py) — verificar que tabla es determinística y no llama LLM.
 - [ ] T111 [P] [US1] Tests unitarios del generador: [backend/tests/unit/test_widget_generator.py](backend/tests/unit/test_widget_generator.py) con LiteLLM mockeado (ADL-015): happy path, respuesta no parseable → error.
 - [ ] T112 [P] [US1] Tests unitarios del architect: [backend/tests/unit/test_architect_service.py](backend/tests/unit/test_architect_service.py) — happy path, generator timeout → fallback, spec inválida → fallback.
