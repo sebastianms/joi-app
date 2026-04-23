@@ -15,30 +15,19 @@ from typing import Any, Literal
 import litellm
 
 from app.core.config import settings
+from app.services.mock_llm_router import get_router
 
 Purpose = Literal["sql", "json", "chat", "widget"]
 
 ChatMessage = dict[str, str]
 
-def _mock_sql_response() -> str:
-    return settings.MOCK_LLM_SQL
+
+def _mock_content(purpose: Purpose, messages: list[ChatMessage]) -> str:
+    return get_router().respond(purpose, messages)
 
 
-_MOCK_STATIC: dict[str, str] = {
-    "json": "$.products[*]",
-    "chat": "Hola, ¿en qué puedo ayudarte?",
-    "widget": '{"widget_type":"table","bindings":{"extra":{"columns":[]}},"visual_options":{},"code":null}',
-}
-
-
-def _mock_content(purpose: Purpose) -> str:
-    if purpose == "sql":
-        return _mock_sql_response()
-    return _MOCK_STATIC[purpose]
-
-
-def _mock_response(purpose: Purpose) -> dict:
-    return {"choices": [{"message": {"content": _mock_content(purpose)}}]}
+def _mock_response(purpose: Purpose, messages: list[ChatMessage]) -> dict:
+    return {"choices": [{"message": {"content": _mock_content(purpose, messages)}}]}
 
 
 class LiteLLMConfigurationError(RuntimeError):
@@ -62,7 +51,7 @@ class LiteLLMClient:
         **kwargs: Any,
     ) -> str:
         if settings.MOCK_LLM_RESPONSES:
-            return _mock_content(purpose)
+            return _mock_content(purpose, messages)
         model = self.model_for(purpose)
         response = litellm.completion(model=model, messages=messages, **kwargs)
         return response["choices"][0]["message"]["content"]
@@ -75,7 +64,7 @@ class LiteLLMClient:
         **kwargs: Any,
     ) -> Any:
         if settings.MOCK_LLM_RESPONSES:
-            return _mock_response(purpose)
+            return _mock_response(purpose, messages)
         model = self.model_for(purpose)
         return await litellm.acompletion(model=model, messages=messages, **kwargs)
 

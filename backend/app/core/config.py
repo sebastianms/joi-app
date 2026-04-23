@@ -22,7 +22,6 @@ class Settings(BaseSettings):
     TRACE_PREVIEW_ROWS: int = 10
 
     MOCK_LLM_RESPONSES: bool = False
-    MOCK_LLM_SQL: str = "SELECT id, region, amount, sold_at FROM sales"
 
     class Config:
         env_file = ".env"
