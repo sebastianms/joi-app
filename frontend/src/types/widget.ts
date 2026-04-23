@@ -49,7 +49,7 @@ export interface WidgetCode {
 export interface DataReference {
   extraction_id: string;
   columns: Array<{ name: string; type: string }>;
-  rows: Array<Record<string, unknown>>;
+  row_count: number;
 }
 
 export interface WidgetSpec {
