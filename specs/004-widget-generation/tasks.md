@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas) — US2/US3/US4 next
+**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas), US2 completa (T208 pendiente manual) — US3/US4/T501 next
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -85,13 +85,13 @@ Ciclo completo "extracción exitosa → widget visible". Modelos → servicios �
 
 Detección de preferencia en el chat + regeneración sin re-ejecutar la extracción.
 
-- [ ] T201 [US2] Extender [backend/app/services/triage_engine.py](backend/app/services/triage_engine.py) con pass adicional que busque las 8 regex de R10 cuando el intent es `complex` o hay extracción previa en sesión. Devolver `preferred_widget_type` en el `TriageResult`.
-- [ ] T202 [P] [US2] Tests unitarios del triage extendido: [backend/tests/unit/test_triage_widget_preference.py](backend/tests/unit/test_triage_widget_preference.py) — 8 tipos + múltiples matches → None + frases en español/inglés.
-- [ ] T203 [US2] En [architect_service.py](backend/app/services/widget/architect_service.py), cuando `preferred_widget_type` presente: aplicar `applicability` sobre la extracción previa. Si compatible → generar con ese tipo (`selection_source=user_preference`). Si incompatible → NO generar widget, emitir mensaje explicativo en el chat + alternativas (FR-006).
-- [ ] T204 [US2] Mantener la **misma** `extraction_id` en el nuevo `WidgetSpec` (reutilizar la extracción de la sesión). Verificar que no se invoca al Data Agent de nuevo.
-- [ ] T205 [US2] En [chat_manager.py](backend/app/services/chat_manager.py): ruta "preferencia sobre extracción previa" que toma la última `DataExtraction` de la sesión (en memoria) y la pasa al architect sin llamar al Data Agent.
-- [ ] T206 [P] [US2] Test integración: invocar dos `POST /api/chat/messages` en secuencia (primero prompt de datos, luego "prefiero tabla") y verificar mismo `extraction_id`, distinto `widget_id`, `selection_source=user_preference`.
-- [ ] T207 [P] [US2] Test integración para caso incompatible: KPI previo + "muéstramelo como heatmap" → respuesta del chat explica y propone alternativas; el widget actual permanece.
+- [x] T201 [US2] Extender [backend/app/services/triage_engine.py](backend/app/services/triage_engine.py) con pass adicional que busque las 8 regex de R10 cuando el intent es `complex` o hay extracción previa en sesión. Devolver `preferred_widget_type` en el `TriageResult`.
+- [x] T202 [P] [US2] Tests unitarios del triage extendido: [backend/tests/unit/test_triage_widget_preference.py](backend/tests/unit/test_triage_widget_preference.py) — 8 tipos + múltiples matches → None + frases en español/inglés.
+- [x] T203 [US2] En [architect_service.py](backend/app/services/widget/architect_service.py), cuando `preferred_widget_type` presente: aplicar `applicability` sobre la extracción previa. Si compatible → generar con ese tipo (`selection_source=user_preference`). Si incompatible → NO generar widget, emitir mensaje explicativo en el chat + alternativas (FR-006).
+- [x] T204 [US2] Mantener la **misma** `extraction_id` en el nuevo `WidgetSpec` (reutilizar la extracción de la sesión). Verificar que no se invoca al Data Agent de nuevo.
+- [x] T205 [US2] En [chat_manager.py](backend/app/services/chat_manager.py): ruta "preferencia sobre extracción previa" que toma la última `DataExtraction` de la sesión (en memoria) y la pasa al architect sin llamar al Data Agent.
+- [x] T206 [P] [US2] Test integración: invocar dos `POST /api/chat/messages` en secuencia (primero prompt de datos, luego "prefiero tabla") y verificar mismo `extraction_id`, distinto `widget_id`, `selection_source=user_preference`.
+- [x] T207 [P] [US2] Test integración para caso incompatible: KPI previo + "muéstramelo como heatmap" → respuesta del chat explica y propone alternativas; el widget actual permanece.
 - [ ] T208 [US2] Ejecutar **Escenarios 4 y 5** de `quickstart.md` manual; reportar latencia p95 del swap.
 
 ---

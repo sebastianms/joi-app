@@ -27,7 +27,7 @@ def _mock_sql_response() -> str:
 _MOCK_STATIC: dict[str, str] = {
     "json": "$.products[*]",
     "chat": "Hola, ¿en qué puedo ayudarte?",
-    "widget": '{"widget_type":"table","bindings":{}}',
+    "widget": '{"widget_type":"table","bindings":{"extra":{"columns":[]}},"visual_options":{},"code":null}',
 }
 
 

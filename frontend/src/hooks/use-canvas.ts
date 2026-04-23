@@ -136,8 +136,10 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
-      const iframeWindow = frameRef.current?.contentWindow;
-      if (!iframeWindow || event.source !== iframeWindow) return;
+      // With sandbox="allow-scripts" (no allow-same-origin) the browser assigns
+      // an opaque origin to the iframe, so event.source !== contentWindow always.
+      // We validate message shape instead; the protocol validators reject unknowns.
+      if (!frameRef.current?.contentWindow) return;
       const data = event.data;
       if (isWidgetReadyMessage(data)) {
         clearTimer();

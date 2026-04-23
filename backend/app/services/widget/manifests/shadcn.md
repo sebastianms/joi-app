@@ -27,6 +27,7 @@ Use these component primitives. All are available as global variables (no import
 Wrap charts inside `<Card><CardContent>`. Pass `width="100%"` and `height={300}` to chart containers.
 
 ## Rules
-- No network calls, no `import`, no `require`
-- All components are pre-bundled; reference as `window.ShadcnUI.*`
+- No network calls, no `import`, no `require`, no `window.ShadcnUI`, no `ReactDOM`
+- Most widget types (table, bar_chart, line_chart, pie_chart, kpi, scatter_plot, area_chart) have native renderers — set `code: null`
+- Only `heatmap` may use `code`, and only with plain SVG JavaScript (no libraries)
 - Use Tailwind utility classes for spacing (`p-4`, `gap-2`, `mt-2`)

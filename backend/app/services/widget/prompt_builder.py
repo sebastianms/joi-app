@@ -27,14 +27,23 @@ Your job: given a deterministic target `widget_type` and a dataset description,
 produce a strict JSON object conforming to the WidgetSpec v1 contract.
 
 Hard requirements:
-- Output ONLY the JSON object — no prose, no markdown fences.
-- Every field in the contract must be present.
+- Output ONLY the JSON object — no prose, no markdown fences, no code fences.
 - `bindings` maps the dataset columns to the visual roles required by the
   target `widget_type` (e.g. x/y/series for charts, label/value for kpi).
-- `code` is either null (native renderer handles the type) or a `{html, css?, js?}`
-  bundle that runs inside an isolated iframe with no network access.
+- `visual_options` is a JSON object with optional keys: title (string), x_label (string), y_label (string).
+- `code` MUST be null for these types which have native renderers: table, bar_chart, line_chart, pie_chart, kpi, scatter_plot, area_chart.
+  Only provide `code` for `heatmap` using raw SVG (no external libraries, no React, no DOM APIs beyond getElementById).
 - Never invent columns that are not present in the data description.
-- Prefer clarity and correctness over visual flourish."""
+- Never use window.ShadcnUI, ReactDOM, or any library — the `code.js` field only runs for heatmap as plain JS.
+- Prefer clarity and correctness over visual flourish.
+
+Required JSON shape:
+{
+  "widget_type": "<type>",
+  "bindings": { "x": "<col>", "y": "<col>", ... },
+  "visual_options": { "title": "<optional title>" },
+  "code": null
+}"""
 
 
 @dataclass(frozen=True)

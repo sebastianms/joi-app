@@ -118,7 +118,7 @@ export function CanvasPanel({
             onLoad={handleFrameLoad}
           />
           {state.loading_stage === "bootstrapping" && (
-            <div className="pointer-events-none absolute inset-0">
+            <div className="pointer-events-none absolute inset-0 rounded-lg bg-card">
               <WidgetLoading stage="bootstrapping" />
             </div>
           )}

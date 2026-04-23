@@ -16,10 +16,23 @@ from app.services.widget._column_utils import (
     string_columns,
 )
 
+
+def _exclude_date_like(columns: list) -> list:
+    """Filter out string columns whose names look like date/time fields."""
+    return [c for c in columns if c.name.lower() not in _DATE_LIKE_NAMES]
+
 _MAX_LINE_POINTS = 500
 _MAX_CAT_UNIQUE_BAR = 50
 _MAX_CAT_UNIQUE_HEATMAP = 30
 _MIN_CAT_UNIQUE = 2
+# Heatmap needs enough cells to be meaningful (rows × 2 axes).
+_MIN_HEATMAP_ROWS = 4
+
+# Patterns that suggest a string column is a date/time value, not a true category.
+_DATE_LIKE_NAMES = frozenset({
+    "date", "fecha", "time", "tiempo", "sold_at", "created_at", "updated_at",
+    "timestamp", "datetime", "day", "month", "year", "week",
+})
 
 
 def select_widget_type(extraction: DataExtraction) -> WidgetType:
@@ -42,11 +55,12 @@ def select_widget_type(extraction: DataExtraction) -> WidgetType:
     if datetimes and numerics and row_count <= _MAX_LINE_POINTS:
         return WidgetType.LINE_CHART
 
-    heatmap_cats = small_categoricals(rows, strings, _MIN_CAT_UNIQUE, _MAX_CAT_UNIQUE_HEATMAP)
-    if len(heatmap_cats) >= 2 and numerics:
+    true_strings = _exclude_date_like(strings)
+    heatmap_cats = small_categoricals(rows, true_strings, _MIN_CAT_UNIQUE, _MAX_CAT_UNIQUE_HEATMAP)
+    if len(heatmap_cats) >= 2 and numerics and row_count >= _MIN_HEATMAP_ROWS:
         return WidgetType.HEATMAP
 
-    bar_cats = small_categoricals(rows, strings, _MIN_CAT_UNIQUE, _MAX_CAT_UNIQUE_BAR)
+    bar_cats = small_categoricals(rows, true_strings, _MIN_CAT_UNIQUE, _MAX_CAT_UNIQUE_BAR)
     if bar_cats and numerics:
         return WidgetType.BAR_CHART
 

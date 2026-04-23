@@ -114,7 +114,9 @@ def test_kpi_not_emitted_when_multiple_numerics_single_row():
 def test_heatmap_wins_over_bar_when_two_categoricals_present():
     rows = [
         {"r": "N", "p": "A", "v": 10},
-        {"r": "S", "p": "B", "v": 20},
+        {"r": "N", "p": "B", "v": 15},
+        {"r": "S", "p": "A", "v": 20},
+        {"r": "S", "p": "B", "v": 25},
     ]
     extraction = _extraction(
         [("r", "string"), ("p", "string"), ("v", "integer")], rows
