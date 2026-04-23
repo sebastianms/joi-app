@@ -1,6 +1,7 @@
 "use client";
 
 import type { AgentTrace, DataExtraction } from "@/types/extraction";
+import type { WidgetGenerationTrace } from "@/types/widget";
 
 interface AgentTraceBlockProps {
   trace: AgentTrace;
@@ -39,8 +40,48 @@ export function AgentTraceBlock({ trace, extraction }: AgentTraceBlockProps) {
             columns={trace.preview_columns.map((c) => c.name)}
           />
         )}
+
+        {trace.widget_generation && (
+          <WidgetGenerationSection wg={trace.widget_generation} />
+        )}
       </div>
     </details>
+  );
+}
+
+const STATUS_STYLES: Record<WidgetGenerationTrace["status"], string> = {
+  success: "bg-emerald-100 text-emerald-900",
+  fallback: "bg-amber-100 text-amber-900",
+  error: "bg-destructive text-destructive-foreground",
+};
+
+function WidgetGenerationSection({ wg }: { wg: WidgetGenerationTrace }) {
+  return (
+    <div
+      className="rounded border border-border bg-muted/40 p-2 font-mono text-[11px] leading-relaxed"
+      data-role="widget-generation-trace"
+      data-status={wg.status}
+    >
+      <div className="mb-1 flex flex-wrap items-center gap-2">
+        <span className="font-semibold text-foreground">Widget Generation</span>
+        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${STATUS_STYLES[wg.status]}`}>
+          {wg.status}
+        </span>
+        {wg.widget_type_attempted && (
+          <span className="text-muted-foreground">type={wg.widget_type_attempted}</span>
+        )}
+        <span className="text-muted-foreground">{wg.generation_ms}ms</span>
+        {wg.error_code && (
+          <span className="text-destructive">code={wg.error_code}</span>
+        )}
+      </div>
+      {wg.generated_by_model && (
+        <div className="text-muted-foreground">model: {wg.generated_by_model}</div>
+      )}
+      {wg.message && (
+        <div className="whitespace-pre-wrap break-words text-foreground">{wg.message}</div>
+      )}
+    </div>
   );
 }
 

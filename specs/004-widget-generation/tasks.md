@@ -1,6 +1,6 @@
 # Tasks: Feature 004 — Widget Generation & Canvas Rendering
 
-**Branch**: `004-widget-generation` | **Date**: 2026-04-22 | **Status**: In Progress — US1 next (T101)
+**Branch**: `004-widget-generation` | **Date**: 2026-04-23 | **Status**: US1 completa (T129-T131 diferidas) — US2/US3/US4 next
 
 > Formato por task: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con tareas hermanas (distinto archivo, sin dependencias).
@@ -67,17 +67,17 @@ Ciclo completo "extracción exitosa → widget visible". Modelos → servicios �
 - [ ] T129 [P] [US1] Adaptador shadcn en [frontend/src/lib/widget-runtime/adapters/shadcn.tsx](frontend/src/lib/widget-runtime/adapters/shadcn.tsx) (wrappers de Card/Table/etc. sin dependencia de red).
 - [ ] T130 [P] [US1] Adaptador bootstrap en [adapters/bootstrap.tsx](frontend/src/lib/widget-runtime/adapters/bootstrap.tsx) (clases CSS inline).
 - [ ] T131 [P] [US1] Adaptador heroui en [adapters/heroui.tsx](frontend/src/lib/widget-runtime/adapters/heroui.tsx).
-- [ ] T132 [US1] Verificar el build `npm run build:widget-runtime` produce `public/widget-runtime.bundle.js` < 300KB gzipped (reporte en PR).
+- [x] T132 [US1] Verificar el build `npm run build:widget-runtime` produce `public/widget-runtime.bundle.js` < 300KB gzipped (reporte en PR). **Resultado: 614 KB minified / 181.2 KB gzipped.**
 - [x] T133 [US1] Implementar hook [frontend/src/hooks/use-canvas.ts](frontend/src/hooks/use-canvas.ts): maneja `CanvasState`, monta iframe con `srcdoc`, envía `widget:init`, escucha `ready/error/resize`, aplica timeout de 4s.
 - [x] T134 [US1] Implementar [frontend/src/components/canvas/widget-frame.tsx](frontend/src/components/canvas/widget-frame.tsx): `<iframe sandbox="allow-scripts" srcdoc={...}>` con CSP inyectada (R4). `aria-label`/`data-role` estables (ADL-002).
 - [x] T135 [US1] Implementar [frontend/src/components/canvas/widget-loading.tsx](frontend/src/components/canvas/widget-loading.tsx): skeleton para `generating` y `bootstrapping`.
 - [x] T136 [P] [US1] [frontend/src/components/canvas/widget-empty-state.tsx](frontend/src/components/canvas/widget-empty-state.tsx) para `row_count=0`.
 - [x] T137 [P] [US1] [frontend/src/components/canvas/truncation-badge.tsx](frontend/src/components/canvas/truncation-badge.tsx) (también usado en US1 cuando la extracción viene truncada — FR-013).
-- [ ] T138 [US1] Implementar [frontend/src/components/canvas/canvas-panel.tsx](frontend/src/components/canvas/canvas-panel.tsx): orquesta `use-canvas`, renderiza `WidgetFrame | WidgetLoading | WidgetEmptyState | WidgetErrorBanner` según estado.
-- [ ] T139 [US1] Reemplazar placeholder en [frontend/src/app/page.tsx](frontend/src/app/page.tsx) por `<CanvasPanel />`. Conectar con el `useChat` para recibir `widgetSpec` del último mensaje con extracción.
-- [ ] T140 [US1] Extender [frontend/src/hooks/use-chat.ts](frontend/src/hooks/use-chat.ts) con campo `widgetSpec` opcional en `Message`.
-- [ ] T141 [US1] Extender [frontend/src/components/chat/agent-trace-block.tsx](frontend/src/components/chat/agent-trace-block.tsx) con sección `widget_generation` contigua al trace del Data Agent.
-- [ ] T142 [US1] Ejecutar **Escenario 1** de `quickstart.md` manual en navegador; reportar screenshot + latencia p95 del bootstrap.
+- [x] T138 [US1] Implementar [frontend/src/components/canvas/canvas-panel.tsx](frontend/src/components/canvas/canvas-panel.tsx): orquesta `use-canvas`, renderiza `WidgetFrame | WidgetLoading | WidgetEmptyState | WidgetErrorBanner` según estado.
+- [x] T139 [US1] Reemplazar placeholder en [frontend/src/app/page.tsx](frontend/src/app/page.tsx) por `<CanvasPanel />`. Conectar con el `useChat` para recibir `widgetSpec` del último mensaje con extracción.
+- [x] T140 [US1] Extender [frontend/src/hooks/use-chat.ts](frontend/src/hooks/use-chat.ts) con campo `widgetSpec` opcional en `Message`.
+- [x] T141 [US1] Extender [frontend/src/components/chat/agent-trace-block.tsx](frontend/src/components/chat/agent-trace-block.tsx) con sección `widget_generation` contigua al trace del Data Agent.
+- [x] T142 [US1] Ejecutar **Escenario 1** de `quickstart.md` manual en navegador; reportar screenshot + latencia p95 del bootstrap.
 
 ---
 

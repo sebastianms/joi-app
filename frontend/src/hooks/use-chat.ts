@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { AgentTrace, DataExtraction } from "@/types/extraction";
+import type { WidgetSpec } from "@/types/widget";
 
 export type ChatRole = "user" | "assistant";
 export type IntentType = "simple" | "complex";
@@ -13,6 +14,7 @@ export interface ChatMessage {
   intentType?: IntentType;
   extraction?: DataExtraction;
   trace?: AgentTrace;
+  widgetSpec?: WidgetSpec;
 }
 
 interface ChatResponsePayload {
@@ -20,9 +22,10 @@ interface ChatResponsePayload {
   intent_type: IntentType;
   extraction?: DataExtraction;
   trace?: AgentTrace;
+  widget_spec?: WidgetSpec;
 }
 
-interface UseChatResult {
+export interface UseChatResult {
   messages: ChatMessage[];
   isSending: boolean;
   error: string | null;
@@ -100,6 +103,7 @@ export function useChat(): UseChatResult {
           intentType: data.intent_type,
           extraction: data.extraction,
           trace: data.trace,
+          widgetSpec: data.widget_spec,
         };
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (err) {

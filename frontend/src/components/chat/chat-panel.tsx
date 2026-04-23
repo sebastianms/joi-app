@@ -1,17 +1,18 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
-import { useChat } from "@/hooks/use-chat";
+import type { UseChatResult } from "@/hooks/use-chat";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MessageInput } from "./message-input";
 import { MessageList } from "./message-list";
 
 interface ChatPanelProps {
+  chat: UseChatResult;
   title?: string;
 }
 
-export function ChatPanel({ title = "Joi Chat" }: ChatPanelProps) {
-  const { messages, isSending, error, sendMessage } = useChat();
+export function ChatPanel({ title = "Joi Chat", chat }: ChatPanelProps) {
+  const { messages, isSending, error, sendMessage } = chat;
 
   return (
     <section

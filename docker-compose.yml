@@ -9,6 +9,11 @@ services:
     volumes:
       # Montamos un volumen para la base de datos local
       - ./backend/data:/app/data
+    # Carga API keys + LLM_MODEL_* + flags de Data Agent desde backend/.env.
+    # Los valores del bloque `environment` siguen teniendo prioridad (override
+    # para el entorno containerizado: path de la DB y CORS del frontend Docker).
+    env_file:
+      - ./backend/.env
     environment:
       - DATABASE_URL=sqlite+aiosqlite:////app/data/joi.db
       - CORS_ORIGINS=["http://localhost:3000"]

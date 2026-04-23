@@ -83,4 +83,5 @@ export interface AgentTrace {
   security_rejection: boolean;
   collapsed: boolean;
   created_at: string;
+  widget_generation?: import("./widget").WidgetGenerationTrace | null;
 }

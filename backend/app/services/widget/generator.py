@@ -10,21 +10,29 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 from dataclasses import dataclass
 from typing import Optional
 
+import pydantic
 from pydantic import ValidationError
+
+logger = logging.getLogger(__name__)
 
 from app.core.config import settings
 from app.models.extraction import DataExtraction
 from app.models.render_mode import UILibrary
 from app.models.widget import (
+    DataReference,
     SelectionSource,
+    WidgetBindings,
+    WidgetCode,
     WidgetErrorCode,
     WidgetRenderMode,
     WidgetSpec,
     WidgetType,
+    VisualOptions,
 )
 from app.services import litellm_client
 from app.services.widget.prompt_builder import (
@@ -34,6 +42,21 @@ from app.services.widget.prompt_builder import (
 )
 
 _FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE | re.MULTILINE)
+
+
+class _LLMPayload(pydantic.BaseModel):
+    """Fields the LLM is responsible for producing.
+
+    The caller owns identity + provenance fields and applies them via
+    _override_spec_invariants after validation. Keeping this model narrow
+    avoids SPEC_INVALID errors when the model correctly omits fields it
+    must not invent.
+    """
+
+    widget_type: WidgetType
+    bindings: WidgetBindings
+    visual_options: Optional[VisualOptions] = None
+    code: Optional[WidgetCode] = None
 
 
 def _strip_fences(text: str) -> str:
@@ -62,33 +85,6 @@ class GenerationResult:
         return self.spec is not None
 
 
-def _override_spec_invariants(spec: WidgetSpec, request: GenerationRequest) -> WidgetSpec:
-    """Force fields the LLM must not decide (IDs, source, render mode).
-
-    The model is allowed to produce `bindings`, `visual_options`, `code`,
-    but identity fields and render-mode context come from the caller. The
-    `data_reference.extraction_id` and `row_count` are also forced so the
-    widget never references a phantom dataset.
-    """
-    data_reference = spec.data_reference.model_copy(
-        update={
-            "extraction_id": request.extraction.extraction_id,
-            "row_count": request.extraction.row_count,
-        }
-    )
-    return spec.model_copy(
-        update={
-            "extraction_id": request.extraction.extraction_id,
-            "session_id": request.extraction.session_id,
-            "render_mode": request.render_mode,
-            "ui_library": request.ui_library if request.render_mode == WidgetRenderMode.UI_FRAMEWORK else None,
-            "selection_source": SelectionSource.DETERMINISTIC,
-            "widget_type": request.widget_type,
-            "truncation_badge": request.extraction.truncated,
-            "data_reference": data_reference,
-        }
-    )
-
 
 async def _call_llm(request: GenerationRequest) -> str:
     messages = build_messages(
@@ -105,8 +101,31 @@ async def _call_llm(request: GenerationRequest) -> str:
 
 def _parse_spec(raw: str, request: GenerationRequest) -> WidgetSpec:
     payload = json.loads(_strip_fences(raw))
-    spec = WidgetSpec.model_validate(payload)
-    return _override_spec_invariants(spec, request)
+    llm = _LLMPayload.model_validate(payload)
+    return _build_spec(llm, request)
+
+
+def _build_spec(llm: _LLMPayload, request: GenerationRequest) -> WidgetSpec:
+    """Merge LLM-owned fields with caller-owned identity/provenance fields."""
+    data_reference = DataReference(
+        extraction_id=request.extraction.extraction_id,
+        columns=[c.model_dump() for c in request.extraction.columns],
+        row_count=request.extraction.row_count,
+    )
+    return WidgetSpec(
+        extraction_id=request.extraction.extraction_id,
+        session_id=request.extraction.session_id,
+        render_mode=request.render_mode,
+        ui_library=request.ui_library if request.render_mode == WidgetRenderMode.UI_FRAMEWORK else None,
+        widget_type=request.widget_type,
+        selection_source=SelectionSource.DETERMINISTIC,
+        bindings=llm.bindings,
+        visual_options=llm.visual_options,
+        code=llm.code,
+        data_reference=data_reference,
+        truncation_badge=request.extraction.truncated,
+        generated_by_model="",  # filled by caller after success
+    )
 
 
 async def generate_widget(request: GenerationRequest) -> GenerationResult:
@@ -141,6 +160,7 @@ async def generate_widget(request: GenerationRequest) -> GenerationResult:
     try:
         spec = _parse_spec(raw, request)
     except (json.JSONDecodeError, ValidationError, KeyError, TypeError) as exc:
+        logger.warning("SPEC_INVALID — raw LLM output:\n%s\n\nError: %s", raw, exc)
         return GenerationResult(
             spec=None,
             error_code=WidgetErrorCode.SPEC_INVALID,

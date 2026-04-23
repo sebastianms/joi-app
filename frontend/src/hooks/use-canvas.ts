@@ -95,9 +95,24 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
   const [state, setState] = useState<CanvasState>(() => initialState(sessionId));
   const [bundleCode, setBundleCode] = useState<string | null>(null);
   const [frameHeight, setFrameHeight] = useState<number>(DEFAULT_FRAME_HEIGHT);
+  const [lastAppliedSpec, setLastAppliedSpec] = useState<WidgetSpec | null>(null);
 
   const frameRef = useRef<WidgetFrameHandle | null>(null);
   const timeoutRef = useRef<number | null>(null);
+
+  // React-recommended "adjust state during render" pattern (ver docs de React:
+  // "You Might Not Need an Effect"): sincroniza un estado derivado de una prop
+  // sin programar un efecto extra que causaría renders en cascada.
+  if (lastAppliedSpec !== widgetSpec) {
+    setLastAppliedSpec(widgetSpec);
+    setState((prev) => ({
+      ...prev,
+      previous_widget_spec: prev.current_widget_spec,
+      current_widget_spec: widgetSpec,
+      loading_stage: widgetSpec ? "bootstrapping" : "idle",
+      last_error: null,
+    }));
+  }
 
   const setStage = useCallback((stage: CanvasLoadingStage, error: CanvasError | null = null) => {
     setState((prev) => ({ ...prev, loading_stage: stage, last_error: error }));
@@ -118,26 +133,6 @@ export function useCanvas(input: UseCanvasInput): UseCanvasResult {
         setStage("error", { code: "RENDER_ERROR", message: `No se pudo cargar el runtime: ${message}` });
       });
   }, [setStage]);
-
-  useEffect(() => {
-    if (!widgetSpec) {
-      setState((prev) => ({
-        ...prev,
-        previous_widget_spec: prev.current_widget_spec,
-        current_widget_spec: null,
-        loading_stage: "idle",
-        last_error: null,
-      }));
-      return;
-    }
-    setState((prev) => ({
-      ...prev,
-      previous_widget_spec: prev.current_widget_spec,
-      current_widget_spec: widgetSpec,
-      loading_stage: "bootstrapping",
-      last_error: null,
-    }));
-  }, [widgetSpec]);
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
