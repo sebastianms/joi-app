@@ -38,6 +38,37 @@ docker-compose up --build
 - Backend API: [http://localhost:8000/api](http://localhost:8000/api)
 - Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
+## Feature 004 — Widget Generation & Canvas
+
+El sistema convierte automáticamente cualquier consulta en una visualización interactiva:
+
+```
+Usuario: "muéstrame las ventas por región"
+      ↓
+Data Agent ejecuta SQL → DataExtraction (columnas + filas)
+      ↓
+Agente Arquitecto: selector determinístico → bar_chart
+      ↓
+Agente Generador (LLM): WidgetSpec con bindings validados
+      ↓
+Canvas: iframe sandboxed con CSP + Recharts → widget visible
+```
+
+**Tipos soportados**: `table` · `bar_chart` · `line_chart` · `area_chart` · `pie_chart` · `kpi` · `scatter_plot` · `heatmap`
+
+**Fallback universal**: cualquier fallo del generador (timeout, spec inválida, crash del renderer) produce automáticamente una tabla con los datos crudos. La sesión nunca se interrumpe.
+
+**Preferencia explícita**: el usuario puede pedir un tipo distinto en el chat ("prefiero verlo como tabla") — el sistema reutiliza la extracción anterior sin re-ejecutar la consulta.
+
+**Aislamiento**: cada widget corre en un `<iframe sandbox="allow-scripts">` con CSP que bloquea `connect-src` — el código del widget no puede acceder al DOM del host ni hacer peticiones de red.
+
+Para construir el bundle del runtime antes de levantar el frontend:
+
+```bash
+cd frontend
+npm run build:widget-runtime
+```
+
 ## Dev Setup (Local)
 
 ```bash
