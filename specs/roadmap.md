@@ -32,4 +32,12 @@
 - [ ] Implementación de Dashboards personalizados reordenables.
 - [ ] Integración final del sistema RAG como memoria caché de widgets.
 
+## Phase 7: Visual Redesign & UX Polish — Feature 005
+- [ ] Identidad visual Blade Runner 2049: paleta dark-first, tokens CSS, glow/glass acotado (US1).
+- [ ] Layout dual rediseñado: header, separador de panels, responsive mobile (US2).
+- [ ] Componentes de chat rediseñados: burbujas, AgentTrace, WidgetGenerationTrace (US3).
+- [ ] Canvas con estados visuales ricos: idle, generating, bootstrapping, error (US4).
+- [ ] Onboarding wizard de primera vez: modal 3 pasos, activación automática (US5).
+- [ ] Setup page rediseñada con la identidad visual de la app (US6).
+
 > **Nota**: La infraestructura RAG (US5 — memoria activable por sesión) **no está operativa en el MVP**. El campo `UserSession.rag_enabled` se mantiene como forward-compat. El stack RAG (vector store, few-shot memory) se decide cuando US5 se reactive — ver ADL-010.
