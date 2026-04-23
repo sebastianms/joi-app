@@ -352,3 +352,129 @@ async def test_widget_trace_attached_to_agent_trace():
 
     assert response.trace.widget_generation is not None
     assert response.trace.widget_generation.status == "success"
+
+
+# --- US2: Widget preference over prior extraction (T204, T205, T206, T207) ---
+
+
+def _success_extraction_with_num(
+    row_count: int = 5, session_id: str = "s1"
+) -> DataExtraction:
+    """Extraction with a categorical + numeric column for compatibility tests."""
+    return DataExtraction(
+        session_id=session_id,
+        connection_id="conn-1",
+        source_type=SourceType.SQL_SQLITE,
+        query_plan=QueryPlan(language="sql", expression="SELECT 1"),
+        columns=[
+            ColumnDescriptor(name="cat", type="string"),
+            ColumnDescriptor(name="val", type="integer"),
+        ],
+        rows=[{"cat": f"c{i}", "val": i} for i in range(row_count)],
+        row_count=row_count,
+        status="success",
+    )
+
+
+@pytest.mark.asyncio
+async def test_widget_preference_reuses_same_extraction_id(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    """T206: preference request must pass the cached extraction (same extraction_id)."""
+    extraction = _success_extraction_with_num(row_count=5, session_id="pref-1")
+    agent = StubDataAgent(extraction=extraction, trace=_trace_for(extraction))
+
+    # First turn: data extraction
+    await manager.handle(
+        ChatRequest(session_id="pref-1", message="muéstrame las ventas"), agent
+    )
+    first_extraction_id = extraction.extraction_id
+
+    # Second turn: preference request — "scatter" has no complex keyword so goes via widget_preference route
+    pref_response = await manager.handle(
+        ChatRequest(session_id="pref-1", message="prefiero scatter"), agent
+    )
+
+    assert len(architect.calls) == 2
+    # Second call must use the cached extraction, not a new one
+    assert architect.calls[1].extraction.extraction_id == first_extraction_id
+    # Data agent should NOT have been called a second time
+    assert len(agent.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_widget_preference_sets_preferred_type(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    """T204: architect receives the user-expressed widget type."""
+    extraction = _success_extraction_with_num(row_count=5, session_id="pref-2")
+    agent = StubDataAgent(extraction=extraction, trace=_trace_for(extraction))
+
+    await manager.handle(
+        ChatRequest(session_id="pref-2", message="muéstrame las ventas"), agent
+    )
+    await manager.handle(
+        ChatRequest(session_id="pref-2", message="prefiero scatter"), agent
+    )
+
+    assert architect.calls[1].preferred_widget_type == WidgetType.SCATTER_PLOT
+
+
+@pytest.mark.asyncio
+async def test_widget_preference_without_prior_extraction_falls_back_to_llm(
+    manager: ChatManagerService, architect: RecordingArchitect
+):
+    """No prior extraction → preference phrase treated as SIMPLE, LLM responds."""
+    agent = StubDataAgent()
+    response = await manager.handle(
+        ChatRequest(session_id="pref-3", message="prefiero scatter"), agent
+    )
+
+    assert response.intent_type == IntentType.SIMPLE
+    assert response.response == "stub_response"
+    assert architect.calls == []
+
+
+@pytest.mark.asyncio
+async def test_incompatible_preference_returns_explanation_and_keeps_session(
+    architect: RecordingArchitect,
+):
+    """T207: incompatible preference → explanation in chat, no new widget, session stays."""
+    from app.services.widget.architect_service import PreferenceHint
+
+    async def incompatible_architect(request: ArchitectRequest) -> ArchitectOutcome:
+        if request.preferred_widget_type is not None:
+            hint = PreferenceHint(
+                requested=request.preferred_widget_type,
+                reason="datos insuficientes",
+                alternatives=[WidgetType.TABLE, WidgetType.BAR_CHART],
+            )
+            return ArchitectOutcome(spec=None, trace=None, preference_hint=hint)
+        spec = build_table_fallback(request.extraction)
+        return ArchitectOutcome(spec=spec, trace=None)
+
+    manager = ChatManagerService(
+        triage=TriageEngineService(), llm=StubLLM(), architect=incompatible_architect
+    )
+    extraction = _success_extraction_with_num(row_count=5, session_id="pref-4")
+    agent = StubDataAgent(extraction=extraction, trace=_trace_for(extraction))
+
+    # First turn: successful extraction
+    first_response = await manager.handle(
+        ChatRequest(session_id="pref-4", message="muéstrame las ventas"), agent
+    )
+    assert first_response.widget_spec is not None
+
+    # Second turn: incompatible preference
+    pref_response = await manager.handle(
+        ChatRequest(session_id="pref-4", message="prefiero scatter"), agent
+    )
+
+    assert pref_response.widget_spec is None
+    assert "scatter_plot" in pref_response.response or "scatter" in pref_response.response.lower()
+    assert "datos insuficientes" in pref_response.response
+    # Session still operational: can send another message
+    follow_up = await manager.handle(
+        ChatRequest(session_id="pref-4", message="hola"), agent
+    )
+    assert follow_up.response == "stub_response"

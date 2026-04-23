@@ -5,19 +5,21 @@ from typing import Awaitable, Callable, Optional
 
 from app.models.chat import ChatRequest, ChatResponse, IntentType, Message, Role
 from app.models.extraction import AgentTrace, DataExtraction, ErrorCode, ExtractionError, QueryPlan, SourceType
-from app.models.widget import WidgetSpec
+from app.models.widget import WidgetSpec, WidgetType
 from app.services.data_agent_service import DataAgentService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
 from app.services.widget.architect_service import (
     ArchitectOutcome,
     ArchitectRequest,
+    PreferenceHint,
     build_widget,
 )
 
 _logger = logging.getLogger(__name__)
 
 SessionHistory = dict[str, list[Message]]
+LastExtractionCache = dict[str, DataExtraction]
 
 ArchitectFn = Callable[[ArchitectRequest], Awaitable[ArchitectOutcome]]
 
@@ -43,6 +45,8 @@ class ChatManagerService:
         self._llm = llm
         self._architect = architect
         self._history: SessionHistory = defaultdict(list)
+        # Stores the last successful extraction per session for US2 widget preference.
+        self._last_extraction: LastExtractionCache = {}
 
     async def handle(
         self, request: ChatRequest, data_agent: DataAgentService
@@ -51,7 +55,13 @@ class ChatManagerService:
         session = self._history[request.session_id]
         session.append(user_message)
 
-        triage_result = self._triage.classify(request.message)
+        has_prior = request.session_id in self._last_extraction
+        triage_result = self._triage.classify(request.message, has_prior_extraction=has_prior)
+
+        if triage_result.suggested_route == "widget_preference" and has_prior:
+            return await self._respond_with_widget_preference(
+                request, session, triage_result.preferred_widget_type
+            )
 
         if triage_result.intent_type == IntentType.COMPLEX:
             turn = await self._run_extraction(request, data_agent)
@@ -84,6 +94,8 @@ class ChatManagerService:
         intent_type: IntentType,
     ) -> ChatResponse:
         widget_spec = await self._maybe_build_widget(request, turn)
+        if _widget_eligible(turn.extraction):
+            self._last_extraction[request.session_id] = turn.extraction
         response_text = _format_extraction_response(turn.extraction)
         assistant_message = Message(
             role=Role.ASSISTANT,
@@ -98,6 +110,52 @@ class ChatManagerService:
             extraction=turn.extraction,
             trace=turn.trace,
             widget_spec=widget_spec,
+        )
+
+    async def _respond_with_widget_preference(
+        self,
+        request: ChatRequest,
+        session: list[Message],
+        preferred_widget_type: WidgetType,
+    ) -> ChatResponse:
+        """US2: regenerate widget from the cached extraction without re-querying the data source."""
+        prior_extraction = self._last_extraction[request.session_id]
+        stub_trace = _stub_trace_for_preference(prior_extraction)
+
+        try:
+            outcome = await self._architect(
+                ArchitectRequest(
+                    extraction=prior_extraction,
+                    user_intent=request.message,
+                    preferred_widget_type=preferred_widget_type,
+                )
+            )
+        except Exception as exc:
+            _logger.exception("Unexpected error in architect (preference path): %s", exc)
+            response_text = "No pude actualizar la visualización. Inténtalo de nuevo."
+            session.append(Message(role=Role.ASSISTANT, content=response_text))
+            return ChatResponse(response=response_text, intent_type=IntentType.COMPLEX)
+
+        if outcome.preference_hint is not None:
+            response_text = _format_incompatibility_message(outcome.preference_hint)
+            session.append(Message(role=Role.ASSISTANT, content=response_text))
+            return ChatResponse(response=response_text, intent_type=IntentType.COMPLEX)
+
+        if outcome.trace is not None:
+            stub_trace.widget_generation = outcome.trace
+
+        response_text = f"Widget actualizado como {preferred_widget_type.value}."
+        assistant_message = Message(
+            role=Role.ASSISTANT,
+            content=response_text,
+            trace=stub_trace,
+        )
+        session.append(assistant_message)
+        return ChatResponse(
+            response=response_text,
+            intent_type=IntentType.COMPLEX,
+            trace=stub_trace,
+            widget_spec=outcome.spec,
         )
 
     async def _maybe_build_widget(
@@ -115,7 +173,6 @@ class ChatManagerService:
         except Exception as exc:
             _logger.exception("Unexpected error in architect: %s", exc)
             return None
-        # attach the widget trace onto the agent trace in place
         if outcome.trace is not None:
             turn.trace.widget_generation = outcome.trace
         return outcome.spec
@@ -204,4 +261,23 @@ def _unknown_error_trace(extraction: DataExtraction) -> AgentTrace:
         query_display="",
         preview_rows=[],
         preview_columns=[],
+    )
+
+
+def _stub_trace_for_preference(extraction: DataExtraction) -> AgentTrace:
+    """Minimal trace carrier for the widget-preference path (reuses prior extraction, no new query)."""
+    return AgentTrace(
+        extraction_id=extraction.extraction_id,
+        pipeline="sql",
+        query_display="",
+        preview_rows=[],
+        preview_columns=[],
+    )
+
+
+def _format_incompatibility_message(hint: PreferenceHint) -> str:
+    alternatives = ", ".join(t.value for t in hint.alternatives) if hint.alternatives else "tabla"
+    return (
+        f"El tipo '{hint.requested.value}' no es compatible con los datos actuales: {hint.reason}. "
+        f"Alternativas válidas: {alternatives}."
     )

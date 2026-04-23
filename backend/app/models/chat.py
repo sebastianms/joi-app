@@ -32,6 +32,7 @@ class TriageResult(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     matched_pattern: Optional[str] = None
     suggested_route: str
+    preferred_widget_type: Optional["WidgetType"] = None
 
 
 class ChatResponse(BaseModel):
@@ -47,8 +48,9 @@ class ChatResponse(BaseModel):
 
 # Importación diferida para evitar ciclos; rebuild resuelve las forward references
 from app.models.extraction import AgentTrace, DataExtraction  # noqa: E402
-from app.models.widget import WidgetSpec  # noqa: E402
+from app.models.widget import WidgetSpec, WidgetType  # noqa: E402
 from app.models.render_mode import RenderModeProfileRef  # noqa: E402
 
 Message.model_rebuild()
+TriageResult.model_rebuild()
 ChatResponse.model_rebuild()
