@@ -136,7 +136,7 @@
 - [x] T207 Crear ADL-023 en [.design-logs/ADL-023-rag-langchain-byo-vector-store.md](.design-logs/ADL-023-rag-langchain-byo-vector-store.md) documentando: supersede parcial de ADL-010, LangChain como capa, Qdrant default, lista de providers BYO soportados, strategy de embeddings, filtros obligatorios por sesión.
 - [x] T208 Actualizar [specs/roadmap.md](specs/roadmap.md) Phase 6 marcando el anclaje a esta carpeta y removiendo la nota de RAG diferido.
 - [x] T209 Actualizar [specs/tech-stack.md](specs/tech-stack.md) sección "Vector Store (RAG)" con el stack decidido.
-- [ ] T210 Deckard review final sobre todos los archivos tocados; criticidad ≥ 8 corregida antes de cerrar la feature.
+- [x] T210 Deckard review final sobre todos los archivos tocados; criticidad ≥ 8 corregida antes de cerrar la feature. *6 violaciones ≥ 8 resueltas en commit fc56e3c.*
 
 ---
 
