@@ -42,18 +42,26 @@ class CacheService:
         data_schema_hash: str,
     ) -> list[CacheCandidate]:
         try:
+            from qdrant_client.http.models import Filter, FieldCondition, MatchValue
+
             vs = self._vector_store()
+            # Invalidated entries are removed from the vector store when marked
+            # invalidated (delete_entry / invalidate_by_connection), so this filter
+            # enforces only the session / connection / schema isolation.
+            qdrant_filter = Filter(
+                must=[
+                    FieldCondition(key="metadata.session_id", match=MatchValue(value=session_id)),
+                    FieldCondition(key="metadata.connection_id", match=MatchValue(value=connection_id)),
+                    FieldCondition(
+                        key="metadata.data_schema_hash",
+                        match=MatchValue(value=data_schema_hash),
+                    ),
+                ]
+            )
             results = vs.similarity_search_with_relevance_scores(
                 query=prompt,
                 k=_TOP_K,
-                filter={
-                    "must": [
-                        {"key": "session_id", "match": {"value": session_id}},
-                        {"key": "connection_id", "match": {"value": connection_id}},
-                        {"key": "data_schema_hash", "match": {"value": data_schema_hash}},
-                        {"key": "invalidated_at", "match": {"value": None}},
-                    ]
-                },
+                filter=qdrant_filter,
             )
         except Exception:
             logger.warning("Cache search failed — degrading to miss", exc_info=True)
@@ -83,6 +91,25 @@ class CacheService:
         return candidates
 
     async def index(self, request: CacheIndexRequest) -> None:
+        """Index a widget in both Qdrant (for semantic search) and SQLite (mirror for reuse/invalidation)."""
+        try:
+            from app.repositories.widget_cache_repository import WidgetCacheRepository
+
+            repo = WidgetCacheRepository(self._db)
+            entry = WidgetCacheEntryORM(
+                id=request.entry_id,
+                session_id=request.session_id,
+                widget_id=request.widget_id,
+                prompt_text=request.prompt,
+                data_schema_hash=request.data_schema_hash,
+                connection_id=request.connection_id,
+                widget_type=request.widget_type,
+            )
+            await repo.create(entry)
+        except Exception:
+            logger.warning("Cache SQL mirror insert failed", exc_info=True)
+            return
+
         try:
             from langchain_core.documents import Document
 
@@ -97,13 +124,12 @@ class CacheService:
                     "data_schema_hash": request.data_schema_hash,
                     "widget_type": request.widget_type,
                     "spec_json": request.spec_json,
-                    "invalidated_at": None,
                     "hit_count": 0,
                 },
             )
             vs.add_documents([doc], ids=[request.entry_id])
         except Exception:
-            logger.warning("Cache index failed — widget not cached", exc_info=True)
+            logger.warning("Cache vector index failed — SQL mirror still created", exc_info=True)
 
     async def delete_entry(self, entry_id: str) -> bool:
         """Soft-delete a single entry and best-effort remove its vector store point.

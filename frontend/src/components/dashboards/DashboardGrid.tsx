@@ -61,6 +61,7 @@ export function DashboardGrid({ items, onLayoutChange, onRemoveItem }: Dashboard
         <div
           className="grid gap-3"
           style={{ gridTemplateColumns: "repeat(12, minmax(0, 1fr))" }}
+          data-role="dashboard-grid"
         >
           {items.map((item) => (
             <DashboardItem key={item.widget_id} item={item} onRemove={onRemoveItem} />

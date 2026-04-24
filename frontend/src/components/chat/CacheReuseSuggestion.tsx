@@ -22,7 +22,7 @@ export function CacheReuseSuggestion({
   const scorePercent = Math.round(suggestion.score * 100);
 
   return (
-    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs dark:border-amber-800 dark:bg-amber-950">
+    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs dark:border-amber-800 dark:bg-amber-950" data-role="cache-reuse-suggestion">
       <div className="mb-2 flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
         <Sparkles className="h-3.5 w-3.5 shrink-0" />
         <span className="font-medium">

@@ -107,6 +107,8 @@ export function CollectionList({
       {collections.map((col) => (
         <div
           key={col.id}
+          data-role="collection-item"
+          data-collection-name={col.name}
           className={`group flex items-center gap-1 rounded px-2 py-1 cursor-pointer text-sm ${
             selectedId === col.id
               ? "bg-accent text-accent-foreground"

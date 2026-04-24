@@ -31,12 +31,13 @@ class RequestAgents:
     """Bundles per-request agents that require DB access (keeps send_message at 3 args)."""
 
     def __init__(self, db: AsyncSession = Depends(get_db)) -> None:
+        self.widgets = WidgetRepository(db)
         self.data = DataAgentService(
             connection_repo=SQLiteConnectionRepository(db),
             session_repo=UserSessionRepository(db),
             sql_adapter=_sql_adapter_singleton,
         )
-        self.recovery = WidgetRecoveryService(WidgetRepository(db))
+        self.recovery = WidgetRecoveryService(self.widgets)
         self.cache = CacheService(db)
 
 
@@ -51,4 +52,6 @@ async def send_message(
     manager: ChatManagerService = Depends(get_chat_manager),
     agents: RequestAgents = Depends(),
 ) -> ChatResponse:
-    return await manager.handle(request, agents.data, agents.recovery, agents.cache)
+    return await manager.handle(
+        request, agents.data, agents.recovery, agents.cache, agents.widgets
+    )

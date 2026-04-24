@@ -66,9 +66,43 @@ _WIDGET_TEMPLATE = (
 
 
 def _widget_response_for_prompt(prompt: str) -> str:
-    """Return a WidgetSpec JSON matching the deterministic selector's likely pick."""
+    """Return a WidgetSpec JSON matching the deterministic selector's target type.
+
+    The prompt builder prefixes "Target widget_type: <type>" — the mock must
+    honour that to produce valid bindings. Falling back to intent heuristics
+    only when the marker is absent (legacy paths / tests).
+    """
     lowered = prompt.lower()
-    if "total" in lowered or "kpi" in lowered:
+
+    target_match = re.search(r"target widget_type:\s*(\w+)", lowered)
+    target = target_match.group(1) if target_match else None
+
+    if target == "kpi":
+        return _WIDGET_TEMPLATE.format(
+            widget_type="kpi",
+            bindings='{"value":"total_sales","extra":{}}',
+            title="Total de ventas",
+        )
+    if target == "bar_chart":
+        if "sales_month" in lowered or "mes" in lowered or "month" in lowered:
+            return _WIDGET_TEMPLATE.format(
+                widget_type="bar_chart",
+                bindings='{"x":"sales_month","y":"total_sales","extra":{}}',
+                title="Ventas por mes",
+            )
+        return _WIDGET_TEMPLATE.format(
+            widget_type="bar_chart",
+            bindings='{"x":"region","y":"total_sales","extra":{}}',
+            title="Ventas por región",
+        )
+    if target == "table":
+        return _WIDGET_TEMPLATE.format(
+            widget_type="table",
+            bindings='{"columns":["region","total_sales"],"extra":{}}',
+            title="Datos",
+        )
+    # Legacy fallback (intent-based) when no target marker is present.
+    if "kpi" in lowered or "total de ventas" in lowered:
         return _WIDGET_TEMPLATE.format(
             widget_type="kpi",
             bindings='{"value":"total_sales","extra":{}}',
@@ -80,16 +114,10 @@ def _widget_response_for_prompt(prompt: str) -> str:
             bindings='{"x":"sales_month","y":"total_sales","extra":{}}',
             title="Ventas por mes",
         )
-    if "regi" in lowered:
-        return _WIDGET_TEMPLATE.format(
-            widget_type="bar_chart",
-            bindings='{"x":"region","y":"total_sales","extra":{}}',
-            title="Ventas por región",
-        )
     return _WIDGET_TEMPLATE.format(
         widget_type="bar_chart",
-        bindings='{"x":"region","y":"amount","extra":{}}',
-        title="Ventas",
+        bindings='{"x":"region","y":"total_sales","extra":{}}',
+        title="Ventas por región",
     )
 
 

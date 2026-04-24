@@ -82,6 +82,7 @@ export function SaveWidgetDialog({
       role="dialog"
       aria-modal="true"
       aria-label="Guardar widget"
+      data-role="save-widget-dialog"
     >
       <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-lg">
         <h2 className="mb-4 text-lg font-semibold text-foreground">Guardar widget</h2>
@@ -103,9 +104,9 @@ export function SaveWidgetDialog({
           {collections.length === 0 ? (
             <p className="text-sm text-muted-foreground">No hay colecciones. Crea una abajo.</p>
           ) : (
-            <ul className="max-h-40 overflow-y-auto rounded-md border border-input p-2">
+            <ul className="max-h-40 overflow-y-auto rounded-md border border-input p-2" data-role="collection-checkbox-list">
               {collections.map((c) => (
-                <li key={c.id} className="flex items-center gap-2 py-1">
+                <li key={c.id} className="flex items-center gap-2 py-1" data-collection-name={c.name}>
                   <input
                     type="checkbox"
                     id={`col-${c.id}`}

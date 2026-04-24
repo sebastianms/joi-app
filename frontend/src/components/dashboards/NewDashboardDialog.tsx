@@ -47,6 +47,7 @@ export function NewDashboardDialog({ open, onClose, onCreate }: NewDashboardDial
       aria-modal="true"
       aria-labelledby="new-dashboard-title"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      data-role="new-dashboard-dialog"
     >
       <div className="bg-background rounded-lg shadow-lg w-full max-w-sm p-6">
         <h2 id="new-dashboard-title" className="text-base font-semibold mb-4">

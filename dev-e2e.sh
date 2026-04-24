@@ -12,8 +12,10 @@ cd "$(dirname "$0")"
 
 BACKEND_PORT=8000
 FRONTEND_PORT=3000
+QDRANT_PORT=6333
 BACKEND_LOG=".e2e-backend.log"
 FRONTEND_LOG=".e2e-frontend.log"
+QDRANT_LOG=".e2e-qdrant.log"
 
 cleanup() {
   echo "[dev-e2e] Cleanup…"
@@ -39,8 +41,35 @@ fi
 echo "[dev-e2e] Building widget runtime bundle…"
 (cd frontend && npm run build:widget-runtime --silent)
 
+# Qdrant: reuse if already listening; otherwise launch via docker compose.
+if curl -fsS "http://127.0.0.1:$QDRANT_PORT/readyz" &>/dev/null; then
+  echo "[dev-e2e] Qdrant already reachable on :$QDRANT_PORT — reusing."
+else
+  echo "[dev-e2e] Starting Qdrant on :$QDRANT_PORT via docker compose…"
+  if ! docker compose up -d qdrant >"$QDRANT_LOG" 2>&1; then
+    echo "[dev-e2e] docker compose failed (see $QDRANT_LOG). Start Qdrant manually and re-run."
+    tail -10 "$QDRANT_LOG"
+    exit 1
+  fi
+  echo "[dev-e2e] Waiting for Qdrant…"
+  for i in {1..30}; do
+    if curl -fsS "http://127.0.0.1:$QDRANT_PORT/readyz" &>/dev/null; then
+      echo "[dev-e2e] Qdrant ready."
+      break
+    fi
+    sleep 1
+    if [[ $i -eq 30 ]]; then
+      echo "[dev-e2e] Qdrant failed to start. Tail of $QDRANT_LOG:"
+      tail -30 "$QDRANT_LOG"
+      exit 1
+    fi
+  done
+fi
+
 echo "[dev-e2e] Starting backend on :$BACKEND_PORT with MOCK_LLM_RESPONSES=true…"
-(cd backend && MOCK_LLM_RESPONSES=true .venv/bin/python -m uvicorn app.main:app \
+(cd backend && MOCK_LLM_RESPONSES=true \
+  VECTOR_STORE_ENCRYPTION_KEY="${VECTOR_STORE_ENCRYPTION_KEY:-0000000000000000000000000000000000000000000000000000000000000000}" \
+  .venv/bin/python -m uvicorn app.main:app \
   --host 127.0.0.1 --port $BACKEND_PORT --env-file .env >"../$BACKEND_LOG" 2>&1) &
 BACKEND_PID=$!
 

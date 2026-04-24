@@ -23,13 +23,31 @@ export const QUICKSTART_SESSIONS = [
   `${E2E_SESSION_ID}-incompat`,
 ] as const;
 
+// Feature 005 quickstart — one session per scenario.
+export const FEATURE_005_SESSIONS = [
+  `${E2E_SESSION_ID}-save-widget`,
+  `${E2E_SESSION_ID}-dashboard-layout`,
+  `${E2E_SESSION_ID}-recover-widget`,
+  `${E2E_SESSION_ID}-cache-hit`,
+  `${E2E_SESSION_ID}-byo-vector`,
+  `${E2E_SESSION_ID}-cache-offline`,
+  `${E2E_SESSION_ID}-schema-invalidation`,
+  `${E2E_SESSION_ID}-dashboard-missing-conn`,
+] as const;
+
 const PYTHON = path.resolve(__dirname, "../../backend/.venv/bin/python");
 const SEED_SCRIPT = path.resolve(__dirname, "seed-e2e-db.py");
 
 export default async function globalSetup() {
   execFileSync(
     PYTHON,
-    [SEED_SCRIPT, SALES_DB_PATH, E2E_SESSION_ID, ...QUICKSTART_SESSIONS],
+    [
+      SEED_SCRIPT,
+      SALES_DB_PATH,
+      E2E_SESSION_ID,
+      ...QUICKSTART_SESSIONS,
+      ...FEATURE_005_SESSIONS,
+    ],
     { stdio: "inherit" },
   );
 }

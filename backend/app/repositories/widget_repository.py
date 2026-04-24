@@ -21,6 +21,31 @@ class WidgetRepository:
         )
         return result.scalar_one_or_none()
 
+    async def upsert_from_spec(self, spec, spec_json: str) -> WidgetORM:
+        """Persist the widget row if it doesn't exist yet. Idempotent.
+
+        Widgets are emitted by the architect and kept in-memory until saved.
+        This ensures the row exists so POST /widgets/{id}/save can mutate it
+        without 404ing. Called once per successful generation.
+        """
+        existing = await self._db.execute(
+            select(WidgetORM).where(WidgetORM.id == spec.widget_id)
+        )
+        if existing.scalar_one_or_none() is not None:
+            return existing.scalar_one()
+        row = WidgetORM(
+            id=spec.widget_id,
+            session_id=spec.session_id,
+            extraction_id=spec.extraction_id,
+            widget_type=spec.widget_type.value,
+            selection_source=spec.selection_source.value,
+            render_mode=spec.render_mode.value,
+            spec_json=spec_json,
+        )
+        self._db.add(row)
+        await self._db.flush()
+        return row
+
     async def list_saved(self, session_id: str) -> list[WidgetORM]:
         result = await self._db.execute(
             select(WidgetORM).where(

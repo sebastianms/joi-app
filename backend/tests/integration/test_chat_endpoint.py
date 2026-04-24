@@ -55,11 +55,17 @@ class _StubCacheService:
         return None
 
 
+class _StubWidgetRepo:
+    async def upsert_from_spec(self, *_args, **_kwargs):
+        return None
+
+
 class _StubAgents:
     def __init__(self) -> None:
         self.data = _StubDataAgent()
         self.recovery = _StubRecoveryService()
         self.cache = _StubCacheService()
+        self.widgets = _StubWidgetRepo()
 
 
 @pytest.fixture(autouse=True)

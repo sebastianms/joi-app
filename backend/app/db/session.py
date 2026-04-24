@@ -13,6 +13,16 @@ AsyncSessionFactory = async_sessionmaker(
 
 
 async def get_db() -> AsyncSession:
-    """FastAPI dependency que provee una sesión de base de datos por request."""
+    """FastAPI dependency que provee una sesión de base de datos por request.
+
+    Commits on successful exit so endpoints don't need to call `db.commit()`
+    explicitly after every write. Rolls back on exception so partial state is
+    never persisted.
+    """
     async with AsyncSessionFactory() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise

@@ -90,6 +90,9 @@ export function CollectionManager({
       {widgets.map((widget) => (
         <div
           key={widget.id}
+          data-role="collection-widget-item"
+          data-widget-name={widget.display_name}
+          data-widget-id={widget.id}
           className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2"
         >
           <span className="flex-1 text-sm truncate">{widget.display_name}</span>

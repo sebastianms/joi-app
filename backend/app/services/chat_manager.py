@@ -10,6 +10,7 @@ from app.models.chat import CacheSuggestion, ChatRequest, ChatResponse, IntentTy
 from app.models.extraction import AgentTrace, DataExtraction, ErrorCode, ExtractionError, QueryPlan, SourceType
 from app.models.widget import WidgetSpec, WidgetType
 from app.models.widget_cache import CacheIndexRequest
+from app.repositories.widget_repository import WidgetRepository
 from app.services.data_agent_service import DataAgentService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
@@ -69,6 +70,7 @@ class ChatManagerService:
         data_agent: DataAgentService,
         widget_recovery: WidgetRecoveryService,
         cache_service: Optional[CacheService] = None,
+        widget_repo: Optional[WidgetRepository] = None,
     ) -> ChatResponse:
         user_message = Message(role=Role.USER, content=request.message)
         session = self._history[request.session_id]
@@ -93,7 +95,7 @@ class ChatManagerService:
         if triage_result.intent_type == IntentType.COMPLEX:
             turn = await self._run_extraction(request, data_agent)
             return await self._respond_with_extraction(
-                request, session, turn, triage_result.intent_type, cache_service
+                request, session, turn, triage_result.intent_type, cache_service, widget_repo
             )
 
         response_text = self._llm.complete(list(session))
@@ -148,6 +150,7 @@ class ChatManagerService:
         turn: ExtractionTurn,
         intent_type: IntentType,
         cache_service: Optional[CacheService] = None,
+        widget_repo: Optional[WidgetRepository] = None,
     ) -> ChatResponse:
         if _widget_eligible(turn.extraction):
             self._last_extraction[request.session_id] = turn.extraction
@@ -159,7 +162,7 @@ class ChatManagerService:
             cache_suggestion = await self._try_cache_hit(request, turn.extraction, cache_service)
 
         if cache_suggestion is None:
-            widget_spec = await self._maybe_build_widget(request, turn, cache_service)
+            widget_spec = await self._maybe_build_widget(request, turn, cache_service, widget_repo)
 
         response_text = _format_extraction_response(turn.extraction)
         assistant_message = Message(
@@ -270,6 +273,7 @@ class ChatManagerService:
         request: ChatRequest,
         turn: ExtractionTurn,
         cache_service: Optional[CacheService] = None,
+        widget_repo: Optional[WidgetRepository] = None,
     ) -> Optional[WidgetSpec]:
         if not _widget_eligible(turn.extraction):
             return None
@@ -285,6 +289,11 @@ class ChatManagerService:
             return None
         if outcome.trace is not None:
             turn.trace.widget_generation = outcome.trace
+        if outcome.spec and widget_repo:
+            try:
+                await widget_repo.upsert_from_spec(outcome.spec, outcome.spec.model_dump_json())
+            except Exception:
+                _logger.exception("Failed to persist widget row; save/cache will degrade.")
         if outcome.spec and cache_service:
             await self._index_in_cache(request, turn.extraction, outcome.spec, cache_service)
         return outcome.spec

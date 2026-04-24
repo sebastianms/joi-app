@@ -27,6 +27,9 @@ export function DashboardItem({ item, onRemove }: DashboardItemProps) {
       ref={setNodeRef}
       style={style}
       className="bg-card border border-border rounded-lg flex flex-col min-h-[140px]"
+      data-role="dashboard-item"
+      data-widget-id={item.widget_id}
+      data-grid-width={item.width}
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span
