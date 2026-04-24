@@ -1,6 +1,6 @@
 # Tasks: Feature 005 — Dashboards, Collections & RAG Cache
 
-**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1–US5 pendientes
+**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2–US5 pendientes
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con hermanas (distinto archivo, sin dependencias).
@@ -55,12 +55,12 @@
 
 ## User Story 1 — Guardar widget en colecciones (P1)
 
-- [ ] T050 [P] [US1] Endpoint `POST /api/widgets/{id}/save` en [backend/app/api/widgets.py](backend/app/api/widgets.py): marca `is_saved`, asigna `display_name`, asocia a `collection_ids` (multi, Q3 N:M). Valida que el widget tiene datos válidos (rechaza errores/fallbacks).
-- [ ] T051 [P] [US1] Endpoint `DELETE /api/widgets/{id}/save` en mismo archivo: revierte, falla 409 si el widget está en algún dashboard.
-- [ ] T052 [P] [US1] Endpoint `POST /api/collections` y `GET /api/collections` en nuevo archivo [backend/app/api/collections.py](backend/app/api/collections.py).
-- [ ] T053 [US1] Frontend: componente [frontend/src/components/collections/SaveWidgetDialog.tsx](frontend/src/components/collections/SaveWidgetDialog.tsx) con multi-select de colecciones, creación inline, validación de nombre duplicado.
-- [ ] T054 [US1] Integrar botón "Guardar" en el toolbar del widget renderizado (actualizar componente del canvas existente con data-role `widget-save-button`).
-- [ ] T055 [US1] Hook [frontend/src/hooks/useCollections.ts](frontend/src/hooks/useCollections.ts) para CRUD básico y cache local (SWR-like).
+- [x] T050 [P] [US1] Endpoint `POST /api/widgets/{id}/save` en [backend/app/api/endpoints/widgets.py](backend/app/api/endpoints/widgets.py): marca `is_saved`, asigna `display_name`, asocia a `collection_ids` (multi, Q3 N:M). Valida que el widget tiene datos válidos (rechaza fallbacks).
+- [x] T051 [P] [US1] Endpoint `DELETE /api/widgets/{id}/save` en mismo archivo: revierte, falla 409 si el widget está en algún dashboard.
+- [x] T052 [P] [US1] Endpoint `POST /api/collections` y `GET /api/collections` en nuevo archivo [backend/app/api/endpoints/collections.py](backend/app/api/endpoints/collections.py).
+- [x] T053 [US1] Frontend: componente [frontend/src/components/collections/SaveWidgetDialog.tsx](frontend/src/components/collections/SaveWidgetDialog.tsx) con multi-select de colecciones, creación inline, validación de nombre duplicado.
+- [x] T054 [US1] Integrar botón "Guardar" en el toolbar del widget renderizado (actualizar componente del canvas existente con data-role `widget-save-button`).
+- [x] T055 [US1] Hook [frontend/src/hooks/use-collections.ts](frontend/src/hooks/use-collections.ts) para CRUD básico y cache local (SWR-like).
 
 ---
 
