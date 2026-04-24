@@ -6,15 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardGrid } from "@/components/dashboards/DashboardGrid";
 import { useDashboards, type LayoutItemUpdate } from "@/hooks/useDashboards";
 import { useCollections } from "@/hooks/use-collections";
-
-function getSessionId(): string {
-  if (typeof window === "undefined") return "";
-  const existing = localStorage.getItem("joi_session_id");
-  if (existing) return existing;
-  const id = crypto.randomUUID();
-  localStorage.setItem("joi_session_id", id);
-  return id;
-}
+import { getSessionId } from "@/lib/session";
 
 export default function DashboardPage() {
   const params = useParams();

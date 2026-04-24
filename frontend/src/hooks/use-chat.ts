@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { AgentTrace, DataExtraction } from "@/types/extraction";
 import type { WidgetSpec } from "@/types/widget";
+import { getSessionId } from "@/lib/session";
 
 export type ChatRole = "user" | "assistant";
 export type IntentType = "simple" | "complex";
@@ -35,27 +36,11 @@ export interface UseChatResult {
 
 const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api";
 
-function generateId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
 export function useChat(): UseChatResult {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionId] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const existing = localStorage.getItem("joi_session_id");
-      if (existing) return existing;
-      const id = generateId();
-      localStorage.setItem("joi_session_id", id);
-      return id;
-    }
-    return generateId();
-  });
+  const [sessionId] = useState<string>(getSessionId);
   const sessionIdRef = useRef<string>(sessionId);
 
   const apiUrl = useMemo(
