@@ -1,6 +1,6 @@
 # Tasks: Feature 005 — Dashboards, Collections & RAG Cache
 
-**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2–US5 pendientes
+**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3–US5 pendientes
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con hermanas (distinto archivo, sin dependencias).
@@ -66,11 +66,11 @@
 
 ## User Story 2 — Administrar colecciones (P1)
 
-- [ ] T060 [P] [US2] Endpoints `PATCH /api/collections/{id}`, `DELETE /api/collections/{id}` en [backend/app/api/collections.py](backend/app/api/collections.py).
-- [ ] T061 [P] [US2] Endpoints `POST /api/collections/{id}/widgets` (bulk add), `DELETE /api/collections/{id}/widgets/{widget_id}` en mismo archivo.
-- [ ] T062 [US2] Frontend: página [frontend/src/app/collections/page.tsx](frontend/src/app/collections/page.tsx) con lista de colecciones, widgets por colección, acciones rename/delete/move.
-- [ ] T063 [P] [US2] Componente [frontend/src/components/collections/CollectionList.tsx](frontend/src/components/collections/CollectionList.tsx).
-- [ ] T064 [P] [US2] Componente [frontend/src/components/collections/CollectionManager.tsx](frontend/src/components/collections/CollectionManager.tsx) para operaciones de widget (mover entre colecciones, preview del widget).
+- [x] T060 [P] [US2] Endpoints `PATCH /api/collections/{id}`, `DELETE /api/collections/{id}` en [backend/app/api/endpoints/collections.py](backend/app/api/endpoints/collections.py).
+- [x] T061 [P] [US2] Endpoints `GET /api/collections/{id}/widgets`, `POST /api/collections/{id}/widgets` (bulk add), `DELETE /api/collections/{id}/widgets/{widget_id}` en mismo archivo.
+- [x] T062 [US2] Frontend: página [frontend/src/app/collections/page.tsx](frontend/src/app/collections/page.tsx) con lista de colecciones, widgets por colección, acciones rename/delete/move.
+- [x] T063 [P] [US2] Componente [frontend/src/components/collections/CollectionList.tsx](frontend/src/components/collections/CollectionList.tsx).
+- [x] T064 [P] [US2] Componente [frontend/src/components/collections/CollectionManager.tsx](frontend/src/components/collections/CollectionManager.tsx) para operaciones de widget (mover entre colecciones, preview del widget).
 
 ---
 
