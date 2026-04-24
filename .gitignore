@@ -1,2 +1,3 @@
 backend/data/joi.db
 .e2e-*.log
+qdrant/storage/

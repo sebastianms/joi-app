@@ -11,6 +11,15 @@ litellm==1.66.3
 jsonpath-ng==1.7.0
 sqlparse==0.5.3
 
+# Vector Store & RAG Cache (Feature 005)
+langchain-core==0.3.59
+langchain-community==0.3.23
+langchain-qdrant==0.2.0
+qdrant-client==1.12.1
+cryptography==44.0.3
+# Extras opcionales BYO vector store (instalar manualmente según proveedor elegido):
+# langchain-chroma, langchain-pinecone, langchain-weaviate, langchain-postgres
+
 # Testing
 pytest==8.3.5
 pytest-asyncio==0.26.0
