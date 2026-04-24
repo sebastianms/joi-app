@@ -27,12 +27,15 @@
 - [x] Desarrollo del Agente Arquitecto/Generador para la creación de código del widget — Feature 004 (US1–US2). Selector determinístico (R1), generador LLM, fallback tabular, preferencia explícita del usuario con triage extendido.
 - [x] Motor de sanitización e inyección dinámica del widget en el Canvas derecho — Feature 004 (US3–US4). iframe sandbox CSP (R4), protocolo postMessage, timeout 4s, fallback universal, error banner con continuidad de sesión. Polish pendiente (T901–T910).
 
-## Phase 6: Dashboards, Collections & RAG Cache (Shippable Slice 4)
-- [ ] Funcionalidad para etiquetar y guardar widgets en colecciones.
-- [ ] Implementación de Dashboards personalizados reordenables.
-- [ ] Integración final del sistema RAG como memoria caché de widgets.
+## Phase 6: Dashboards, Collections & RAG Cache (Shippable Slice 4) — Feature 005
+Carpeta: [specs/005-dashboards-collections/](005-dashboards-collections/). Spec, Plan, Tasks listos (2026-04-24).
+- [ ] Funcionalidad para etiquetar y guardar widgets en colecciones (US1–US2, relación widget ↔ colección N:M).
+- [ ] Implementación de Dashboards personalizados reordenables con grid drag-and-drop (US3).
+- [ ] Recuperación de widgets guardados desde el chat por nombre (US4).
+- [ ] Integración del sistema RAG como memoria caché de widgets (US5) — **activado en esta feature** sobre LangChain, Qdrant por defecto en Docker, BYO vector store opcional (Chroma/Pinecone/Weaviate/PGVector). Supersedencia parcial de ADL-010 documentada en ADL-023 (por crear al cerrar el Implement).
 
-## Phase 7: Visual Redesign & UX Polish — Feature 005
+## Phase 7: Visual Redesign & UX Polish — Feature 006
+Carpeta: [specs/006-visual-redesign/](006-visual-redesign/). Spec, Clarify, Plan y Tasks listos (2026-04-24). Incluye cierre del backlog diferido de Feature 004 (T129–T131 adaptadores UI; T501–T507 render-mode selector) — supersede ADL-022 al completar Implement.
 - [ ] Identidad visual Blade Runner 2049: paleta dark-first, tokens CSS, glow/glass acotado (US1).
 - [ ] Layout dual rediseñado: header, separador de panels, responsive mobile (US2).
 - [ ] Componentes de chat rediseñados: burbujas, AgentTrace, WidgetGenerationTrace (US3).
@@ -42,4 +45,4 @@
   - Incluye selector de render-mode (shadcn/bootstrap/heroui + Design System deshabilitado) — Feature 004 T501–T507 diferidas.
   - Incluye implementación de adaptadores UI para el runtime del widget (T129–T131) y cobertura de Escenarios 6–7 y 11–12 del quickstart de Feature 004 (T307, T507).
 
-> **Nota**: La infraestructura RAG (US5 — memoria activable por sesión) **no está operativa en el MVP**. El campo `UserSession.rag_enabled` se mantiene como forward-compat. El stack RAG (vector store, few-shot memory) se decide cuando US5 se reactive — ver ADL-010.
+> **Nota (actualizada 2026-04-24)**: La infraestructura RAG se **activa en Feature 005 (Phase 6)** como caché semántico de widgets. ADL-010 queda parcialmente superseded por ADL-023 (nombre provisional, se crea al cerrar el Implement): LangChain como capa de abstracción, Qdrant default (Docker), BYO vector store opcional (Chroma/Pinecone/Weaviate/PGVector), embeddings `text-embedding-3-small` vía LiteLLM controlados por Joi. Ver [specs/005-dashboards-collections/research.md](005-dashboards-collections/research.md) para detalles.

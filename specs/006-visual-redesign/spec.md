@@ -1,4 +1,4 @@
-# Spec: Feature 005 — Visual Redesign & UX Polish
+# Spec: Feature 006 — Visual Redesign & UX Polish
 
 **Fase**: Phase 7 — Visual Identity & UX  
 **Prioridad**: P2 (post Feature 004)  
@@ -153,5 +153,17 @@ Antes de crear componentes nuevos, se extienden los existentes con las clases de
 
 - Lighthouse Accessibility ≥ 90 (los colores de contraste deben cumplir WCAG AA).
 - Ninguna dependencia nueva en `package.json`.
-- Bundle size del frontend no aumenta más de 10KB gzipped respecto al estado pre-005.
+- Bundle size del frontend no aumenta más de 10KB gzipped respecto al estado pre-006. Baseline = tamaño gzipped del build de `main` al 2026-04-24; verificación **manual** en el PR (sin Action dedicada).
 - Los 22 tests E2E existentes siguen pasando sin modificación (los `data-role` y `aria-label` se preservan).
+
+---
+
+## Clarifications
+
+### Session 2026-04-24
+
+- **Q1 — Paleta CSS**: Los valores propuestos (bg #0a0d12, surface #111520, accent #00d4ff, warm #f5a623) NO se congelan al iniciar. Antes del Plan, se produce un **mockup visual** (screenshot/componente de referencia renderizado) con la paleta aplicada al layout dual y al chat. El usuario valida el mockup y recién ahí se emiten los tokens CSS definitivos en [frontend/src/app/globals.css](frontend/src/app/globals.css). La decisión sobre nombres de tokens (D4) sí queda como está en el spec.
+- **Q2 — Breakpoint responsive**: En `< 768px` (breakpoint `md` de Tailwind) el layout cambia de dual-panel a **tabs** para alternar entre chat y canvas. En `≥ 768px` siempre dual-panel. Contratos: el componente raíz expone un hook `useLayoutMode()` que devuelve `"dual" | "tabs"`, y los tabs tienen `data-role="layout-tab-chat"` / `data-role="layout-tab-canvas"`.
+- **Q3 — Trigger del onboarding wizard**: Se activa **solo** cuando `localStorage.getItem("joi_session_id") === null` (primera visita absoluta). Sessions existentes NO lo ven automáticamente. Botón "¿Cómo funciona?" del header lo reabre manualmente. La flag `onboarding_completed` del cliente se guarda también en `localStorage`, no en la DB (no se requiere columna en `UserSession`).
+- **Q4 — Render-mode selector y adaptadores UI (T129–T131, T501–T507 de Feature 004)**: **Entran en el alcance de Feature 006 Visual Redesign**. US6 ahora incluye: (a) selector visual shadcn/bootstrap/heroui + Design System deshabilitado en el Setup redesignado, (b) implementación de adaptadores UI para el runtime del widget (T129–T131 Feature 004), (c) cobertura de Escenarios 6–7 y 11–12 del quickstart de Feature 004. El backlog diferido de 004 queda cerrado al completar esta feature. ADL-022 (render-mode-profile-deferred) pasa a "Superseded by Feature 006".
+- **Q5 — Bundle size budget**: El baseline es el tamaño gzipped del build de `main` al **2026-04-24**. Se documenta el valor exacto en el Plan (tras correr `npm run build` sobre el HEAD actual). Verificación **manual** por el PR reviewer — no se añade GitHub Action dedicada. Si se excede +10KB, el PR se bloquea hasta optimización.
