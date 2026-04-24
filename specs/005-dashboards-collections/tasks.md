@@ -129,7 +129,7 @@
 - [ ] T200 Health endpoint global `/api/health` incluye sub-status del vector store activo (provider + healthy).
 - [ ] T201 [P] Documentar en [README.md](README.md) el flag BYO vector store y pasos para configurar Pinecone/Chroma/Weaviate/PGVector.
 - [ ] T202 [P] Actualizar [backend/app/services/triage/README](backend/app/services/triage/) (si existe) con los nuevos patrones de recuperación.
-- [ ] T203 Playwright E2E: automatizar Escenarios 1, 2, 4, 6 de [quickstart.md](specs/005-dashboards-collections/quickstart.md).
+- [ ] T203 Playwright E2E: automatizar Escenarios 1, 2, 4, 6 de [quickstart.md](specs/005-dashboards-collections/quickstart.md) y correr toda la suit de tests E2E.
 - [ ] T204 [P] Unit tests backend: `cache_service` (hit, miss, invalidación por schema, invalidación por connection).
 - [ ] T205 [P] Unit tests backend: repositorios de collections y dashboards (CRUD, cascade, N:M).
 - [ ] T206 Medir latencia de cache lookup en p95; ajustar si excede 300ms (SC-006).

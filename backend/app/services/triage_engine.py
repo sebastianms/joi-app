@@ -12,7 +12,7 @@ _SIMPLE_PATTERNS: list[str] = [
 ]
 
 _COMPLEX_KEYWORDS: list[str] = [
-    "muestra", "muéstrame", "show", "dame", "give me",
+    "dame", "give me",
     "gráfica", "grafica", "gráfico", "chart", "table", "tabla",
     "lista", "list", "visualiza", "visualize",
     "consulta", "query", "datos", "data", "reporte", "report",
@@ -34,6 +34,12 @@ _WIDGET_PREFERENCE_PATTERNS: list[tuple[re.Pattern[str], WidgetType]] = [
     (re.compile(r"\b(heatmap|mapa de calor)\b", re.IGNORECASE), WidgetType.HEATMAP),
     (re.compile(r"\b([aá]rea( chart)?|gr[aá]fico de [aá]rea)\b", re.IGNORECASE), WidgetType.AREA_CHART),
 ]
+
+_RECOVERY_PATTERN = re.compile(
+    r"^\s*(?:mu[eé]stra(?:me)?|abre|trae|ens[eé][ñn]a(?:me)?)"
+    r"(?:\s+(?:el|la|los|las|un|una))?\s+(.+)",
+    re.IGNORECASE,
+)
 
 _COMPILED_SIMPLE = [re.compile(p, re.IGNORECASE) for p in _SIMPLE_PATTERNS]
 
@@ -96,6 +102,18 @@ class TriageEngineService:
                     suggested_route="widget_preference",
                     preferred_widget_type=preferred,
                 )
+
+        # Recovery: only reached when message has no complex keywords and no widget
+        # preference match, so data queries like "muéstrame las ventas" go to COMPLEX
+        # while name lookups like "abre el reporte de enero" reach this branch.
+        recovery_match = _RECOVERY_PATTERN.match(message)
+        if recovery_match:
+            return TriageResult(
+                intent_type=IntentType.SIMPLE,
+                confidence=0.95,
+                suggested_route="widget_recovery",
+                recovered_widget_name=recovery_match.group(1).strip(),
+            )
 
         return TriageResult(
             intent_type=IntentType.SIMPLE,

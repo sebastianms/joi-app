@@ -11,6 +11,9 @@ litellm==1.66.3
 jsonpath-ng==1.7.0
 sqlparse==0.5.3
 
+# Widget Recovery (Feature 005 — US4)
+rapidfuzz==3.13.0
+
 # Vector Store & RAG Cache (Feature 005)
 langchain-core==0.3.59
 langchain-community==0.3.23

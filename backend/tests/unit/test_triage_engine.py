@@ -87,3 +87,31 @@ def test_long_message_with_complex_keyword(engine: TriageEngineService):
     long_msg = "necesito que " + "analices " * 20 + "los datos de ventas del año pasado"
     result = engine.classify(long_msg)
     assert result.intent_type == IntentType.COMPLEX
+
+
+# --- Recovery route (US4) ---
+
+def test_abre_without_complex_keywords_routes_to_recovery(engine: TriageEngineService):
+    # "balance" is not a complex keyword — should reach the recovery branch
+    result = engine.classify("abre el balance del mes")
+    assert result.suggested_route == "widget_recovery"
+    assert result.recovered_widget_name == "balance del mes"
+
+
+def test_trae_routes_to_recovery(engine: TriageEngineService):
+    result = engine.classify("trae el análisis mensual")
+    assert result.suggested_route == "widget_recovery"
+    assert "análisis mensual" in result.recovered_widget_name
+
+
+def test_muestrame_with_complex_keyword_stays_complex(engine: TriageEngineService):
+    result = engine.classify("muéstrame las ventas por mes")
+    assert result.intent_type == IntentType.COMPLEX
+    assert result.suggested_route == "agent_pipeline"
+
+
+def test_recovery_name_is_extracted_correctly(engine: TriageEngineService):
+    # Name must not contain complex keywords so it falls through to recovery
+    result = engine.classify("muéstrame el proyección mensual")
+    assert result.suggested_route == "widget_recovery"
+    assert result.recovered_widget_name == "proyección mensual"

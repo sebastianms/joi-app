@@ -8,6 +8,11 @@ import { getSessionId } from "@/lib/session";
 export type ChatRole = "user" | "assistant";
 export type IntentType = "simple" | "complex";
 
+export interface WidgetSummary {
+  id: string;
+  display_name: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
@@ -16,6 +21,8 @@ export interface ChatMessage {
   extraction?: DataExtraction;
   trace?: AgentTrace;
   widgetSpec?: WidgetSpec;
+  recoveredWidget?: WidgetSummary;
+  candidates?: WidgetSummary[];
 }
 
 interface ChatResponsePayload {
@@ -24,6 +31,8 @@ interface ChatResponsePayload {
   extraction?: DataExtraction;
   trace?: AgentTrace;
   widget_spec?: WidgetSpec;
+  recovered_widget?: WidgetSummary;
+  candidates?: WidgetSummary[];
 }
 
 export interface UseChatResult {
@@ -89,6 +98,8 @@ export function useChat(): UseChatResult {
           extraction: data.extraction,
           trace: data.trace,
           widgetSpec: data.widget_spec,
+          recoveredWidget: data.recovered_widget,
+          candidates: data.candidates,
         };
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (err) {

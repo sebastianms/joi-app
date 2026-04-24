@@ -1,9 +1,9 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from app.api.endpoints.chat import get_chat_manager, get_data_agent
+from app.api.endpoints.chat import RequestAgents, get_chat_manager
 from app.main import app
-from app.models.chat import Message
+from app.models.chat import Message, WidgetSummary
 from app.models.extraction import (
     AgentTrace,
     DataExtraction,
@@ -25,9 +25,7 @@ class _EchoStubLLM(LLMGateway):
 
 
 class _StubDataAgent:
-    async def extract(
-        self, session_id: str, prompt: str
-    ) -> tuple[DataExtraction, AgentTrace]:
+    async def extract(self, session_id: str, prompt: str) -> tuple[DataExtraction, AgentTrace]:
         extraction = DataExtraction(
             session_id=session_id,
             connection_id="__none__",
@@ -35,17 +33,21 @@ class _StubDataAgent:
             query_plan=QueryPlan(language="sql", expression=""),
             row_count=0,
             status="error",
-            error=ExtractionError(
-                code=ErrorCode.NO_CONNECTION,
-                message="No hay una fuente de datos activa.",
-            ),
+            error=ExtractionError(code=ErrorCode.NO_CONNECTION, message="No hay una fuente de datos activa."),
         )
-        trace = AgentTrace(
-            extraction_id=extraction.extraction_id,
-            pipeline="sql",
-            query_display="",
-        )
+        trace = AgentTrace(extraction_id=extraction.extraction_id, pipeline="sql", query_display="")
         return extraction, trace
+
+
+class _StubRecoveryService:
+    async def find(self, session_id: str, name_query: str) -> tuple[WidgetSummary | None, list[WidgetSummary]]:
+        return None, []
+
+
+class _StubAgents:
+    def __init__(self) -> None:
+        self.data = _StubDataAgent()
+        self.recovery = _StubRecoveryService()
 
 
 @pytest.fixture(autouse=True)
@@ -54,10 +56,10 @@ def _override_dependencies():
         triage=TriageEngineService(),
         llm=_EchoStubLLM(),
     )
-    app.dependency_overrides[get_data_agent] = lambda: _StubDataAgent()
+    app.dependency_overrides[RequestAgents] = lambda: _StubAgents()
     yield
     app.dependency_overrides.pop(get_chat_manager, None)
-    app.dependency_overrides.pop(get_data_agent, None)
+    app.dependency_overrides.pop(RequestAgents, None)
 
 
 @pytest.mark.asyncio
@@ -106,19 +108,15 @@ async def test_chat_default_simple_intent():
 
 @pytest.mark.asyncio
 async def test_chat_validation_empty_message():
-    payload = {"session_id": "s4", "message": ""}
-
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        response = await client.post("/api/chat/messages", json=payload)
+        response = await client.post("/api/chat/messages", json={"session_id": "s4", "message": ""})
 
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_chat_validation_missing_session_id():
-    payload = {"message": "hola"}
-
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        response = await client.post("/api/chat/messages", json=payload)
+        response = await client.post("/api/chat/messages", json={"message": "hola"})
 
     assert response.status_code == 422

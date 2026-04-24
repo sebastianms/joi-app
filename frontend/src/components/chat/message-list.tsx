@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import type { ChatMessage } from "@/hooks/use-chat";
+import type { ChatMessage, WidgetSummary } from "@/hooks/use-chat";
 import { AgentTraceBlock } from "./agent-trace-block";
 
 interface MessageListProps {
@@ -90,7 +90,48 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             extraction={message.extraction}
           />
         )}
+        {!isUser && message.recoveredWidget && (
+          <RecoveredWidgetCard widget={message.recoveredWidget} />
+        )}
+        {!isUser && message.candidates && message.candidates.length > 0 && (
+          <CandidateList candidates={message.candidates} />
+        )}
       </div>
+    </div>
+  );
+}
+
+function RecoveredWidgetCard({ widget }: { widget: WidgetSummary }) {
+  return (
+    <div className="mt-2 flex items-center gap-2 rounded border border-border bg-background px-3 py-2 text-xs">
+      <span className="flex-1 truncate font-medium">{widget.display_name}</span>
+      <Link
+        href={`/?recovered_widget=${widget.id}`}
+        className="text-primary underline hover:opacity-80 shrink-0"
+      >
+        Abrir
+      </Link>
+    </div>
+  );
+}
+
+function CandidateList({ candidates }: { candidates: WidgetSummary[] }) {
+  return (
+    <div className="mt-2 flex flex-col gap-1">
+      {candidates.map((w) => (
+        <div
+          key={w.id}
+          className="flex items-center gap-2 rounded border border-border bg-background px-3 py-1.5 text-xs"
+        >
+          <span className="flex-1 truncate">{w.display_name}</span>
+          <Link
+            href={`/?recovered_widget=${w.id}`}
+            className="text-primary underline hover:opacity-80 shrink-0"
+          >
+            Abrir
+          </Link>
+        </div>
+      ))}
     </div>
   );
 }

@@ -27,12 +27,18 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1)
 
 
+class WidgetSummary(BaseModel):
+    id: str
+    display_name: str
+
+
 class TriageResult(BaseModel):
     intent_type: IntentType
     confidence: float = Field(ge=0.0, le=1.0)
     matched_pattern: Optional[str] = None
     suggested_route: str
     preferred_widget_type: Optional["WidgetType"] = None
+    recovered_widget_name: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
@@ -42,6 +48,8 @@ class ChatResponse(BaseModel):
     trace: Optional["AgentTrace"] = None
     widget_spec: Optional["WidgetSpec"] = None
     render_mode_profile: Optional["RenderModeProfileRef"] = None
+    recovered_widget: Optional[WidgetSummary] = None
+    candidates: Optional[list[WidgetSummary]] = None
 
     model_config = {"populate_by_name": True}
 

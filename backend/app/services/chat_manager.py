@@ -9,6 +9,7 @@ from app.models.widget import WidgetSpec, WidgetType
 from app.services.data_agent_service import DataAgentService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
+from app.services.widget_recovery_service import WidgetRecoveryService
 from app.services.widget.architect_service import (
     ArchitectOutcome,
     ArchitectRequest,
@@ -49,7 +50,7 @@ class ChatManagerService:
         self._last_extraction: LastExtractionCache = {}
 
     async def handle(
-        self, request: ChatRequest, data_agent: DataAgentService
+        self, request: ChatRequest, data_agent: DataAgentService, widget_recovery: WidgetRecoveryService
     ) -> ChatResponse:
         user_message = Message(role=Role.USER, content=request.message)
         session = self._history[request.session_id]
@@ -57,6 +58,9 @@ class ChatManagerService:
 
         has_prior = request.session_id in self._last_extraction
         triage_result = self._triage.classify(request.message, has_prior_extraction=has_prior)
+
+        if triage_result.suggested_route == "widget_recovery" and triage_result.recovered_widget_name:
+            return await self._handle_recovery(request, triage_result.recovered_widget_name, widget_recovery)
 
         # US2: when the user expresses a widget-type preference AND we have a prior
         # extraction, regenerate the widget from cache without re-querying the data
@@ -79,6 +83,32 @@ class ChatManagerService:
             response=response_text,
             intent_type=triage_result.intent_type,
         )
+
+    async def _handle_recovery(
+        self, request: ChatRequest, name_query: str, widget_recovery: WidgetRecoveryService
+    ) -> ChatResponse:
+        session = self._history[request.session_id]
+        match, candidates = await widget_recovery.find(request.session_id, name_query)
+        if match:
+            response_text = f"Encontré el widget \"{match.display_name}\"."
+            session.append(Message(role=Role.ASSISTANT, content=response_text))
+            return ChatResponse(
+                response=response_text,
+                intent_type=IntentType.SIMPLE,
+                recovered_widget=match,
+            )
+        if candidates:
+            names = ", ".join(f'"{c.display_name}"' for c in candidates)
+            response_text = f"Encontré varios widgets que podrían coincidir: {names}. ¿Cuál quieres abrir?"
+            session.append(Message(role=Role.ASSISTANT, content=response_text))
+            return ChatResponse(
+                response=response_text,
+                intent_type=IntentType.SIMPLE,
+                candidates=candidates,
+            )
+        response_text = f"No encontré ningún widget guardado con el nombre \"{name_query}\"."
+        session.append(Message(role=Role.ASSISTANT, content=response_text))
+        return ChatResponse(response=response_text, intent_type=IntentType.SIMPLE)
 
     async def _run_extraction(
         self, request: ChatRequest, data_agent: DataAgentService
