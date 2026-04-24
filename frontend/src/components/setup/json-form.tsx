@@ -57,7 +57,8 @@ export function JSONUploadForm() {
       formData.append("name", connectionName)
       formData.append("user_session_id", localStorage.getItem("joi_session_id") ?? "demo-session-123")
 
-      const response = await fetch("http://127.0.0.1:8000/api/connections/json", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api";
+      const response = await fetch(`${apiUrl}/connections/json`, {
         method: "POST",
         body: formData,
       })
