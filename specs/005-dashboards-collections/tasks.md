@@ -1,6 +1,6 @@
 # Tasks: Feature 005 — Dashboards, Collections & RAG Cache
 
-**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 ✅ | Polish pendiente
+**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 ✅ | Polish ✅
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con hermanas (distinto archivo, sin dependencias).
@@ -128,7 +128,7 @@
 
 - [x] T200 Health endpoint global `/api/health` incluye sub-status del vector store activo (provider + healthy).
 - [x] T201 [P] Documentar en [README.md](README.md) el flag BYO vector store y pasos para configurar Pinecone/Chroma/Weaviate/PGVector.
-- [ ] T202 [P] Actualizar [backend/app/services/triage/README](backend/app/services/triage/) (si existe) con los nuevos patrones de recuperación.
+- [x] T202 [P] Actualizar [backend/app/services/triage/README](backend/app/services/triage/) (si existe) con los nuevos patrones de recuperación. *N/A — no existe directorio `triage/`; la lógica vive en `triage_engine.py` sin README separado.*
 - [x] T203 Playwright E2E: automatizar Escenarios 1, 2, 4, 6 de [quickstart.md](specs/005-dashboards-collections/quickstart.md) y correr toda la suit de tests E2E. *Cubiertos los 8 escenarios del quickstart (Esc 1–8). Suite completa: 35 E2E passing.*
 - [x] T204 [P] Unit tests backend: `cache_service` (hit, miss, invalidación por schema, invalidación por connection). *Adelantado junto al push de coverage a 91.2% (commit 5b6313a).*
 - [x] T205 [P] Unit tests backend: repositorios de collections y dashboards (CRUD, cascade, N:M). *Cubiertos en bloque Foundational + endpoint tests existentes.*
