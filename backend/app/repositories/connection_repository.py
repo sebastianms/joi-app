@@ -30,3 +30,11 @@ class SQLiteConnectionRepository(DataSourceRepository):
             )
         )
         return list(result.scalars().all())
+
+    async def delete(self, connection_id: str) -> bool:
+        connection = await self.find_by_id(connection_id)
+        if connection is None:
+            return False
+        await self._session.delete(connection)
+        await self._session.flush()
+        return True

@@ -12,7 +12,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ title = "Joi Chat", chat }: ChatPanelProps) {
-  const { messages, isSending, error, sendMessage } = chat;
+  const { messages, isSending, error, sendMessage, sessionId } = chat;
 
   return (
     <section
@@ -23,7 +23,12 @@ export function ChatPanel({ title = "Joi Chat", chat }: ChatPanelProps) {
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       </header>
 
-      <MessageList messages={messages} isTyping={isSending} />
+      <MessageList
+        messages={messages}
+        isTyping={isSending}
+        sessionId={sessionId}
+        onSendMessage={sendMessage}
+      />
 
       {error && (
         <Alert variant="destructive" className="mx-3 mb-2">

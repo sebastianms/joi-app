@@ -3,13 +3,16 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import type { ChatMessage, WidgetSummary } from "@/hooks/use-chat";
+import type { ChatMessage, UseChatResult, WidgetSummary } from "@/hooks/use-chat";
 import { AgentTraceBlock } from "./agent-trace-block";
+import { CacheReuseSuggestion } from "./CacheReuseSuggestion";
 
 interface MessageListProps {
   messages: ChatMessage[];
   isTyping?: boolean;
   emptyLabel?: string;
+  sessionId?: string;
+  onSendMessage?: UseChatResult["sendMessage"];
 }
 
 const DEFAULT_EMPTY_LABEL =
@@ -19,6 +22,8 @@ export function MessageList({
   messages,
   isTyping = false,
   emptyLabel = DEFAULT_EMPTY_LABEL,
+  sessionId,
+  onSendMessage,
 }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +46,12 @@ export function MessageList({
       aria-live="polite"
     >
       {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+        <MessageBubble
+          key={message.id}
+          message={message}
+          sessionId={sessionId}
+          onSendMessage={onSendMessage}
+        />
       ))}
       {isTyping && <TypingIndicator />}
       <div ref={bottomRef} />
@@ -65,7 +75,15 @@ function renderWithLinks(text: string) {
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({
+  message,
+  sessionId,
+  onSendMessage,
+}: {
+  message: ChatMessage;
+  sessionId?: string;
+  onSendMessage?: UseChatResult["sendMessage"];
+}) {
   const isUser = message.role === "user";
   return (
     <div
@@ -95,6 +113,16 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         )}
         {!isUser && message.candidates && message.candidates.length > 0 && (
           <CandidateList candidates={message.candidates} />
+        )}
+        {!isUser && message.cacheSuggestion && sessionId && onSendMessage && (
+          <CacheReuseSuggestion
+            suggestion={message.cacheSuggestion}
+            sessionId={sessionId}
+            originalPrompt={message.originalPrompt ?? ""}
+            onGenerateNew={(prompt) =>
+              void onSendMessage(prompt, { skipCache: true })
+            }
+          />
         )}
       </div>
     </div>

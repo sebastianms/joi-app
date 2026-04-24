@@ -11,6 +11,7 @@ from app.services.chat_manager import ChatManagerService
 from app.services.data_agent_service import DataAgentService
 from app.services.llm_gateway import LiteLLMGateway
 from app.services.triage_engine import TriageEngineService
+from app.services.widget_cache.cache_service import CacheService
 from app.services.widget_recovery_service import WidgetRecoveryService
 
 router = APIRouter()
@@ -36,6 +37,7 @@ class RequestAgents:
             sql_adapter=_sql_adapter_singleton,
         )
         self.recovery = WidgetRecoveryService(WidgetRepository(db))
+        self.cache = CacheService(db)
 
 
 @router.post(
@@ -49,4 +51,4 @@ async def send_message(
     manager: ChatManagerService = Depends(get_chat_manager),
     agents: RequestAgents = Depends(),
 ) -> ChatResponse:
-    return await manager.handle(request, agents.data, agents.recovery)
+    return await manager.handle(request, agents.data, agents.recovery, agents.cache)

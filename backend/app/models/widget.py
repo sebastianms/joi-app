@@ -142,4 +142,5 @@ class WidgetGenerationTrace(BaseModel):
     generation_ms: int
     render_ms: Optional[int] = None
     error_code: Optional[WidgetErrorCode] = None
+    source: Literal["cache", "generated", "recovered"] = "generated"
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

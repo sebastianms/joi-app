@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { SQLConnectionForm } from "@/components/setup/sql-form";
 import { JSONUploadForm } from "@/components/setup/json-form";
+import { VectorStoreStep } from "@/components/setup/VectorStoreStep";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SetupPage() {
@@ -26,9 +27,10 @@ export default function SetupPage() {
 
         <div className="w-full max-w-2xl mx-auto">
           <Tabs defaultValue="sql" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="sql">SQL Database</TabsTrigger>
               <TabsTrigger value="json">JSON File</TabsTrigger>
+              <TabsTrigger value="vector-store">Vector Store</TabsTrigger>
             </TabsList>
             <TabsContent value="sql" className="mt-0">
               <div className="bg-white dark:bg-zinc-950 p-6 rounded-xl border shadow-sm">
@@ -38,6 +40,11 @@ export default function SetupPage() {
             <TabsContent value="json" className="mt-0">
               <div className="bg-white dark:bg-zinc-950 p-6 rounded-xl border shadow-sm">
                 <JSONUploadForm />
+              </div>
+            </TabsContent>
+            <TabsContent value="vector-store" className="mt-0">
+              <div className="bg-white dark:bg-zinc-950 p-6 rounded-xl border shadow-sm">
+                <VectorStoreStep />
               </div>
             </TabsContent>
           </Tabs>

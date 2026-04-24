@@ -7,6 +7,7 @@ from app.models.connection import DataSourceConnection, DataSourceType, Connecti
 from app.repositories.connection_repository import SQLiteConnectionRepository
 from app.services.connection_tester import ConnectionTesterService
 from app.services.json_handler import JsonFileService, FileTooLargeError, InvalidJsonError
+from app.services.widget_cache.cache_service import CacheService
 
 router = APIRouter()
 
@@ -112,3 +113,24 @@ async def upload_json_connection(
     saved_connection = await repo.save(new_connection)
 
     return saved_connection
+
+
+@router.delete("/{connection_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_connection(
+    connection_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Delete a connection and soft-invalidate all associated widget cache entries."""
+    repo = SQLiteConnectionRepository(db)
+    connection = await repo.find_by_id(connection_id)
+    if connection is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connection not found")
+
+    cache_service = CacheService(db)
+    await cache_service.invalidate_by_connection(
+        session_id=connection.user_session_id,
+        connection_id=connection_id,
+    )
+
+    await repo.delete(connection_id)
+    await db.commit()

@@ -17,6 +17,46 @@ logger = logging.getLogger(__name__)
 _COLLECTION_NAME = "widget_cache"
 
 
+def validate_vector_store(provider: str, connection_params: dict) -> None:
+    """Ping the vector store with a dummy similarity search.
+
+    Raises RuntimeError with a human-readable message if the provider is
+    unavailable or the required extra is not installed.
+    """
+    import json
+
+    from app.models.vector_store_config import VectorStoreProvider
+    from app.services.embeddings.litellm_embeddings import LiteLLMEmbeddings
+
+    dummy_embeddings = LiteLLMEmbeddings()
+    params_json = json.dumps(connection_params)
+
+    try:
+        vs = build_vector_store_from_params(provider, params_json, dummy_embeddings)
+        vs.similarity_search("joi-validate-ping", k=1)
+    except RuntimeError:
+        raise
+    except Exception as exc:
+        raise RuntimeError(f"Connection test failed: {exc}") from exc
+
+
+def build_vector_store_from_params(
+    provider: str, params_json: str, embeddings: Embeddings
+) -> "VectorStore":
+    """Build a VectorStore directly from provider name + raw params JSON (no ORM)."""
+    if provider == "qdrant":
+        return _build_qdrant_byo(params_json, embeddings)
+    if provider == "chroma":
+        return _build_chroma(params_json, embeddings)
+    if provider == "pinecone":
+        return _build_pinecone(params_json, embeddings)
+    if provider == "weaviate":
+        return _build_weaviate(params_json, embeddings)
+    if provider == "pgvector":
+        return _build_pgvector(params_json, embeddings)
+    raise RuntimeError(f"Unsupported vector store provider: {provider}")
+
+
 def build_vector_store(
     config: "VectorStoreConfigORM | None",
     embeddings: Embeddings,

@@ -1,9 +1,12 @@
 from collections import defaultdict
+import hashlib
+import json
 import logging
+import uuid
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Optional
 
-from app.models.chat import ChatRequest, ChatResponse, IntentType, Message, Role
+from app.models.chat import CacheSuggestion, ChatRequest, ChatResponse, IntentType, Message, Role
 from app.models.extraction import AgentTrace, DataExtraction, ErrorCode, ExtractionError, QueryPlan, SourceType
 from app.models.widget import WidgetSpec, WidgetType
 from app.services.data_agent_service import DataAgentService
@@ -23,6 +26,15 @@ SessionHistory = dict[str, list[Message]]
 LastExtractionCache = dict[str, DataExtraction]
 
 ArchitectFn = Callable[[ArchitectRequest], Awaitable[ArchitectOutcome]]
+
+
+def _schema_hash(extraction: DataExtraction) -> str:
+    """Stable SHA-256 of the column schema — used as cache partition key."""
+    cols = sorted(
+        [{"name": c.name, "type": c.type} for c in extraction.columns],
+        key=lambda c: c["name"],
+    )
+    return hashlib.sha256(json.dumps(cols, separators=(",", ":")).encode()).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -50,7 +62,11 @@ class ChatManagerService:
         self._last_extraction: LastExtractionCache = {}
 
     async def handle(
-        self, request: ChatRequest, data_agent: DataAgentService, widget_recovery: WidgetRecoveryService
+        self,
+        request: ChatRequest,
+        data_agent: DataAgentService,
+        widget_recovery: WidgetRecoveryService,
+        cache_service=None,
     ) -> ChatResponse:
         user_message = Message(role=Role.USER, content=request.message)
         session = self._history[request.session_id]
@@ -74,7 +90,9 @@ class ChatManagerService:
 
         if triage_result.intent_type == IntentType.COMPLEX:
             turn = await self._run_extraction(request, data_agent)
-            return await self._respond_with_extraction(request, session, turn, triage_result.intent_type)
+            return await self._respond_with_extraction(
+                request, session, turn, triage_result.intent_type, cache_service
+            )
 
         response_text = self._llm.complete(list(session))
         assistant_message = Message(role=Role.ASSISTANT, content=response_text)
@@ -127,10 +145,20 @@ class ChatManagerService:
         session: list[Message],
         turn: ExtractionTurn,
         intent_type: IntentType,
+        cache_service=None,
     ) -> ChatResponse:
-        widget_spec = await self._maybe_build_widget(request, turn)
         if _widget_eligible(turn.extraction):
             self._last_extraction[request.session_id] = turn.extraction
+
+        cache_suggestion: Optional[CacheSuggestion] = None
+        widget_spec: Optional[WidgetSpec] = None
+
+        if _widget_eligible(turn.extraction) and cache_service and not request.skip_cache:
+            cache_suggestion = await self._try_cache_hit(request, turn.extraction, cache_service)
+
+        if cache_suggestion is None:
+            widget_spec = await self._maybe_build_widget(request, turn, cache_service)
+
         response_text = _format_extraction_response(turn.extraction)
         assistant_message = Message(
             role=Role.ASSISTANT,
@@ -145,6 +173,43 @@ class ChatManagerService:
             extraction=turn.extraction,
             trace=turn.trace,
             widget_spec=widget_spec,
+            cache_suggestion=cache_suggestion,
+        )
+
+    async def _try_cache_hit(
+        self,
+        request: ChatRequest,
+        extraction: DataExtraction,
+        cache_service,
+    ) -> Optional[CacheSuggestion]:
+        try:
+            candidates = await cache_service.search(
+                session_id=request.session_id,
+                prompt=request.message,
+                connection_id=extraction.connection_id,
+                data_schema_hash=_schema_hash(extraction),
+            )
+        except Exception:
+            _logger.warning("Cache search error — continuing without cache", exc_info=True)
+            return None
+
+        if not candidates:
+            return None
+
+        best = candidates[0]
+        spec: Optional[WidgetSpec] = None
+        try:
+            from app.models.widget import WidgetSpec as _WidgetSpec
+            spec = _WidgetSpec.model_validate_json(best.widget_spec_json)
+        except Exception:
+            pass
+
+        return CacheSuggestion(
+            cache_entry_id=best.entry.id,
+            score=best.score,
+            widget_type=best.entry.widget_type,
+            prompt_text=best.entry.prompt_text,
+            widget_spec=spec,
         )
 
     async def _respond_with_widget_preference(
@@ -196,7 +261,7 @@ class ChatManagerService:
         )
 
     async def _maybe_build_widget(
-        self, request: ChatRequest, turn: ExtractionTurn
+        self, request: ChatRequest, turn: ExtractionTurn, cache_service=None
     ) -> Optional[WidgetSpec]:
         if not _widget_eligible(turn.extraction):
             return None
@@ -212,7 +277,33 @@ class ChatManagerService:
             return None
         if outcome.trace is not None:
             turn.trace.widget_generation = outcome.trace
+        if outcome.spec and cache_service:
+            await self._index_in_cache(request, turn.extraction, outcome.spec, cache_service)
         return outcome.spec
+
+    async def _index_in_cache(
+        self,
+        request: ChatRequest,
+        extraction: DataExtraction,
+        spec: WidgetSpec,
+        cache_service,
+    ) -> None:
+        try:
+            from app.models.widget_cache import CacheIndexRequest
+            await cache_service.index(
+                CacheIndexRequest(
+                    entry_id=str(uuid.uuid4()),
+                    session_id=request.session_id,
+                    widget_id=spec.widget_id,
+                    widget_type=spec.widget_type.value,
+                    spec_json=spec.model_dump_json(),
+                    prompt=request.message,
+                    connection_id=extraction.connection_id,
+                    data_schema_hash=_schema_hash(extraction),
+                )
+            )
+        except Exception:
+            _logger.warning("Cache index error — widget not cached", exc_info=True)
 
     def get_history(self, session_id: str) -> list[Message]:
         return list(self._history[session_id])

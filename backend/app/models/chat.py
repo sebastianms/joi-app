@@ -25,6 +25,15 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     session_id: str = Field(..., min_length=1)
     message: str = Field(..., min_length=1)
+    skip_cache: bool = False
+
+
+class CacheSuggestion(BaseModel):
+    cache_entry_id: str
+    score: float
+    widget_type: str
+    prompt_text: str
+    widget_spec: Optional["WidgetSpec"] = None
 
 
 class WidgetSummary(BaseModel):
@@ -50,6 +59,7 @@ class ChatResponse(BaseModel):
     render_mode_profile: Optional["RenderModeProfileRef"] = None
     recovered_widget: Optional[WidgetSummary] = None
     candidates: Optional[list[WidgetSummary]] = None
+    cache_suggestion: Optional[CacheSuggestion] = None
 
     model_config = {"populate_by_name": True}
 
@@ -62,3 +72,4 @@ from app.models.render_mode import RenderModeProfileRef  # noqa: E402
 Message.model_rebuild()
 TriageResult.model_rebuild()
 ChatResponse.model_rebuild()
+CacheSuggestion.model_rebuild()

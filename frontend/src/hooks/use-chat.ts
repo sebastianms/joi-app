@@ -13,6 +13,14 @@ export interface WidgetSummary {
   display_name: string;
 }
 
+export interface CacheSuggestion {
+  cache_entry_id: string;
+  score: number;
+  widget_type: string;
+  prompt_text: string;
+  widget_spec?: WidgetSpec;
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
@@ -23,6 +31,8 @@ export interface ChatMessage {
   widgetSpec?: WidgetSpec;
   recoveredWidget?: WidgetSummary;
   candidates?: WidgetSummary[];
+  cacheSuggestion?: CacheSuggestion;
+  originalPrompt?: string;
 }
 
 interface ChatResponsePayload {
@@ -33,13 +43,14 @@ interface ChatResponsePayload {
   widget_spec?: WidgetSpec;
   recovered_widget?: WidgetSummary;
   candidates?: WidgetSummary[];
+  cache_suggestion?: CacheSuggestion;
 }
 
 export interface UseChatResult {
   messages: ChatMessage[];
   isSending: boolean;
   error: string | null;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, options?: { skipCache?: boolean }) => Promise<void>;
   sessionId: string;
 }
 
@@ -60,7 +71,7 @@ export function useChat(): UseChatResult {
   );
 
   const sendMessage = useCallback(
-    async (content: string): Promise<void> => {
+    async (content: string, options?: { skipCache?: boolean }): Promise<void> => {
       const trimmed = content.trim();
       if (trimmed.length === 0 || isSending) {
         return;
@@ -83,6 +94,7 @@ export function useChat(): UseChatResult {
           body: JSON.stringify({
             session_id: sessionIdRef.current,
             message: trimmed,
+            skip_cache: options?.skipCache ?? false,
           }),
         });
 
@@ -102,6 +114,8 @@ export function useChat(): UseChatResult {
           widgetSpec: data.widget_spec,
           recoveredWidget: data.recovered_widget,
           candidates: data.candidates,
+          cacheSuggestion: data.cache_suggestion,
+          originalPrompt: data.cache_suggestion ? trimmed : undefined,
         };
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (err) {
