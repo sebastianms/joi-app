@@ -14,7 +14,7 @@ Plataforma de generación dinámica de UI con IA. El sistema interpreta datos y 
 | Frontend | Next.js + Tailwind CSS + shadcn/ui |
 | Backend | Python + FastAPI + LiteLLM (LLM agnóstico) |
 | DB Secundaria | SQLite (vía SQLAlchemy async) |
-| Cache Vectorial | Diferido post-MVP (ver ADL-010) |
+| Cache Vectorial | Qdrant (Docker) |
 | Tests | pytest + pytest-asyncio + Playwright (e2e) |
 
 ## Estructura
@@ -27,16 +27,55 @@ joi-app/
 └── docs/             # Artefactos generados (badges, etc.)
 ```
 
-## Docker (Recomendado)
+## Levantar el proyecto
 
-Levanta toda la plataforma con un solo comando (construye y orquesta backend y frontend):
+### Desarrollo local (recomendado)
+
+**Requisitos previos**: Python 3.11+, Node.js 18+, Docker (solo para Qdrant).
+
+**Primera vez — backend:**
 
 ```bash
-docker-compose up --build
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # completar API keys
 ```
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend API: [http://localhost:8000/api](http://localhost:8000/api)
-- Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+**Primera vez — frontend:**
+
+```bash
+cd frontend
+npm install
+npm run build:widget-runtime
+```
+
+**Arranque diario:**
+
+```bash
+# 1. Qdrant (vector store) — solo necesita Docker, corre en background
+docker compose up qdrant -d
+
+# 2. Backend + Frontend en un solo comando
+./dev.sh
+```
+
+| Servicio     | URL                                                  |
+|---|---|
+| Frontend     | [http://localhost:3000](http://localhost:3000)        |
+| Backend API  | [http://localhost:8000/api](http://localhost:8000/api)|
+| Swagger Docs | [http://localhost:8000/docs](http://localhost:8000/docs)|
+| Qdrant UI    | [http://localhost:6333/dashboard](http://localhost:6333/dashboard)|
+
+`./dev.sh` levanta backend (uvicorn) y frontend (next dev) juntos, esperando a que el backend responda antes de arrancar el frontend. No hace falta coordinarlos manualmente.
+
+### Docker completo
+
+Construye y orquesta todos los servicios (producción / CI):
+
+```bash
+docker compose up --build
+```
 
 ## Capacidades del sistema
 
@@ -87,21 +126,12 @@ cd frontend
 npm run build:widget-runtime
 ```
 
-## Dev Setup (Local)
+## Tests
 
 ```bash
-# Backend
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+# Backend (corre en menos de 5 s, sin servicios externos)
+cd backend && .venv/bin/pytest
 
-# Frontend
-cd frontend
-npm install
-npm run dev
-
-# Tests (backend)
-cd backend
-pytest
+# Con reporte de cobertura
+cd backend && .venv/bin/pytest --cov=app --cov-report=term-missing
 ```
