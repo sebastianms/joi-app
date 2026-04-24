@@ -23,6 +23,12 @@ class Settings(BaseSettings):
 
     MOCK_LLM_RESPONSES: bool = False
 
+    QDRANT_URL: str = "http://localhost:6333"
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    # AES-256 key for encrypting BYO vector store credentials. Required when
+    # users configure a non-default vector store via /api/vector-store/config.
+    VECTOR_STORE_ENCRYPTION_KEY: str | None = None
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

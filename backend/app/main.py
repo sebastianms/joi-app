@@ -6,6 +6,7 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
+from app.services.widget_cache.bootstrap import ensure_widget_cache_collection
 import app.models.user_session  # noqa: F401 — registra UserSession en Base.metadata
 import app.models.render_mode  # noqa: F401 — registra RenderModeProfileORM en Base.metadata
 import app.models.widget  # noqa: F401 — registra WidgetORM en Base.metadata
@@ -16,9 +17,9 @@ import app.models.widget_cache  # noqa: F401 — registra WidgetCacheEntryORM en
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Inicializar las tablas de base de datos
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await ensure_widget_cache_collection()
     yield
 
 app = FastAPI(

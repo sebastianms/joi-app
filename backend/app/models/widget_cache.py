@@ -95,3 +95,14 @@ class CacheCandidate(BaseModel):
     entry: WidgetCacheEntry
     score: float
     widget_spec_json: str
+
+
+class CacheIndexRequest(BaseModel):
+    entry_id: str
+    session_id: str
+    widget_id: str
+    widget_type: str
+    spec_json: str
+    prompt: str
+    connection_id: Optional[str]
+    data_schema_hash: str
