@@ -8,6 +8,11 @@ from app.db.base import Base
 from app.db.session import engine
 import app.models.user_session  # noqa: F401 — registra UserSession en Base.metadata
 import app.models.render_mode  # noqa: F401 — registra RenderModeProfileORM en Base.metadata
+import app.models.widget  # noqa: F401 — registra WidgetORM en Base.metadata
+import app.models.collection  # noqa: F401 — registra Collection, CollectionWidget en Base.metadata
+import app.models.dashboard  # noqa: F401 — registra Dashboard, DashboardItem en Base.metadata
+import app.models.vector_store_config  # noqa: F401 — registra VectorStoreConfigORM en Base.metadata
+import app.models.widget_cache  # noqa: F401 — registra WidgetCacheEntryORM en Base.metadata
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -4,8 +4,48 @@ from enum import Enum
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
+from sqlalchemy import Boolean, DateTime, Index, String, Text, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
+from app.db.base import Base
 from app.models.render_mode import UILibrary
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+# ── ORM ───────────────────────────────────────────────────────────────────────
+
+
+class WidgetORM(Base):
+    __tablename__ = "widgets"
+    __table_args__ = (
+        UniqueConstraint(
+            "session_id", "display_name", name="uq_widget_display_name_per_session"
+        ),
+        Index("ix_widgets_session_saved", "session_id", postgresql_where="is_saved = TRUE"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    session_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    extraction_id: Mapped[str] = mapped_column(String, nullable=False)
+    widget_type: Mapped[str] = mapped_column(String, nullable=False)
+    selection_source: Mapped[str] = mapped_column(String, nullable=False)
+    render_mode: Mapped[str] = mapped_column(String, nullable=False)
+    spec_json: Mapped[str] = mapped_column(Text, nullable=False)
+    is_saved: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    display_name: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    saved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow
+    )
+
+
+# ── Pydantic ──────────────────────────────────────────────────────────────────
 
 
 class WidgetType(str, Enum):
