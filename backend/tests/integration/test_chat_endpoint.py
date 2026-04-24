@@ -44,10 +44,22 @@ class _StubRecoveryService:
         return None, []
 
 
+class _StubCacheService:
+    async def search(self, **_kwargs):
+        return []
+
+    async def index(self, _request):
+        return None
+
+    async def invalidate_by_connection(self, **_kwargs):
+        return None
+
+
 class _StubAgents:
     def __init__(self) -> None:
         self.data = _StubDataAgent()
         self.recovery = _StubRecoveryService()
+        self.cache = _StubCacheService()
 
 
 @pytest.fixture(autouse=True)
