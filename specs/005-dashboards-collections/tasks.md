@@ -89,10 +89,10 @@
 
 ## User Story 4 — Recuperar widget guardado desde chat (P2)
 
-- [ ] T080 [US4] Extender el triage determinístico existente (archivo del triage actual — verificar en `backend/app/services/triage/`) con patrones de recuperación (`muéstra(me)?|abre|trae|enseña`) + detección de nombres mediante fuzzy match (`rapidfuzz`).
-- [ ] T081 [US4] En el pipeline `/api/chat`, si triage detecta intención de recuperación → buscar `widgets` saved por nombre → si match único devolver `recovered_widget`, si múltiples devolver `candidates`.
-- [ ] T082 [US4] Añadir `rapidfuzz` a [backend/requirements.txt](backend/requirements.txt) (ligero).
-- [ ] T083 [P] [US4] Frontend: manejar los nuevos campos `recovered_widget` / `candidates` en el handler del chat; renderizar lista clickeable cuando hay candidates.
+- [x] T080 [US4] Extender el triage determinístico existente (archivo del triage actual — verificar en `backend/app/services/triage/`) con patrones de recuperación (`muéstra(me)?|abre|trae|enseña`) + detección de nombres mediante fuzzy match (`rapidfuzz`).
+- [x] T081 [US4] En el pipeline `/api/chat`, si triage detecta intención de recuperación → buscar `widgets` saved por nombre → si match único devolver `recovered_widget`, si múltiples devolver `candidates`.
+- [x] T082 [US4] Añadir `rapidfuzz` a [backend/requirements.txt](backend/requirements.txt) (ligero).
+- [x] T083 [P] [US4] Frontend: manejar los nuevos campos `recovered_widget` / `candidates` en el handler del chat; renderizar lista clickeable cuando hay candidates.
 
 ---
 
