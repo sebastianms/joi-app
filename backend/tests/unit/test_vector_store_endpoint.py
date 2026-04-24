@@ -84,7 +84,7 @@ async def test_health_default_qdrant_healthy(client: AsyncClient):
     fake_client.get_collections.return_value = []
 
     with patch(
-        "qdrant_client.QdrantClient",
+        "app.api.endpoints.vector_store.QdrantClient",
         return_value=fake_client,
     ):
         res = await client.get("/api/vector-store/health", params={"session_id": "s"})
@@ -96,7 +96,7 @@ async def test_health_default_qdrant_healthy(client: AsyncClient):
 
 async def test_health_default_qdrant_unhealthy(client: AsyncClient):
     with patch(
-        "qdrant_client.QdrantClient",
+        "app.api.endpoints.vector_store.QdrantClient",
         side_effect=RuntimeError("qdrant offline"),
     ):
         res = await client.get("/api/vector-store/health", params={"session_id": "s"})
@@ -116,8 +116,8 @@ async def test_health_byo_config(client: AsyncClient):
     )
 
     with patch(
-        "app.api.endpoints.vector_store.validate_vector_store",
-        return_value=None,
+        "app.api.endpoints.vector_store.build_vector_store_from_params",
+        return_value=MagicMock(),
     ):
         res = await client.get(
             "/api/vector-store/health", params={"session_id": "sess-health-byo"}

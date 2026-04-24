@@ -11,7 +11,7 @@ from httpx import AsyncClient
 async def test_health_reports_vector_store_healthy(client: AsyncClient):
     fake_client = MagicMock()
     fake_client.get_collections.return_value = []
-    with patch("qdrant_client.QdrantClient", return_value=fake_client):
+    with patch("app.api.endpoints.health.QdrantClient", return_value=fake_client):
         res = await client.get("/api/health")
     assert res.status_code == 200
     data = res.json()
@@ -22,7 +22,7 @@ async def test_health_reports_vector_store_healthy(client: AsyncClient):
 
 
 async def test_health_reports_vector_store_unhealthy(client: AsyncClient):
-    with patch("qdrant_client.QdrantClient", side_effect=RuntimeError("offline")):
+    with patch("app.api.endpoints.health.QdrantClient", side_effect=RuntimeError("offline")):
         res = await client.get("/api/health")
     assert res.status_code == 200
     assert res.json()["vector_store"]["healthy"] is False

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, status
+from qdrant_client import QdrantClient
 
 from app.core.config import settings
 
@@ -11,8 +12,6 @@ router = APIRouter()
 
 def _default_qdrant_healthy() -> bool:
     try:
-        from qdrant_client import QdrantClient
-
         client = QdrantClient(url=settings.QDRANT_URL, timeout=2)
         client.get_collections()
         return True

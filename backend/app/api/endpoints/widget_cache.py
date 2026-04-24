@@ -85,7 +85,7 @@ async def delete_cache_entry(
     session_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> None:
-    """Soft-delete a cache entry. Also removes the vector store point."""
+    """Soft-delete a cache entry (and best-effort remove from the vector store)."""
     repo = WidgetCacheRepository(db)
     entry = await repo.get(entry_id)
     if entry is None:
@@ -93,15 +93,8 @@ async def delete_cache_entry(
     if entry.session_id != session_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Session mismatch")
 
-    deleted = await repo.soft_delete(entry_id)
+    deleted = await CacheService(db).delete_entry(entry_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cache entry not found")
-
-    try:
-        service = CacheService(db)
-        vs = service._vector_store()
-        vs.delete(ids=[entry_id])
-    except Exception:
-        pass  # SQLite-side soft delete already protects future searches
 
     await db.commit()

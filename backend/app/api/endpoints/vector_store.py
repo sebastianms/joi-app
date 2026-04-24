@@ -9,10 +9,20 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.db.session import get_db
 from app.models.vector_store_config import VectorStoreProvider
 from app.repositories.vector_store_config_repository import VectorStoreConfigRepository
-from app.services.widget_cache.vector_store_factory import validate_vector_store
+from app.services.embeddings.litellm_embeddings import LiteLLMEmbeddings
+from app.services.widget_cache.vector_store_factory import (
+    build_vector_store_from_params,
+    validate_vector_store,
+)
+
+try:
+    from qdrant_client import QdrantClient
+except ImportError:
+    QdrantClient = None  # type: ignore[assignment]
 
 router = APIRouter()
 
@@ -126,13 +136,14 @@ async def health(
 
     try:
         if is_default:
-            from app.core.config import settings
-            from qdrant_client import QdrantClient
-            client = QdrantClient(url=settings.QDRANT_URL)
+            client = QdrantClient(url=settings.QDRANT_URL, timeout=2)
             client.get_collections()
         else:
             params = await repo.get_decrypted_params(session_id) or {}
-            validate_vector_store(provider, params)
+            # Lightweight ping: construct the client only (no similarity_search).
+            # Full validation runs on POST /validate, not on every health check.
+            import json as _json
+            build_vector_store_from_params(provider, _json.dumps(params), LiteLLMEmbeddings())
         healthy = True
     except Exception:
         healthy = False

@@ -9,9 +9,11 @@ from typing import Awaitable, Callable, Optional
 from app.models.chat import CacheSuggestion, ChatRequest, ChatResponse, IntentType, Message, Role
 from app.models.extraction import AgentTrace, DataExtraction, ErrorCode, ExtractionError, QueryPlan, SourceType
 from app.models.widget import WidgetSpec, WidgetType
+from app.models.widget_cache import CacheIndexRequest
 from app.services.data_agent_service import DataAgentService
 from app.services.llm_gateway import LLMGateway
 from app.services.triage_engine import TriageEngineService
+from app.services.widget_cache.cache_service import CacheService
 from app.services.widget_recovery_service import WidgetRecoveryService
 from app.services.widget.architect_service import (
     ArchitectOutcome,
@@ -66,7 +68,7 @@ class ChatManagerService:
         request: ChatRequest,
         data_agent: DataAgentService,
         widget_recovery: WidgetRecoveryService,
-        cache_service=None,
+        cache_service: Optional[CacheService] = None,
     ) -> ChatResponse:
         user_message = Message(role=Role.USER, content=request.message)
         session = self._history[request.session_id]
@@ -145,7 +147,7 @@ class ChatManagerService:
         session: list[Message],
         turn: ExtractionTurn,
         intent_type: IntentType,
-        cache_service=None,
+        cache_service: Optional[CacheService] = None,
     ) -> ChatResponse:
         if _widget_eligible(turn.extraction):
             self._last_extraction[request.session_id] = turn.extraction
@@ -180,7 +182,7 @@ class ChatManagerService:
         self,
         request: ChatRequest,
         extraction: DataExtraction,
-        cache_service,
+        cache_service: CacheService,
     ) -> Optional[CacheSuggestion]:
         try:
             candidates = await cache_service.search(
@@ -199,10 +201,13 @@ class ChatManagerService:
         best = candidates[0]
         spec: Optional[WidgetSpec] = None
         try:
-            from app.models.widget import WidgetSpec as _WidgetSpec
-            spec = _WidgetSpec.model_validate_json(best.widget_spec_json)
+            spec = WidgetSpec.model_validate_json(best.widget_spec_json)
         except Exception:
-            pass
+            _logger.warning(
+                "Invalid cached widget_spec for entry %s — returning suggestion without spec",
+                best.entry.id,
+                exc_info=True,
+            )
 
         return CacheSuggestion(
             cache_entry_id=best.entry.id,
@@ -261,7 +266,10 @@ class ChatManagerService:
         )
 
     async def _maybe_build_widget(
-        self, request: ChatRequest, turn: ExtractionTurn, cache_service=None
+        self,
+        request: ChatRequest,
+        turn: ExtractionTurn,
+        cache_service: Optional[CacheService] = None,
     ) -> Optional[WidgetSpec]:
         if not _widget_eligible(turn.extraction):
             return None
@@ -286,10 +294,9 @@ class ChatManagerService:
         request: ChatRequest,
         extraction: DataExtraction,
         spec: WidgetSpec,
-        cache_service,
+        cache_service: CacheService,
     ) -> None:
         try:
-            from app.models.widget_cache import CacheIndexRequest
             await cache_service.index(
                 CacheIndexRequest(
                     entry_id=str(uuid.uuid4()),

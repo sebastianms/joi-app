@@ -105,6 +105,31 @@ class CacheService:
         except Exception:
             logger.warning("Cache index failed — widget not cached", exc_info=True)
 
+    async def delete_entry(self, entry_id: str) -> bool:
+        """Soft-delete a single entry and best-effort remove its vector store point.
+
+        Returns True if the SQL row was marked invalidated; False if the entry
+        did not exist. Vector store deletion failures are logged but do not
+        fail the call — the SQL-side invalidation is the source of truth.
+        """
+        from app.repositories.widget_cache_repository import WidgetCacheRepository
+
+        repo = WidgetCacheRepository(self._db)
+        invalidated = await repo.soft_delete(entry_id)
+        if not invalidated:
+            return False
+
+        try:
+            vs = self._vector_store()
+            vs.delete(ids=[entry_id])
+        except Exception:
+            logger.warning(
+                "Vector store deletion failed for %s — SQL-side invalidation still active.",
+                entry_id,
+                exc_info=True,
+            )
+        return True
+
     async def invalidate_by_connection(
         self, *, session_id: str, connection_id: str
     ) -> None:

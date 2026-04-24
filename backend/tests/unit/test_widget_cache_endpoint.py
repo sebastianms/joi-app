@@ -142,7 +142,7 @@ async def test_reuse_session_mismatch(client: AsyncClient, cache_entry: WidgetCa
 
 async def test_delete_cache_entry(client: AsyncClient, cache_entry: WidgetCacheEntryORM):
     with patch(
-        "app.api.endpoints.widget_cache.CacheService._vector_store",
+        "app.services.widget_cache.cache_service.CacheService._vector_store",
         MagicMock(side_effect=RuntimeError("qdrant offline — OK, soft delete still applies")),
     ):
         res = await client.delete(
