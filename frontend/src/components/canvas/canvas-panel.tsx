@@ -4,9 +4,12 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCanvas } from "@/hooks/use-canvas";
+import { useCollections } from "@/hooks/use-collections";
 import type { WidgetSpec } from "@/types/widget";
+import { Button } from "@/components/ui/button";
+import { SaveWidgetDialog } from "@/components/collections/SaveWidgetDialog";
 import { WidgetFrame } from "./widget-frame";
 import { WidgetLoading } from "./widget-loading";
 import { WidgetEmptyState } from "./widget-empty-state";
@@ -33,6 +36,22 @@ export function CanvasPanel({
     widgetSpec,
     dataRows,
   });
+  const { collections, fetchCollections, createCollection, saveWidget } = useCollections();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  async function handleOpenSaveDialog() {
+    await fetchCollections(sessionId);
+    setDialogOpen(true);
+  }
+
+  async function handleSave(displayName: string, collectionIds: string[]) {
+    if (!widgetSpec) return;
+    await saveWidget(widgetSpec.widget_id, {
+      session_id: sessionId,
+      display_name: displayName,
+      collection_ids: collectionIds,
+    });
+  }
 
   const title = useMemo(() => {
     if (!widgetSpec) return "Canvas de widgets";
@@ -111,35 +130,55 @@ export function CanvasPanel({
   }
 
   return (
-    <PanelShell>
-      <div className="flex flex-col gap-2 p-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">
-            {widgetSpec.visual_options?.title ?? "Widget"}
-          </h2>
-          {widgetSpec.truncation_badge && (
-            <TruncationBadge rowCount={widgetSpec.data_reference.row_count} />
-          )}
-        </div>
-        <div
-          className="relative w-full overflow-hidden rounded-lg border border-border bg-background"
-          style={{ height: frameHeight }}
-          data-role="widget-container"
-        >
-          <WidgetFrame
-            ref={frameRef}
-            bundleCode={bundleCode}
-            title={title}
-            onLoad={handleFrameLoad}
-          />
-          {state.loading_stage === "bootstrapping" && (
-            <div className="pointer-events-none absolute inset-0 rounded-lg bg-card">
-              <WidgetLoading stage="bootstrapping" />
+    <>
+      <PanelShell>
+        <div className="flex flex-col gap-2 p-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-foreground">
+              {widgetSpec.visual_options?.title ?? "Widget"}
+            </h2>
+            <div className="flex items-center gap-2">
+              {widgetSpec.truncation_badge && (
+                <TruncationBadge rowCount={widgetSpec.data_reference.row_count} />
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleOpenSaveDialog}
+                data-role="widget-save-button"
+              >
+                Guardar
+              </Button>
             </div>
-          )}
+          </div>
+          <div
+            className="relative w-full overflow-hidden rounded-lg border border-border bg-background"
+            style={{ height: frameHeight }}
+            data-role="widget-container"
+          >
+            <WidgetFrame
+              ref={frameRef}
+              bundleCode={bundleCode}
+              title={title}
+              onLoad={handleFrameLoad}
+            />
+            {state.loading_stage === "bootstrapping" && (
+              <div className="pointer-events-none absolute inset-0 rounded-lg bg-card">
+                <WidgetLoading stage="bootstrapping" />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </PanelShell>
+      </PanelShell>
+      <SaveWidgetDialog
+        open={dialogOpen}
+        collections={collections}
+        onClose={() => setDialogOpen(false)}
+        onSave={handleSave}
+        onCreateCollection={(name) => createCollection(sessionId, name)}
+      />
+    </>
   );
 }
 
