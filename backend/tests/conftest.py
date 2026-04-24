@@ -1,9 +1,16 @@
+import os
+
+os.environ.setdefault("VECTOR_STORE_ENCRYPTION_KEY", "0" * 64)
+
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.core.config import settings
 from app.db.session import Base, get_db
 from app.main import app
+
+settings.VECTOR_STORE_ENCRYPTION_KEY = os.environ["VECTOR_STORE_ENCRYPTION_KEY"]
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 

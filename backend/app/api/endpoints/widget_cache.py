@@ -76,7 +76,7 @@ async def reuse_cache_entry(
     await repo.increment_hit(entry_id)
     await db.commit()
 
-    return {"cache_entry_id": entry_id, "widget_id": entry.widget_id, "hit_count": entry.hit_count + 1}
+    return {"cache_entry_id": entry_id, "widget_id": entry.widget_id, "hit_count": entry.hit_count}
 
 
 @router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)

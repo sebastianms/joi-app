@@ -125,17 +125,15 @@ async def health(
         is_default = False
 
     try:
-        from app.services.widget_cache.bootstrap import _ping_qdrant  # type: ignore[attr-defined]
         if is_default:
             from app.core.config import settings
             from qdrant_client import QdrantClient
             client = QdrantClient(url=settings.QDRANT_URL)
             client.get_collections()
-            healthy = True
         else:
             params = await repo.get_decrypted_params(session_id) or {}
             validate_vector_store(provider, params)
-            healthy = True
+        healthy = True
     except Exception:
         healthy = False
 

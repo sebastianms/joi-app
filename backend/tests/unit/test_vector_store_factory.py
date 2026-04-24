@@ -76,3 +76,68 @@ def test_unsupported_provider_raises():
     """Unknown provider raises RuntimeError."""
     with pytest.raises(RuntimeError, match="Unsupported"):
         build_vector_store_from_params("unknown_db", json.dumps({}), _EMBEDDINGS)
+
+
+def test_validate_vector_store_success():
+    """validate_vector_store pings the vector store and succeeds when similarity_search works."""
+    from app.services.widget_cache.vector_store_factory import validate_vector_store
+
+    fake_vs = MagicMock()
+    fake_vs.similarity_search.return_value = []
+
+    with patch(
+        "app.services.widget_cache.vector_store_factory.build_vector_store_from_params",
+        return_value=fake_vs,
+    ):
+        validate_vector_store("qdrant", {"url": "http://x:6333"})
+    fake_vs.similarity_search.assert_called_once()
+
+
+def test_validate_vector_store_wraps_generic_error():
+    """Generic exceptions from the vector store are wrapped into a RuntimeError."""
+    from app.services.widget_cache.vector_store_factory import validate_vector_store
+
+    fake_vs = MagicMock()
+    fake_vs.similarity_search.side_effect = ValueError("connection refused")
+
+    with patch(
+        "app.services.widget_cache.vector_store_factory.build_vector_store_from_params",
+        return_value=fake_vs,
+    ):
+        with pytest.raises(RuntimeError, match="Connection test failed"):
+            validate_vector_store("qdrant", {"url": "http://x:6333"})
+
+
+def test_build_qdrant_default_uses_settings_url():
+    """Default Qdrant path uses QdrantClient(url=settings.QDRANT_URL)."""
+    from app.services.widget_cache import vector_store_factory
+
+    fake_client = MagicMock()
+    fake_qvs = MagicMock(return_value=MagicMock())
+
+    with (
+        patch("qdrant_client.QdrantClient", return_value=fake_client),
+        patch("langchain_qdrant.QdrantVectorStore", new=fake_qvs),
+    ):
+        vector_store_factory._build_qdrant_default(_EMBEDDINGS)
+    assert fake_qvs.called
+
+
+def test_build_qdrant_byo_passes_params_to_client():
+    """BYO Qdrant forwards the JSON params to QdrantClient."""
+    from app.services.widget_cache import vector_store_factory
+
+    captured = {}
+
+    def fake_ctor(**kwargs):
+        captured.update(kwargs)
+        return MagicMock()
+
+    with (
+        patch("qdrant_client.QdrantClient", side_effect=fake_ctor),
+        patch("langchain_qdrant.QdrantVectorStore", return_value=MagicMock()),
+    ):
+        vector_store_factory._build_qdrant_byo(
+            json.dumps({"url": "http://remote:6333", "api_key": "k"}), _EMBEDDINGS
+        )
+    assert captured == {"url": "http://remote:6333", "api_key": "k"}
