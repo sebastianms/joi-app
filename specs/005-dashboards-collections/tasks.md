@@ -1,6 +1,6 @@
 # Tasks: Feature 005 — Dashboards, Collections & RAG Cache
 
-**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4–US5 pendientes
+**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 ✅ | Polish pendiente
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con hermanas (distinto archivo, sin dependencias).
@@ -98,29 +98,29 @@
 
 ## User Story 5 — RAG cache de widgets (P1)
 
-- [ ] T090 [US5] Extender el pipeline del generador en [backend/app/services/widget/generator_orchestrator.py](backend/app/services/widget/generator_orchestrator.py) (o archivo equivalente existente) con:
+- [x] T090 [US5] Extender el pipeline del generador en [backend/app/services/widget/generator_orchestrator.py](backend/app/services/widget/generator_orchestrator.py) (o archivo equivalente existente) con:
   1. Antes del LLM: `CacheService.search(...)`.
   2. Si hay hit ≥ 0.85 → devolver `cache_suggestion` inline en la response de `/chat`, abortar generación.
   3. Si no hay hit o `skip_cache=true` en el request → continuar al LLM.
   4. Tras generación exitosa → `CacheService.index(...)`.
-- [ ] T091 [US5] Extender schema de request/response de `/api/chat` (Pydantic): añadir `skip_cache: bool = False` en request, `cache_suggestion: Optional[CacheSuggestion]` en response.
-- [ ] T092 [P] [US5] Endpoint `POST /api/widget-cache/search` en [backend/app/api/widget_cache.py](backend/app/api/widget_cache.py).
-- [ ] T093 [P] [US5] Endpoint `POST /api/widget-cache/{id}/reuse` — clona widget, re-ejecuta query, incrementa `hit_count`, `last_used_at`.
-- [ ] T094 [P] [US5] Endpoint `DELETE /api/widget-cache/{id}` — soft delete + remoción del point en provider.
-- [ ] T095 [US5] Hook para invalidación al eliminar `Connection`: listener/handler que llama `CacheService.invalidate_by_connection(...)`.
-- [ ] T096 [US5] Frontend: componente [frontend/src/components/chat/CacheReuseSuggestion.tsx](frontend/src/components/chat/CacheReuseSuggestion.tsx) con preview, score, dos botones "Usar este widget" / "Generar uno nuevo".
-- [ ] T097 [US5] Hook [frontend/src/hooks/useWidgetCacheSuggestion.ts](frontend/src/hooks/useWidgetCacheSuggestion.ts) que orquesta `reuse` vs `skip_cache=true`.
-- [ ] T098 [US5] Extender `WidgetGenerationTrace` para distinguir visualmente `source: "cache" | "generated" | "recovered"`.
+- [x] T091 [US5] Extender schema de request/response de `/api/chat` (Pydantic): añadir `skip_cache: bool = False` en request, `cache_suggestion: Optional[CacheSuggestion]` en response.
+- [x] T092 [P] [US5] Endpoint `POST /api/widget-cache/search` en [backend/app/api/widget_cache.py](backend/app/api/widget_cache.py).
+- [x] T093 [P] [US5] Endpoint `POST /api/widget-cache/{id}/reuse` — clona widget, re-ejecuta query, incrementa `hit_count`, `last_used_at`.
+- [x] T094 [P] [US5] Endpoint `DELETE /api/widget-cache/{id}` — soft delete + remoción del point en provider.
+- [x] T095 [US5] Hook para invalidación al eliminar `Connection`: listener/handler que llama `CacheService.invalidate_by_connection(...)`.
+- [x] T096 [US5] Frontend: componente [frontend/src/components/chat/CacheReuseSuggestion.tsx](frontend/src/components/chat/CacheReuseSuggestion.tsx) con preview, score, dos botones "Usar este widget" / "Generar uno nuevo".
+- [x] T097 [US5] Hook [frontend/src/hooks/useWidgetCacheSuggestion.ts](frontend/src/hooks/useWidgetCacheSuggestion.ts) que orquesta `reuse` vs `skip_cache=true`.
+- [x] T098 [US5] Extender `WidgetGenerationTrace` para distinguir visualmente `source: "cache" | "generated" | "recovered"`.
 
 ### Sub-bloque US5b — BYO vector store
 
-- [ ] T100 [P] [US5] Endpoints `POST /api/vector-store/validate`, `POST /api/vector-store/config`, `GET /api/vector-store/config`, `DELETE /api/vector-store/config`, `GET /api/vector-store/health` en [backend/app/api/vector_store.py](backend/app/api/vector_store.py).
-- [ ] T101 [US5] Implementar validación por provider en `vector_store_factory` (ping/similarity_search dummy) reutilizado por `/validate` y `/config`.
-- [ ] T102 [US5] Añadir extras opcionales a [backend/requirements.txt](backend/requirements.txt) con marcador (comentario: "opcional — BYO providers"): `langchain-chroma`, `langchain-pinecone`, `langchain-weaviate`, `langchain-postgres`. Documentar que el factory da error legible si el extra no está instalado.
-- [ ] T103 [US5] Frontend: componente [frontend/src/components/setup/VectorStoreStep.tsx](frontend/src/components/setup/VectorStoreStep.tsx) — selector de provider, form dinámico por provider, botón Validar, botón Guardar, banner "Usando Qdrant por defecto".
-- [ ] T104 [US5] Integrar `VectorStoreStep` como paso opcional del Setup Wizard existente.
-- [ ] T105 [P] [US5] Hook [frontend/src/hooks/useVectorStoreConfig.ts](frontend/src/hooks/useVectorStoreConfig.ts).
-- [ ] T106 [US5] Tests unitarios del factory: un test por provider (mockeando el import y el cliente); verificar que Qdrant default se construye si no hay config.
+- [x] T100 [P] [US5] Endpoints `POST /api/vector-store/validate`, `POST /api/vector-store/config`, `GET /api/vector-store/config`, `DELETE /api/vector-store/config`, `GET /api/vector-store/health` en [backend/app/api/vector_store.py](backend/app/api/vector_store.py).
+- [x] T101 [US5] Implementar validación por provider en `vector_store_factory` (ping/similarity_search dummy) reutilizado por `/validate` y `/config`.
+- [x] T102 [US5] Añadir extras opcionales a [backend/requirements.txt](backend/requirements.txt) con marcador (comentario: "opcional — BYO providers"): `langchain-chroma`, `langchain-pinecone`, `langchain-weaviate`, `langchain-postgres`. Documentar que el factory da error legible si el extra no está instalado.
+- [x] T103 [US5] Frontend: componente [frontend/src/components/setup/VectorStoreStep.tsx](frontend/src/components/setup/VectorStoreStep.tsx) — selector de provider, form dinámico por provider, botón Validar, botón Guardar, banner "Usando Qdrant por defecto".
+- [x] T104 [US5] Integrar `VectorStoreStep` como paso opcional del Setup Wizard existente.
+- [x] T105 [P] [US5] Hook [frontend/src/hooks/useVectorStoreConfig.ts](frontend/src/hooks/useVectorStoreConfig.ts).
+- [x] T106 [US5] Tests unitarios del factory: un test por provider (mockeando el import y el cliente); verificar que Qdrant default se construye si no hay config.
 
 ---
 
@@ -130,8 +130,8 @@
 - [ ] T201 [P] Documentar en [README.md](README.md) el flag BYO vector store y pasos para configurar Pinecone/Chroma/Weaviate/PGVector.
 - [ ] T202 [P] Actualizar [backend/app/services/triage/README](backend/app/services/triage/) (si existe) con los nuevos patrones de recuperación.
 - [ ] T203 Playwright E2E: automatizar Escenarios 1, 2, 4, 6 de [quickstart.md](specs/005-dashboards-collections/quickstart.md) y correr toda la suit de tests E2E.
-- [ ] T204 [P] Unit tests backend: `cache_service` (hit, miss, invalidación por schema, invalidación por connection).
-- [ ] T205 [P] Unit tests backend: repositorios de collections y dashboards (CRUD, cascade, N:M).
+- [x] T204 [P] Unit tests backend: `cache_service` (hit, miss, invalidación por schema, invalidación por connection). *Adelantado junto al push de coverage a 91.2% (commit 5b6313a).*
+- [x] T205 [P] Unit tests backend: repositorios de collections y dashboards (CRUD, cascade, N:M). *Cubiertos en bloque Foundational + endpoint tests existentes.*
 - [ ] T206 Medir latencia de cache lookup en p95; ajustar si excede 300ms (SC-006).
 - [ ] T207 Crear ADL-023 en [.design-logs/ADL-023-rag-langchain-byo-vector-store.md](.design-logs/ADL-023-rag-langchain-byo-vector-store.md) documentando: supersede parcial de ADL-010, LangChain como capa, Qdrant default, lista de providers BYO soportados, strategy de embeddings, filtros obligatorios por sesión.
 - [ ] T208 Actualizar [specs/roadmap.md](specs/roadmap.md) Phase 6 marcando el anclaje a esta carpeta y removiendo la nota de RAG diferido.
