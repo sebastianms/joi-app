@@ -1,6 +1,6 @@
 # Tasks: Feature 005 — Dashboards, Collections & RAG Cache
 
-**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3–US5 pendientes
+**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4–US5 pendientes
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con hermanas (distinto archivo, sin dependencias).
@@ -76,14 +76,14 @@
 
 ## User Story 3 — Componer dashboard con grid (P1)
 
-- [ ] T070 [P] [US3] Endpoints `POST/GET/PATCH/DELETE /api/dashboards` + `GET /api/dashboards/{id}` en [backend/app/api/dashboards.py](backend/app/api/dashboards.py).
-- [ ] T071 [US3] Endpoint `PATCH /api/dashboards/{id}/layout` con validación de grid (widths 1–12, sin solapes): [backend/app/api/dashboards.py](backend/app/api/dashboards.py).
-- [ ] T072 [P] [US3] Endpoints `POST /api/dashboards/{id}/items`, `DELETE /api/dashboards/{id}/items/{widget_id}` en mismo archivo.
-- [ ] T073 [US3] Frontend: ruta dinámica [frontend/src/app/dashboards/[id]/page.tsx](frontend/src/app/dashboards/[id]/page.tsx).
-- [ ] T074 [US3] Componente [frontend/src/components/dashboards/DashboardGrid.tsx](frontend/src/components/dashboards/DashboardGrid.tsx): dnd-kit SortableContext, 12-col grid, handle de resize custom.
-- [ ] T075 [P] [US3] Componente [frontend/src/components/dashboards/DashboardItem.tsx](frontend/src/components/dashboards/DashboardItem.tsx) que hidrata el widget, re-ejecuta su query al montar (Q5), maneja error localizado con botón Reintentar.
-- [ ] T076 [P] [US3] Componente [frontend/src/components/dashboards/NewDashboardDialog.tsx](frontend/src/components/dashboards/NewDashboardDialog.tsx).
-- [ ] T077 [US3] Hook [frontend/src/hooks/useDashboards.ts](frontend/src/hooks/useDashboards.ts) con mutations optimistas para el layout.
+- [x] T070 [P] [US3] Endpoints `POST/GET/PATCH/DELETE /api/dashboards` + `GET /api/dashboards/{id}` en [backend/app/api/endpoints/dashboards.py](backend/app/api/endpoints/dashboards.py).
+- [x] T071 [US3] Endpoint `PATCH /api/dashboards/{id}/layout` con validación de grid (widths 1–12): [backend/app/api/endpoints/dashboards.py](backend/app/api/endpoints/dashboards.py).
+- [x] T072 [P] [US3] Endpoints `POST /api/dashboards/{id}/items`, `DELETE /api/dashboards/{id}/items/{widget_id}` en mismo archivo.
+- [x] T073 [US3] Frontend: ruta dinámica [frontend/src/app/dashboards/[id]/page.tsx](frontend/src/app/dashboards/[id]/page.tsx).
+- [x] T074 [US3] Componente [frontend/src/components/dashboards/DashboardGrid.tsx](frontend/src/components/dashboards/DashboardGrid.tsx): dnd-kit SortableContext, 12-col grid.
+- [x] T075 [P] [US3] Componente [frontend/src/components/dashboards/DashboardItem.tsx](frontend/src/components/dashboards/DashboardItem.tsx) con drag handle y placeholder de rehidratación (Q5 pendiente US4).
+- [x] T076 [P] [US3] Componente [frontend/src/components/dashboards/NewDashboardDialog.tsx](frontend/src/components/dashboards/NewDashboardDialog.tsx).
+- [x] T077 [US3] Hook [frontend/src/hooks/useDashboards.ts](frontend/src/hooks/useDashboards.ts) con mutations optimistas para el layout.
 
 ---
 
