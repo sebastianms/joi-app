@@ -126,16 +126,16 @@
 
 ## Polish (cross-cutting)
 
-- [ ] T200 Health endpoint global `/api/health` incluye sub-status del vector store activo (provider + healthy).
-- [ ] T201 [P] Documentar en [README.md](README.md) el flag BYO vector store y pasos para configurar Pinecone/Chroma/Weaviate/PGVector.
+- [x] T200 Health endpoint global `/api/health` incluye sub-status del vector store activo (provider + healthy).
+- [x] T201 [P] Documentar en [README.md](README.md) el flag BYO vector store y pasos para configurar Pinecone/Chroma/Weaviate/PGVector.
 - [ ] T202 [P] Actualizar [backend/app/services/triage/README](backend/app/services/triage/) (si existe) con los nuevos patrones de recuperación.
 - [ ] T203 Playwright E2E: automatizar Escenarios 1, 2, 4, 6 de [quickstart.md](specs/005-dashboards-collections/quickstart.md) y correr toda la suit de tests E2E.
 - [x] T204 [P] Unit tests backend: `cache_service` (hit, miss, invalidación por schema, invalidación por connection). *Adelantado junto al push de coverage a 91.2% (commit 5b6313a).*
 - [x] T205 [P] Unit tests backend: repositorios de collections y dashboards (CRUD, cascade, N:M). *Cubiertos en bloque Foundational + endpoint tests existentes.*
 - [ ] T206 Medir latencia de cache lookup en p95; ajustar si excede 300ms (SC-006).
-- [ ] T207 Crear ADL-023 en [.design-logs/ADL-023-rag-langchain-byo-vector-store.md](.design-logs/ADL-023-rag-langchain-byo-vector-store.md) documentando: supersede parcial de ADL-010, LangChain como capa, Qdrant default, lista de providers BYO soportados, strategy de embeddings, filtros obligatorios por sesión.
-- [ ] T208 Actualizar [specs/roadmap.md](specs/roadmap.md) Phase 6 marcando el anclaje a esta carpeta y removiendo la nota de RAG diferido.
-- [ ] T209 Actualizar [specs/tech-stack.md](specs/tech-stack.md) sección "Vector Store (RAG)" con el stack decidido.
+- [x] T207 Crear ADL-023 en [.design-logs/ADL-023-rag-langchain-byo-vector-store.md](.design-logs/ADL-023-rag-langchain-byo-vector-store.md) documentando: supersede parcial de ADL-010, LangChain como capa, Qdrant default, lista de providers BYO soportados, strategy de embeddings, filtros obligatorios por sesión.
+- [x] T208 Actualizar [specs/roadmap.md](specs/roadmap.md) Phase 6 marcando el anclaje a esta carpeta y removiendo la nota de RAG diferido.
+- [x] T209 Actualizar [specs/tech-stack.md](specs/tech-stack.md) sección "Vector Store (RAG)" con el stack decidido.
 - [ ] T210 Deckard review final sobre todos los archivos tocados; criticidad ≥ 8 corregida antes de cerrar la feature.
 
 ---

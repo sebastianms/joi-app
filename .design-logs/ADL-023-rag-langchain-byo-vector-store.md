@@ -114,3 +114,18 @@ Si Qdrant no está disponible:
 - **ADL-007** — Chroma RAG (archivado): este ADL lo reemplaza. Qdrant vence por API y filtros.
 - **ADL-010** — RAG diferido: **supersedida** por este ADL. El caché se activa en Feature 005.
 - **ADL-003** — SQLite como estado de app: `widget_cache_entries` sigue este patrón (metadata en SQLite, no en el vector store).
+
+---
+
+## Notas de activación (2026-04-24 — cierre US5)
+
+- Implementado en `ChatManagerService._try_cache_hit` y `_index_in_cache`. El hit se devuelve como `cache_suggestion` en `ChatResponse` junto al flujo normal del chat.
+- Colección Qdrant `widget_cache` se crea lazily en `lifespan` vía `ensure_widget_cache_collection()`.
+- Frontend: `CacheReuseSuggestion.tsx` muestra score + widget_type + prompt original; botones "Usar este widget" (→ `POST /widget-cache/{id}/reuse`) y "Generar uno nuevo" (→ re-envía con `skip_cache=true`).
+- BYO integrado como tercer tab del `/setup`; la config se cifra antes de persistir.
+- Cobertura: `cache_service.py` 98%, `vector_store_factory.py` 64%, `bootstrap.py` 100%. Suite 426 tests, floor 91%.
+
+### Pendientes tras activación
+
+- **T206 — Medición p95 del cache lookup**: se hará con datos reales una vez la feature esté en uso. Objetivo SC-006: < 300ms. Si excede, ajustar `_TOP_K` (actual 5) o cambiar a distancia `DOT` si las colecciones crecen.
+- **Rotación de `VECTOR_STORE_ENCRYPTION_KEY`**: no implementada. Rotar la clave invalida todas las configs BYO cifradas (re-ingreso manual). Documentado como limitación aceptada para MVP.

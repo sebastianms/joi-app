@@ -115,6 +115,31 @@ El sistema elige el tipo de widget más adecuado según la forma de los datos, s
 
 **Fallback universal**: cualquier fallo del generador (timeout, spec inválida, crash del renderer) produce automáticamente una tabla con los datos crudos. La sesión nunca se interrumpe.
 
+### Cache semántico de widgets (RAG)
+
+Cuando el usuario repite una consulta similar a una ya generada, el sistema sugiere reutilizar el widget anterior en lugar de regenerar código. El flujo:
+
+1. Antes de llamar al LLM, el pipeline consulta el vector store con el prompt.
+2. Si hay hit con score ≥ 0.85 → devuelve `cache_suggestion` al chat (botones "Usar este widget" / "Generar uno nuevo").
+3. Si no hay hit o el usuario opta por regenerar (`skip_cache=true`) → pipeline normal.
+4. Tras generar con éxito → se indexa el nuevo widget.
+
+Los filtros `session_id`, `connection_id` y `data_schema_hash` son obligatorios en toda búsqueda: un widget de otra sesión o con un schema distinto nunca se sugiere. Al eliminar una conexión, todas las entradas asociadas se soft-deletean automáticamente.
+
+#### Vector store: Qdrant por defecto y BYO opcional
+
+Por defecto, la app usa **Qdrant** en Docker Compose — no hace falta configurar nada. Si prefieres tu propio proveedor, ve a `/setup → Vector Store` y elige uno:
+
+| Provider | Extra a instalar | Docs |
+|---|---|---|
+| Qdrant (BYO remoto) | — (ya instalado) | [qdrant.tech](https://qdrant.tech/) |
+| Chroma | `pip install langchain-chroma` | [trychroma.com](https://www.trychroma.com/) |
+| Pinecone | `pip install langchain-pinecone` | [pinecone.io](https://www.pinecone.io/) |
+| Weaviate | `pip install langchain-weaviate` | [weaviate.io](https://weaviate.io/) |
+| PGVector | `pip install langchain-postgres` | [pgvector](https://github.com/pgvector/pgvector) |
+
+Las credenciales se cifran con Fernet (clave en `VECTOR_STORE_ENCRYPTION_KEY`) antes de persistir. El botón "Validar conexión" hace un ping real al provider antes de guardar. Si Qdrant u otro provider no está disponible, el caché se degrada a miss sin interrumpir al usuario (FR-013).
+
 ### Aislamiento de seguridad
 
 Cada widget corre en un `<iframe sandbox="allow-scripts">` con CSP que bloquea `connect-src`. El código del widget no puede acceder al DOM del host, leer cookies ni hacer peticiones de red.

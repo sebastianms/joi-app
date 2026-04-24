@@ -1,7 +1,8 @@
-from app.api.endpoints import chat, collections, connections, dashboards, vector_store, widget_cache, widgets
+from app.api.endpoints import chat, collections, connections, dashboards, health, vector_store, widget_cache, widgets
 from fastapi import APIRouter
 
 api_router = APIRouter()
+api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(connections.router, prefix="/connections", tags=["connections"])
 api_router.include_router(chat.router, prefix="/chat", tags=["chat"])
 api_router.include_router(widgets.router, prefix="/widgets", tags=["widgets"])

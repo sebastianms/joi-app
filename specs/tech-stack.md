@@ -6,7 +6,7 @@ Joi-App utiliza una arquitectura basada en un **Sistema Multi-Agente** acoplado 
 - **Orquestador de Agentes:** Enruta y coordina el flujo de los prompts hacia los agentes especializados.
 - **Agente de Datos (Agente 1):** Conecta con fuentes de datos (DB o APIs), formula consultas de lectura y entrega la información bajo un contrato JSON estricto.
 - **Agente de Arquitectura y Generación (Consolidado):** Analiza el Design System y los datos para seleccionar el widget más adecuado y genera el código final simultáneamente, reduciendo la latencia de llamadas al LLM.
-- **Capa de Memoria (RAG):** *Diferida post-MVP* — ver ADL-010. El MVP no incluye memoria vectorial; se re-evaluará al retomar US5 de Feature 003.
+- **Capa de Memoria (RAG):** Activa desde Feature 005 — caché semántico de widgets vía LangChain + Qdrant (default Docker) + embeddings `text-embedding-3-small`. Ver ADL-023.
 
 ## Technology Stack & Configuration
 - **Frontend / UI Render Engine:** Next.js (React), que permite la ejecución e inyección segura de código UI en tiempo de ejecución.
@@ -18,7 +18,7 @@ Joi-App utiliza una arquitectura basada en un **Sistema Multi-Agente** acoplado 
 ## Data Layer & Persistence
 - **Fuentes de Datos de Origen (Solo Lectura):** PostgreSQL, MySQL, SQLite, Archivos JSON.
 - **Base de Datos Secundaria (Estado de App):** SQLite, encargado de almacenar metadatos, configuración de conexiones, colecciones de widgets y definiciones de Dashboards.
-- **Vector Store (RAG):** *Diferido post-MVP* — ver ADL-010. Cuando US5 se reactive, el stack se re-decide; la investigación en `specs/003-data-agent/research.md` queda como insumo.
+- **Vector Store (RAG):** **Qdrant** por defecto (Docker, `langchain-qdrant`). Capa de abstracción **LangChain** (`langchain-core`, `langchain-community`) permite BYO vector store opcional vía imports lazy: Chroma (`langchain-chroma`), Pinecone (`langchain-pinecone`), Weaviate (`langchain-weaviate`), PGVector (`langchain-postgres`). Embeddings `text-embedding-3-small` (1536 dim) ruteados por LiteLLM. Credenciales BYO cifradas con Fernet+SHA-256. Metadata espejo en SQLite (`widget_cache_entries`) para invalidación rápida y analytics. Ver ADL-023.
 
 ## Processing Pipelines
 1. **Triage Híbrido:** Primera capa determinística (regex de intención y palabras clave de acción) apoyada por el historial de sesión corto, sirviendo como un filtro eficiente antes de recurrir al procesamiento completo vía LLM.
