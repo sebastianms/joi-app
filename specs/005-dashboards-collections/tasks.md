@@ -1,6 +1,6 @@
 # Tasks: Feature 005 — Dashboards, Collections & RAG Cache
 
-**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Draft (post-Plan)
+**Branch**: `005-dashboards-collections` | **Date**: 2026-04-24 | **Status**: Setup ✅ | Foundational ✅ | US1–US5 pendientes
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable con hermanas (distinto archivo, sin dependencias).
@@ -12,13 +12,13 @@
 
 ## Setup
 
-- [ ] T001 Añadir servicio `qdrant` al [docker-compose.yml](docker-compose.yml) con imagen `qdrant/qdrant:v1.10.0`, puerto `6333`, volumen `./qdrant/storage:/qdrant/storage`, healthcheck HTTP `/healthz`.
-- [ ] T002 [P] Añadir variables al [backend/.env.example](backend/.env.example): `QDRANT_URL=http://qdrant:6333`, `EMBEDDING_MODEL=text-embedding-3-small`, `VECTOR_STORE_ENCRYPTION_KEY=<generar>`.
-- [ ] T003 [P] Añadir dependencias core al [backend/requirements.txt](backend/requirements.txt): `langchain-core`, `langchain-community`, `langchain-qdrant`, `qdrant-client`. Extras lazy documentados en comentario: `langchain-chroma`, `langchain-pinecone`, `langchain-weaviate`, `langchain-postgres`.
-- [ ] T004 [P] Añadir dependencias frontend a [frontend/package.json](frontend/package.json): `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`. Ejecutar `npm install` y verificar lockfile.
-- [ ] T005 [P] Crear directorios nuevos en `backend/app/services/`: `embeddings/`, `widget_cache/`. Añadir `__init__.py` vacíos.
-- [ ] T006 [P] Crear directorios nuevos en `frontend/src/components/`: `collections/`, `dashboards/`. Añadir `.gitkeep`.
-- [ ] T007 Añadir `./qdrant/storage/` a `.gitignore`.
+- [x] T001 Añadir servicio `qdrant` al [docker-compose.yml](docker-compose.yml) con imagen `qdrant/qdrant:v1.10.0`, puerto `6333`, volumen `./qdrant/storage:/qdrant/storage`, healthcheck HTTP `/healthz`.
+- [x] T002 [P] Añadir variables al [backend/.env.example](backend/.env.example): `QDRANT_URL=http://qdrant:6333`, `EMBEDDING_MODEL=text-embedding-3-small`, `VECTOR_STORE_ENCRYPTION_KEY=<generar>`.
+- [x] T003 [P] Añadir dependencias core al [backend/requirements.txt](backend/requirements.txt): `langchain-core`, `langchain-community`, `langchain-qdrant`, `qdrant-client`. Extras lazy documentados en comentario: `langchain-chroma`, `langchain-pinecone`, `langchain-weaviate`, `langchain-postgres`.
+- [x] T004 [P] Añadir dependencias frontend a [frontend/package.json](frontend/package.json): `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`. Ejecutar `npm install` y verificar lockfile.
+- [x] T005 [P] Crear directorios nuevos en `backend/app/services/`: `embeddings/`, `widget_cache/`. Añadir `__init__.py` vacíos.
+- [x] T006 [P] Crear directorios nuevos en `frontend/src/components/`: `collections/`, `dashboards/`. Añadir `.gitkeep`.
+- [x] T007 Añadir `./qdrant/storage/` a `.gitignore`.
 
 ---
 
@@ -26,30 +26,30 @@
 
 ### Modelos + migraciones
 
-- [ ] T010 Extender [backend/app/models/widget.py](backend/app/models/widget.py) (Pydantic + SQLAlchemy ORM) con `is_saved: bool = False`, `display_name: Optional[str]`, `saved_at: Optional[datetime]`. Añadir índices conforme a `data-model.md`.
-- [ ] T011 Crear [backend/app/models/collection.py](backend/app/models/collection.py): `Collection`, `CollectionORM`, tabla junction `collection_widgets` (PK compuesta) con constraint UNIQUE `(session_id, name)` en collections.
-- [ ] T012 Crear [backend/app/models/dashboard.py](backend/app/models/dashboard.py): `Dashboard`, `DashboardItem`, ORMs + constraint UNIQUE `(dashboard_id, widget_id)` en items.
-- [ ] T013 Crear [backend/app/models/vector_store_config.py](backend/app/models/vector_store_config.py): `VectorStoreConfig` + enum `VectorStoreProvider`. Validador de `connection_params` por provider (Pydantic model_validator).
-- [ ] T014 Crear [backend/app/models/widget_cache.py](backend/app/models/widget_cache.py): `WidgetCacheEntry` Pydantic + ORM con soft-delete (`invalidated_at`).
-- [ ] T015 Registrar todas las tablas nuevas en `Base.metadata` dentro de `backend/app/main.py` (lifespan crea si no existen, consistente con T011 de Feature 004).
+- [x] T010 Extender [backend/app/models/widget.py](backend/app/models/widget.py) (Pydantic + SQLAlchemy ORM) con `is_saved: bool = False`, `display_name: Optional[str]`, `saved_at: Optional[datetime]`. Añadir índices conforme a `data-model.md`.
+- [x] T011 Crear [backend/app/models/collection.py](backend/app/models/collection.py): `Collection`, `CollectionWidget` junction (PK compuesta) con constraint UNIQUE `(session_id, name)` en collections.
+- [x] T012 Crear [backend/app/models/dashboard.py](backend/app/models/dashboard.py): `Dashboard`, `DashboardItem`, ORMs + constraint UNIQUE `(dashboard_id, widget_id)` en items.
+- [x] T013 Crear [backend/app/models/vector_store_config.py](backend/app/models/vector_store_config.py): `VectorStoreConfig` Pydantic + `VectorStoreConfigORM` + enum `VectorStoreProvider`.
+- [x] T014 Crear [backend/app/models/widget_cache.py](backend/app/models/widget_cache.py): `WidgetCacheEntry` Pydantic + `WidgetCacheEntryORM` con soft-delete (`invalidated_at`). Añadido `CacheIndexRequest` dataclass (fix [F1] Deckard).
+- [x] T015 Registrar todas las tablas nuevas en `Base.metadata` dentro de [backend/app/main.py](backend/app/main.py) (lifespan crea si no existen).
 
 ### Abstracción del vector store y embeddings
 
-- [ ] T020 Crear [backend/app/services/embeddings/litellm_embeddings.py](backend/app/services/embeddings/litellm_embeddings.py): clase `LiteLLMEmbeddings(Embeddings)` (interfaz LangChain) envolviendo el gateway existente `litellm_client`. Métodos `embed_documents`, `embed_query`. Cache in-memory LRU por prompt para el ciclo actual de request.
-- [ ] T021 Crear [backend/app/services/widget_cache/vector_store_factory.py](backend/app/services/widget_cache/vector_store_factory.py): función `build_vector_store(session, embeddings) -> VectorStore`. Despacho por provider con imports lazy (Qdrant obligatorio, resto en try/except con error claro).
-- [ ] T022 Crear [backend/app/services/widget_cache/bootstrap.py](backend/app/services/widget_cache/bootstrap.py): al startup del backend, asegurar que la colección `widget_cache` existe en Qdrant default (crea si no). Registrar en `main.lifespan`.
-- [ ] T023 Crear [backend/app/services/widget_cache/cache_service.py](backend/app/services/widget_cache/cache_service.py): `CacheService.search(session, prompt, connection_id) -> list[CacheCandidate]`, `index(session, widget, prompt)`, `invalidate_by_connection(session, connection_id)`. Todas las queries usan filtros LangChain (`session_id`, `connection_id`, `data_schema_hash`, `invalidated_at IS NULL`). Incluir fallback FR-013: captura `VectorStoreUnavailable`, log warn, devuelve `[]` / `None`.
+- [x] T020 Crear [backend/app/services/embeddings/litellm_embeddings.py](backend/app/services/embeddings/litellm_embeddings.py): clase `LiteLLMEmbeddings(Embeddings)` con `embed_documents`, `embed_query`, cache LRU in-memory.
+- [x] T021 Crear [backend/app/services/widget_cache/vector_store_factory.py](backend/app/services/widget_cache/vector_store_factory.py): `build_vector_store(config, embeddings) -> VectorStore`. Despacho por provider con imports lazy.
+- [x] T022 Crear [backend/app/services/widget_cache/bootstrap.py](backend/app/services/widget_cache/bootstrap.py): `ensure_widget_cache_collection()` registrado en `main.lifespan`. Degradación graceful si Qdrant no disponible.
+- [x] T023 Crear [backend/app/services/widget_cache/cache_service.py](backend/app/services/widget_cache/cache_service.py): `CacheService` con `search/index/invalidate_by_connection`. Filtros obligatorios por `session_id`, `connection_id`, `data_schema_hash`. Fallback no-bloqueante (FR-013).
 
 ### Cifrado de credenciales BYO
 
-- [ ] T025 Reusar o exponer el helper de cifrado ya usado en [backend/app/models/connection.py](backend/app/models/connection.py) como módulo `backend/app/services/security/encryption.py`. Verificar que `VECTOR_STORE_ENCRYPTION_KEY` se lee al startup y aborta si no existe.
+- [x] T025 Crear [backend/app/services/security/encryption.py](backend/app/services/security/encryption.py): Fernet/SHA-256. `VECTOR_STORE_ENCRYPTION_KEY` requerida; RuntimeError claro si no está seteada.
 
 ### Repositorios
 
-- [ ] T030 [P] Crear [backend/app/repositories/collection_repository.py](backend/app/repositories/collection_repository.py): CRUD + operaciones N:M (add/remove widget). Queries SIEMPRE filtran por `session_id`.
-- [ ] T031 [P] Crear [backend/app/repositories/dashboard_repository.py](backend/app/repositories/dashboard_repository.py): CRUD + `update_layout(dashboard_id, items)`.
-- [ ] T032 [P] Crear [backend/app/repositories/vector_store_config_repository.py](backend/app/repositories/vector_store_config_repository.py): upsert por session (unique), decrypt transparente en `get`.
-- [ ] T033 [P] Crear [backend/app/repositories/widget_cache_repository.py](backend/app/repositories/widget_cache_repository.py): métodos sobre SQLite (espejo de metadata), NO toca el vector store directamente.
+- [x] T030 [P] Crear [backend/app/repositories/collection_repository.py](backend/app/repositories/collection_repository.py): CRUD + operaciones N:M (add/remove widget). Queries siempre filtran por `session_id`.
+- [x] T031 [P] Crear [backend/app/repositories/dashboard_repository.py](backend/app/repositories/dashboard_repository.py): CRUD + `update_layout(dashboard_id, items)` con clamping de width [1,12].
+- [x] T032 [P] Crear [backend/app/repositories/vector_store_config_repository.py](backend/app/repositories/vector_store_config_repository.py): upsert por session (unique), encrypt/decrypt transparente.
+- [x] T033 [P] Crear [backend/app/repositories/widget_cache_repository.py](backend/app/repositories/widget_cache_repository.py): acepta `WidgetCacheEntryORM` directamente (no fields sueltos). NO toca el vector store.
 
 ---
 

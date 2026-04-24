@@ -1,7 +1,7 @@
 # ADL-010: RAG Diferido Post-MVP (US5 fuera de la primera release)
 
 **Fecha:** 2026-04-22
-**Estado:** Activo
+**Estado:** Supersedida por ADL-023 (Feature 005, 2026-04-24)
 **Área:** Arquitectura
 **Autor:** AI Session
 
