@@ -10,14 +10,20 @@ interface OnboardingWizardControls {
   complete: () => void;
 }
 
+// Captured at module-load time — before any component (including useChat)
+// has a chance to create a new session ID in localStorage.
+// "true" means the user already had a session before this page load.
+const _hadSessionOnLoad =
+  typeof window !== "undefined" && !!window.localStorage.getItem("joi_session_id");
+
 export function useOnboardingWizard(): OnboardingWizardControls {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Show on every visit until the user explicitly completes the wizard.
-    // Note: useChat creates the session ID synchronously before this effect runs,
-    // so checking sessionId === null would always be false.
-    if (!joiStorage.onboarding.isCompleted()) {
+    // Show wizard only on genuine first visits (no prior session) and
+    // only while the user hasn't completed it yet.
+    const isFirstVisit = !_hadSessionOnLoad;
+    if (isFirstVisit && !joiStorage.onboarding.isCompleted()) {
       setIsOpen(true);
     }
   }, []);
