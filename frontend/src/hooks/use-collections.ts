@@ -180,11 +180,15 @@ export function useCollections(): UseCollectionsResult {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error(`Failed to save widget: ${res.status}`);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.detail ?? `Failed to save widget: ${res.status}`);
+        }
         return true;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-        return false;
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        setError(msg);
+        throw err;
       }
     },
     [],

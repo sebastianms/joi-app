@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -46,7 +47,13 @@ async def save_widget(
             detail="Fallback widgets cannot be saved",
         )
 
-    widget = await widget_repo.mark_saved(widget, body.display_name)
+    try:
+        widget = await widget_repo.mark_saved(widget, body.display_name)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Ya tienes un widget guardado con el nombre '{body.display_name}'",
+        )
 
     for cid in body.collection_ids:
         collection = await collection_repo.get(cid, body.session_id)

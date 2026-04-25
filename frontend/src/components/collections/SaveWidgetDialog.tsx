@@ -68,8 +68,8 @@ export function SaveWidgetDialog({
     try {
       await onSave(displayName.trim(), Array.from(selectedIds));
       onClose();
-    } catch {
-      setError("Error al guardar el widget");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar el widget");
     } finally {
       setIsSaving(false);
     }
