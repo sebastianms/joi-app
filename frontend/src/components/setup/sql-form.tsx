@@ -69,8 +69,9 @@ export function SQLConnectionForm() {
       </div>
 
       <div>
-        <label className={LABEL_CLS}>Motor</label>
+        <label htmlFor="sql-engine" className={LABEL_CLS}>Motor</label>
         <select
+          id="sql-engine"
           value={sourceType}
           onChange={(e) => setSourceType(e.target.value as SourceType)}
           className={INPUT_CLS}

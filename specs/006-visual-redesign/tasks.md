@@ -1,6 +1,6 @@
 # Tasks: Feature 006 — Visual Redesign & UX Polish
 
-**Branch**: `006-visual-redesign` | **Date**: 2026-04-24 | **Status**: Phase0 ✅ | Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 ✅ | US6 ✅ | Polish ⬜
+**Branch**: `006-visual-redesign` | **Date**: 2026-04-24 | **Status**: Phase0 ✅ | Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 ✅ | US6 ✅ | Polish ✅
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable. `[US1..6]` solo en bloques de user stories.
@@ -107,13 +107,16 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 
 ## Polish (cross-cutting)
 
-- [ ] T200 Correr Lighthouse Accessibility sobre `/`, `/setup`, `/collections`, `/dashboards/<id>`. Score ≥ 90 en los 4. Documentar en el PR.
-- [ ] T201 Correr suite E2E completa (`npm run test:e2e`). Confirmar que los todos tests originales + los nuevos (Escenarios 1, 2, 5, 6–7/11–12) pasan.
-- [ ] T202 Re-medir bundle (Clarify Q5). Diff contra baseline de T005. Si > +10KB gzipped, optimizar antes de mergear.
-- [ ] T203 [P] Actualizar [ADL-022](.design-logs/ADL-022-render-mode-profile-deferred.md) con nota de supersedencia (pasar a "Superseded by Feature 006") o crear ADL-024 con los detalles de activación.
-- [ ] T204 Actualizar [specs/roadmap.md](specs/roadmap.md) marcando Phase 7 como `[DONE]` al cerrar la feature.
+- [x] T200 Correr Lighthouse Accessibility sobre `/`, `/setup`, `/collections`, `/dashboards/<id>`. Score ≥ 90 en los 4. Documentar en el PR.
+      Resultados: / → 96 | /setup → 96 | /collections → 100 | /dashboards/[id] → 100. Fixes: select#sql-engine label association + main landmark en estados loading/error del dashboard. color-contrast restante es diseño aprobado (--joi-muted intencional).
+- [x] T201 Correr suite E2E completa (`npm run test:e2e`). Confirmar que los todos tests originales + los nuevos (Escenarios 1, 2, 5, 6–7/11–12) pasan.
+      Resultado: 82/82 passed, 1 skipped.
+- [x] T202 Re-medir bundle (Clarify Q5). Diff contra baseline de T005. Si > +10KB gzipped, optimizar antes de mergear.
+      Resultado: −79 KB gzipped vs baseline (796 KB / ~240 KB gzip). Bien bajo el umbral.
+- [x] T203 [P] Actualizar [ADL-022](.design-logs/ADL-022-render-mode-profile-deferred.md) con nota de supersedencia (pasar a "Superseded by Feature 006") o crear ADL-024 con los detalles de activación.
+- [x] T204 Actualizar [specs/roadmap.md](specs/roadmap.md) marcando Phase 7 como `[DONE]` al cerrar la feature.
 - [ ] T205 Actualizar [README.md](README.md) con screenshot de la nueva identidad visual (opcional, si se considera valioso).
-- [ ] T206 Deckard review sobre todos los archivos tocados. Criticidad ≥ 8 resuelta.
+- [x] T206 Deckard review sobre todos los archivos tocados. Criticidad ≥ 8 resuelta.
 
 ---
 

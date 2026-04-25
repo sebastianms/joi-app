@@ -62,3 +62,10 @@ Baseline main@fadf15f@2026-04-25:
 ```
 
 - Verificación: re-medir al cerrar Polish. Diff > +10KB gzipped bloquea merge.
+
+```
+Polish close main@d4f8183@2026-04-25:
+  Total static JS chunks (uncompressed): ~796 KB
+  Total static JS chunks (gzipped):      ~240 KB
+  Δ gzipped vs baseline:                 −79 KB ✅ (umbral: +10 KB)
+```

@@ -54,17 +54,17 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">
+      <main className="flex h-screen items-center justify-center text-sm text-muted-foreground">
         Cargando dashboard…
-      </div>
+      </main>
     );
   }
 
   if (error || !currentDashboard) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-destructive">
+      <main className="flex h-screen items-center justify-center text-sm text-destructive">
         {error ?? "Dashboard no encontrado."}
-      </div>
+      </main>
     );
   }
 
