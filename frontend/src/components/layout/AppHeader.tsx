@@ -23,17 +23,18 @@ export function AppHeader({ onOpenOnboarding }: AppHeaderProps) {
         border-b border-[color:var(--joi-border)]"
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5">
+      <Link href="/" className="flex items-center gap-2.5 group">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center
-            bg-[color:var(--joi-accent)] text-black text-[13px] font-bold leading-none"
+            bg-[color:var(--joi-accent)] text-black text-[13px] font-bold leading-none
+            group-hover:opacity-80 transition-opacity"
         >
           J
         </div>
-        <span className="text-[15px] font-semibold tracking-[0.12em] text-[color:var(--joi-text)]">
+        <span className="text-[15px] font-semibold tracking-[0.12em] text-[color:var(--joi-text)] group-hover:text-[color:var(--joi-accent)] transition-colors">
           JOI<span className="text-[color:var(--joi-accent)]">.</span>APP
         </span>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex items-center gap-2">
@@ -45,6 +46,13 @@ export function AppHeader({ onOpenOnboarding }: AppHeaderProps) {
             sesión · {shortSession}
           </span>
         )}
+        <Link
+          href="/"
+          className="px-3 py-1.5 text-[13px] font-medium text-[color:var(--joi-muted)]
+            rounded hover:text-[color:var(--joi-text)] hover:bg-white/5 transition-colors"
+        >
+          Chat
+        </Link>
         <Link
           href="/dashboards"
           className="px-3 py-1.5 text-[13px] font-medium text-[color:var(--joi-muted)]
