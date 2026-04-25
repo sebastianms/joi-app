@@ -23,15 +23,22 @@ export function WizardStepConnect({ onNext, onSkip }: WizardStepConnectProps) {
         >
           Omitir
         </button>
-        <Link
-          href="/setup"
-          onClick={onNext}
-          className="px-4 py-2 rounded text-sm font-semibold
-            bg-[color:var(--joi-accent)] text-black
-            hover:opacity-90 transition-opacity"
-        >
-          Ir a configurar →
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/setup"
+            className="text-xs text-[color:var(--joi-muted)] hover:text-[color:var(--joi-accent)] transition-colors px-2 py-1"
+          >
+            Ir a configurar
+          </Link>
+          <button
+            onClick={onNext}
+            className="px-4 py-2 rounded text-sm font-semibold
+              bg-[color:var(--joi-accent)] text-black
+              hover:opacity-90 transition-opacity"
+          >
+            Siguiente →
+          </button>
+        </div>
       </div>
     </>
   );
