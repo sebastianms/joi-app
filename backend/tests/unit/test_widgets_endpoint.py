@@ -56,6 +56,29 @@ async def test_save_widget_404_on_missing(client: AsyncClient, session_id: str):
     assert res.status_code == 404
 
 
+async def test_save_widget_duplicate_name_returns_409(client: AsyncClient, db_session: AsyncSession, session_id: str):
+    w1 = _make_widget(session_id, widget_id="w-dup-1")
+    w2 = _make_widget(session_id, widget_id="w-dup-2")
+    db_session.add(w1)
+    db_session.add(w2)
+    await db_session.flush()
+
+    res1 = await client.post("/api/widgets/w-dup-1/save", json={
+        "session_id": session_id,
+        "display_name": "Duplicado",
+        "collection_ids": [],
+    })
+    assert res1.status_code == 200
+
+    res2 = await client.post("/api/widgets/w-dup-2/save", json={
+        "session_id": session_id,
+        "display_name": "Duplicado",
+        "collection_ids": [],
+    })
+    assert res2.status_code == 409
+    assert "Duplicado" in res2.json()["detail"]
+
+
 async def test_save_fallback_widget_returns_422(client: AsyncClient, db_session: AsyncSession, session_id: str):
     fallback = _make_widget(session_id, selection_source="fallback", widget_id="w-fallback")
     db_session.add(fallback)
