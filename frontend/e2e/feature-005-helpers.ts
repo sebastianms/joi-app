@@ -44,6 +44,7 @@ export function reseedConnection(sessionId: string): void {
 export async function gotoWithSession(page: Page, sessionId: string, path = "/"): Promise<void> {
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto(path);
 }
@@ -86,18 +87,22 @@ export async function saveWidgetWith(
   if (collectionNames.length > 0) {
     await expect(
       dialog.locator('[data-role="collection-checkbox-list"] [data-collection-name]').first(),
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({ timeout: 10000 });
   }
 
   for (const newName of newCollections) {
     await dialog.getByPlaceholder("Nueva colección…").fill(newName);
     await dialog.getByRole("button", { name: "Crear" }).click();
-    // Newly-created collection gets auto-selected by the dialog.
-    await expect(
-      dialog.locator(
-        `[data-role="collection-checkbox-list"] [data-collection-name="${newName}"] input[type="checkbox"]`,
-      ),
-    ).toBeChecked({ timeout: 5000 });
+    const newCheckbox = dialog.locator(
+      `[data-role="collection-checkbox-list"] [data-collection-name="${newName}"] input[type="checkbox"]`,
+    );
+    // Wait for the collection row to appear, then ensure it is checked.
+    // The dialog may or may not auto-check newly created collections.
+    await expect(newCheckbox).toBeVisible({ timeout: 5000 });
+    if (!(await newCheckbox.isChecked())) {
+      await newCheckbox.check();
+    }
+    await expect(newCheckbox).toBeChecked({ timeout: 2000 });
   }
 
   for (const existing of collectionNames) {

@@ -1,7 +1,7 @@
 # ADL-022: RenderModeProfile y Setup Wizard — Modelo de Datos Implementado, UI Diferida
 
 **Fecha:** 2026-04-23
-**Estado:** Activo — UI/endpoints diferidos a Feature 005 US6
+**Estado:** Supersedida por Feature 006 (ADL completado 2026-04-25)
 **Área:** Arquitectura / Backend / Frontend
 **Autor:** AI Session
 
@@ -65,6 +65,18 @@ Durante la implementación, T010–T012 se completaron (modelo, ORM, repositorio
 |---|---|
 | Implementar UI ahora sin Feature 005 | Crearía un Setup Wizard inconsistente visualmente (viejo diseño + nuevo step) |
 | No implementar el modelo de datos hasta Feature 005 | El chat_manager necesita el default lazy en cada request — mejor tenerlo ya |
+
+---
+
+## Supersedencia — Feature 006 (2026-04-25)
+
+Feature 006 implementó todo lo diferido en este ADL:
+- `GET/PUT /api/render-mode/{session_id}` activos y con tests.
+- `VectorStoreStep` + tab "Widgets" en Setup con selector de 4 modos (shadcn, bootstrap, heroui, design_system_disabled).
+- Escenarios 11–12 automatizados en `frontend/e2e/feature-006-render-mode.spec.ts`.
+- Adaptadores de librería en `frontend/src/lib/widget-runtime/adapters/`.
+
+Este ADL queda como registro histórico de la decisión de diferimiento. El estado definitivo de la arquitectura de render-mode está en Feature 006 tasks y commits correspondientes.
 
 ---
 

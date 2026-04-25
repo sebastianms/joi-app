@@ -24,6 +24,15 @@ const SESSION = E2E_SESSION_ID;
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 async function gotoWithSession(page: Page, sessionId: string, path = "/"): Promise<void> {
+  await page.route("**/api/chat/messages", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+      body.skip_cache = true;
+      await route.continue({ postData: JSON.stringify(body) });
+    } else {
+      await route.continue();
+    }
+  });
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
     window.localStorage.setItem("joi_onboarding_completed", "true"); // suppress wizard
@@ -32,11 +41,16 @@ async function gotoWithSession(page: Page, sessionId: string, path = "/"): Promi
 }
 
 async function gotoFreshSession(page: Page): Promise<void> {
-  // Clear all Joi keys so the wizard triggers
+  // Use sessionStorage as a run-once guard so the initScript clears localStorage only
+  // on the FIRST page load per test — not on subsequent page.reload() calls within the
+  // same test. sessionStorage persists across reloads but is destroyed with the page.
   await page.addInitScript(() => {
-    window.localStorage.removeItem("joi_session_id");
-    window.localStorage.removeItem("joi_onboarding_completed");
-    window.localStorage.removeItem("joi_render_mode");
+    if (!sessionStorage.getItem("__joi_e2e_cleared")) {
+      sessionStorage.setItem("__joi_e2e_cleared", "1");
+      localStorage.removeItem("joi_session_id");
+      localStorage.removeItem("joi_onboarding_completed");
+      localStorage.removeItem("joi_render_mode");
+    }
   });
   await page.goto("/");
 }
@@ -98,16 +112,27 @@ test.describe("Esc 1 — Primera visita dispara el OnboardingWizard", () => {
   });
 
   test("paso 2 y 3 accesibles via 'Ir a configurar' sin navegar (intercept)", async ({ page }) => {
-    // Intercept /setup navigation so the wizard state is preserved
-    await page.route("**/setup**", (route) => route.fulfill({ status: 200, body: "" }));
+    // Use a capture-phase listener to preventDefault on /setup link clicks.
+    // This stops the browser (and Next.js router) from following the href, while
+    // React's synthetic onClick={onNext} still fires (we don't stopPropagation).
+    await page.addInitScript(() => {
+      document.addEventListener(
+        "click",
+        (e) => {
+          const a = (e.target as Element)?.closest?.("a[href*='setup']");
+          if (a) e.preventDefault();
+        },
+        { capture: true },
+      );
+    });
     await gotoFreshSession(page);
     const dialog = await getDialog(page);
     await expect(dialog).toBeVisible({ timeout: 3000 });
 
-    // Step 1 → click "Ir a configurar" (intercepted, no navigation)
-    await dialog.getByRole("link", { name: /ir a configurar/i }).click();
+    // Step 1 → noWaitAfter so Playwright doesn't block on navigation that won't happen.
+    await dialog.getByRole("link", { name: /ir a configurar/i }).click({ noWaitAfter: true });
     // Step 2 should now be visible
-    await expect(dialog.getByText(/pregunta por tus datos/i)).toBeVisible({ timeout: 2000 });
+    await expect(dialog.getByText(/pregunta por tus datos/i)).toBeVisible({ timeout: 3000 });
 
     // Step 2 → Entendido
     await dialog.getByRole("button", { name: /entendido/i }).click();
@@ -268,8 +293,8 @@ test.describe("Esc 8 — Integración visual con Feature 005", () => {
     const suggestion = page.locator('[data-role="cache-reuse-suggestion"]');
     const count = await suggestion.count();
     if (count > 0) {
-      await expect(page.locator('[data-role="cache-reuse-button"]')).toBeVisible();
-      await expect(page.locator('[data-role="cache-skip-button"]')).toBeVisible();
+      await expect(page.locator('[data-role="cache-reuse-button"]').first()).toBeVisible();
+      await expect(page.locator('[data-role="cache-skip-button"]').first()).toBeVisible();
     }
   });
 });
@@ -297,10 +322,12 @@ test.describe("Esc 9 — Reset completo (contrato localStorage)", () => {
 
   test("nueva sesión se genera tras reset cuando se envía un mensaje", async ({ page }) => {
     await gotoFreshSession(page);
-    // Complete onboarding
+    // Complete onboarding — wait for React to hydrate before checking visibility
     const dialog = await getDialog(page);
+    await dialog.waitFor({ state: "visible", timeout: 3000 }).catch(() => {});
     if (await dialog.isVisible()) {
       await dialog.getByRole("button", { name: /omitir/i }).click();
+      await expect(dialog).not.toBeVisible({ timeout: 2000 });
     }
     await sendMessage(page, "hola");
     const sessionId = await page.evaluate(() => localStorage.getItem("joi_session_id"));

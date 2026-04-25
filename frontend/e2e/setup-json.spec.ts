@@ -4,16 +4,22 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 test.describe('JSON Uploads Setup', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('joi_onboarding_completed', 'true');
+    });
+  });
   let validFilePath: string;
   let largeFilePath: string;
 
   test.beforeAll(() => {
     const tmpDir = os.tmpdir();
+    const suffix = process.pid;
 
-    validFilePath = path.join(tmpDir, 'valid-test.json');
+    validFilePath = path.join(tmpDir, `valid-test-${suffix}.json`);
     fs.writeFileSync(validFilePath, JSON.stringify([{ id: 1, name: 'test' }]));
 
-    largeFilePath = path.join(tmpDir, 'large-test.json');
+    largeFilePath = path.join(tmpDir, `large-test-${suffix}.json`);
     const largeContent = Buffer.alloc(11 * 1024 * 1024, ' ');
     fs.writeFileSync(largeFilePath, largeContent);
   });

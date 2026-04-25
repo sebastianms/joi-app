@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('SQL Connections Setup', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('joi_onboarding_completed', 'true');
+    });
+  });
+
   test('should successfully test and save a valid SQL connection', async ({ page }) => {
     await page.goto('/setup');
 

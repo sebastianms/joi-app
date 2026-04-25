@@ -23,6 +23,8 @@ const CACHE_SESSION = `${E2E_SESSION_ID}-cache-hit`;
 const SCHEMA_SESSION = `${E2E_SESSION_ID}-schema-invalidation`;
 
 test.describe("Esc 3 — Recuperar widget por nombre (US4)", () => {
+  test.describe.configure({ mode: "serial" });
+
   test.beforeEach(async () => {
     resetSessionState(RECOVER_SESSION);
   });
@@ -31,11 +33,22 @@ test.describe("Esc 3 — Recuperar widget por nombre (US4)", () => {
     page,
   }) => {
     // Save "Churn mensual 2025" on a seed prompt
+    await page.route("**/api/chat/messages", async (route) => {
+      if (route.request().method() === "POST") {
+        const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+        body.skip_cache = true;
+        await route.continue({ postData: JSON.stringify(body) });
+      } else {
+        await route.continue();
+      }
+    });
     await gotoWithSession(page, RECOVER_SESSION);
     await sendMessage(page, "ventas por mes 2025");
     await waitForAssistantReply(page, 1);
     await waitForWidgetFrame(page);
     await saveWidgetWith(page, "Churn mensual 2025", [], ["Métricas"]);
+    // Give Qdrant time to index the saved widget before the recovery API call.
+    await page.waitForTimeout(2000);
 
     // New session: same seed but fresh message history — call /chat with recovery intent
     const res = (await apiRequest("POST", "/chat/messages", {
@@ -56,6 +69,15 @@ test.describe("Esc 3 — Recuperar widget por nombre (US4)", () => {
   });
 
   test("prompt ambiguo devuelve candidates cuando hay varios widgets", async ({ page }) => {
+    await page.route("**/api/chat/messages", async (route) => {
+      if (route.request().method() === "POST") {
+        const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+        body.skip_cache = true;
+        await route.continue({ postData: JSON.stringify(body) });
+      } else {
+        await route.continue();
+      }
+    });
     await gotoWithSession(page, RECOVER_SESSION);
     await sendMessage(page, "ventas por mes 2025");
     await waitForAssistantReply(page, 1);
@@ -85,6 +107,8 @@ test.describe("Esc 3 — Recuperar widget por nombre (US4)", () => {
 });
 
 test.describe("Esc 4 — RAG cache hit con Qdrant default (US5)", () => {
+  test.describe.configure({ mode: "serial" });
+
   test.beforeEach(async () => {
     resetSessionState(CACHE_SESSION);
   });
@@ -99,6 +123,12 @@ test.describe("Esc 4 — RAG cache hit con Qdrant default (US5)", () => {
     await sendMessage(page, prompt);
     await waitForAssistantReply(page, 1);
     await waitForWidgetFrame(page);
+
+    // Wait for Qdrant to finish indexing the turn-1 entry before turn 2 arrives.
+    // Without this, the similarity search in turn 2 may find nothing (same timing
+    // issue that Esc 3 works around with its own page.waitForTimeout before the
+    // API call).
+    await page.waitForTimeout(2000);
 
     // Turn 2 — identical prompt → cosine = 1.0 → guaranteed hit
     await sendMessage(page, prompt);
@@ -121,6 +151,20 @@ test.describe("Esc 4 — RAG cache hit con Qdrant default (US5)", () => {
     page,
   }) => {
     await gotoWithSession(page, CACHE_SESSION);
+
+    // Inject skip_cache only for the first POST so we always get a fresh widget_spec
+    // on the priming message, even if a similar prompt is already cached in Qdrant.
+    let primed = false;
+    await page.route("**/api/chat/messages", async (route) => {
+      if (!primed && route.request().method() === "POST") {
+        primed = true;
+        const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+        body.skip_cache = true;
+        await route.continue({ postData: JSON.stringify(body) });
+      } else {
+        await route.continue();
+      }
+    });
 
     // Prime the cache with an initial generation.
     await sendMessage(page, "ventas por región en 2025");

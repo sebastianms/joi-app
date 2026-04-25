@@ -25,6 +25,7 @@ const RESET_SESSION = `${E2E_SESSION_ID}-render-mode-reset`;
 async function gotoSetupWithSession(page: import("@playwright/test").Page, sessionId: string) {
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto("/setup");
 }
@@ -57,22 +58,22 @@ test.describe("Esc 11 — Cambio de render-mode vía Setup (US6)", () => {
     await gotoSetupWithSession(page, CHANGE_SESSION);
     await page.getByRole("tab", { name: "Widgets" }).click();
 
-    // Intercept the PUT call
-    const putPromise = page.waitForRequest(
-      (req) =>
-        req.method() === "PUT" &&
-        req.url().includes(`/api/render-mode/${CHANGE_SESSION}`),
+    // Wait for the PUT response (localStorage is updated after response completes)
+    const putResponsePromise = page.waitForResponse(
+      (res) =>
+        res.request().method() === "PUT" &&
+        res.url().includes(`/api/render-mode/${CHANGE_SESSION}`),
     );
 
     await page.locator('[data-role="render-mode-option-bootstrap"]').click();
-    const putReq = await putPromise;
+    const putRes = await putResponsePromise;
 
     // Verify request body
-    const body = JSON.parse(putReq.postData() ?? "{}") as { mode: string; ui_library: string };
+    const body = JSON.parse(putRes.request().postData() ?? "{}") as { mode: string; ui_library: string };
     expect(body.mode).toBe("ui_framework");
     expect(body.ui_library).toBe("bootstrap");
 
-    // Verify localStorage updated
+    // Verify localStorage updated (hook sets it after response)
     const stored = await page.evaluate(() => localStorage.getItem("joi_render_mode"));
     expect(stored).toBe("bootstrap");
   });

@@ -19,6 +19,7 @@ import { E2E_SESSION_ID } from "./global-setup";
 async function gotoWithSession(page: Page, sessionId: string): Promise<void> {
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto("/");
 }

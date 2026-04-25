@@ -28,8 +28,18 @@ const EXPECTED_FORBIDDEN_FLAGS = [
 ];
 
 async function gotoWithSession(page: Page, sessionId: string): Promise<void> {
+  await page.route("**/api/chat/messages", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+      body.skip_cache = true;
+      await route.continue({ postData: JSON.stringify(body) });
+    } else {
+      await route.continue();
+    }
+  });
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto("/");
 }

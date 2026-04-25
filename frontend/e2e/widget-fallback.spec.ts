@@ -20,8 +20,18 @@ import { test, expect, type Page } from "@playwright/test";
 import { E2E_SESSION_ID } from "./global-setup";
 
 async function gotoWithSession(page: Page, sessionId: string): Promise<void> {
+  await page.route("**/api/chat/messages", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+      body.skip_cache = true;
+      await route.continue({ postData: JSON.stringify(body) });
+    } else {
+      await route.continue();
+    }
+  });
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto("/");
 }
@@ -51,7 +61,10 @@ test.describe("T406a — fallback table: sesión operativa tras generador fallid
         return;
       }
       intercepted = true;
-      const response = await route.fetch();
+      // Force skip_cache so backend returns widget_spec (not cache_suggestion)
+      const reqBody = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+      reqBody.skip_cache = true;
+      const response = await route.fetch({ postData: JSON.stringify(reqBody) });
       const json = await response.json();
       // Inject a minimal fallback table widget_spec (overrides whatever the backend returned).
       if (json.widget_spec) {

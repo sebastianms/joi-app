@@ -20,6 +20,8 @@ import { E2E_SESSION_ID } from "./global-setup";
 const SESSION = `${E2E_SESSION_ID}-save-widget`;
 
 test.describe("Esc 1 — Guardar widget en varias colecciones (US1 + US2)", () => {
+  test.describe.configure({ mode: "serial" });
+
   test.beforeEach(() => {
     resetSessionState(SESSION);
   });
@@ -33,9 +35,9 @@ test.describe("Esc 1 — Guardar widget en varias colecciones (US1 + US2)", () =
       name: "Comercial",
     })) as { id: string };
 
-    // 2. Generate a widget
+    // 2. Generate a widget — use a unique prompt to avoid Qdrant cache interference
     await gotoWithSession(page, SESSION);
-    await sendMessage(page, "ventas por mes 2025");
+    await sendMessage(page, "ventas colecciones test 2025 desglose mensual");
     await waitForAssistantReply(page);
     await waitForWidgetFrame(page);
 

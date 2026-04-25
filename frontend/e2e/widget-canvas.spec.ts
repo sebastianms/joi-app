@@ -17,8 +17,20 @@ import { test, expect, type Page } from "@playwright/test";
 import { E2E_SESSION_ID } from "./global-setup";
 
 async function gotoWithSession(page: Page, sessionId: string): Promise<void> {
+  // Force skip_cache so parallel tests that already cached a widget_spec
+  // don't receive a cache_suggestion instead of widget_spec here.
+  await page.route("**/api/chat/messages", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+      body.skip_cache = true;
+      await route.continue({ postData: JSON.stringify(body) });
+    } else {
+      await route.continue();
+    }
+  });
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto("/");
 }
@@ -122,7 +134,7 @@ test.describe("Esc 1d — Canvas empty state con row_count=0", () => {
     await expect(canvas).toBeVisible();
 
     // Sin ningún prompt enviado, el canvas muestra el placeholder inicial
-    await expect(canvas).toContainText("Los widgets generados aparecerán aquí");
+    await expect(canvas).toContainText("Tu canvas está esperando");
   });
 });
 

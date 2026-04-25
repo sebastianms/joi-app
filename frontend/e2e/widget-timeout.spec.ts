@@ -38,8 +38,18 @@ async function gotoWithInterceptedBundle(page: Page, sessionId: string): Promise
       body: NO_OP_BUNDLE,
     }),
   );
+  await page.route("**/api/chat/messages", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+      body.skip_cache = true;
+      await route.continue({ postData: JSON.stringify(body) });
+    } else {
+      await route.continue();
+    }
+  });
   await page.addInitScript((sid) => {
     window.localStorage.setItem("joi_session_id", sid);
+    window.localStorage.setItem("joi_onboarding_completed", "true");
   }, sessionId);
   await page.goto("/");
 }
@@ -118,9 +128,19 @@ test.describe("T303b — RENDER_ERROR persiste cuando el fetch del bundle falla 
   test("error de bundle permanece visible tras recibir widget_spec", async ({ page }) => {
     // Abort the bundle request entirely — bundleCode stays null
     await page.route("**/widget-runtime.bundle.js", (route) => route.abort("failed"));
+    await page.route("**/api/chat/messages", async (route) => {
+      if (route.request().method() === "POST") {
+        const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+        body.skip_cache = true;
+        await route.continue({ postData: JSON.stringify(body) });
+      } else {
+        await route.continue();
+      }
+    });
 
     await page.addInitScript((sid) => {
       window.localStorage.setItem("joi_session_id", sid);
+      window.localStorage.setItem("joi_onboarding_completed", "true");
     }, `${E2E_SESSION_ID}`);
     await page.goto("/");
 

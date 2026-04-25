@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Chat Engine - Basic Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('joi_onboarding_completed', 'true');
+    });
+  });
+
   test('should send a simple message and render the assistant echo response', async ({ page }) => {
     await page.goto('/');
 

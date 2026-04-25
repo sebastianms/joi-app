@@ -34,14 +34,14 @@ Carpeta: [specs/005-dashboards-collections/](005-dashboards-collections/). US1�
 - [x] Recuperación de widgets guardados desde el chat por nombre (US4).
 - [x] Integración del sistema RAG como memoria caché de widgets (US5) — activada sobre LangChain + Qdrant default (Docker) + BYO vector store opcional (Chroma/Pinecone/Weaviate/PGVector). Supersedencia parcial de ADL-010 documentada en [ADL-023](../.design-logs/ADL-023-rag-langchain-byo-vector-store.md).
 
-## Phase 7: Visual Redesign & UX Polish — Feature 006
-Carpeta: [specs/006-visual-redesign/](006-visual-redesign/). Spec, Clarify, Plan y Tasks listos (2026-04-24). Incluye cierre del backlog diferido de Feature 004 (T129–T131 adaptadores UI; T501–T507 render-mode selector) — supersede ADL-022 al completar Implement.
-- [ ] Identidad visual Blade Runner 2049: paleta dark-first, tokens CSS, glow/glass acotado (US1).
-- [ ] Layout dual rediseñado: header, separador de panels, responsive mobile (US2).
-- [ ] Componentes de chat rediseñados: burbujas, AgentTrace, WidgetGenerationTrace (US3).
-- [ ] Canvas con estados visuales ricos: idle, generating, bootstrapping, error (US4).
-- [ ] Onboarding wizard de primera vez: modal 3 pasos, activación automática (US5).
-- [ ] Setup page rediseñada con la identidad visual de la app (US6).
+## Phase 7: Visual Redesign & UX Polish — Feature 006 [DONE]
+Carpeta: [specs/006-visual-redesign/](006-visual-redesign/). Completada 2026-04-25. Cierra el backlog diferido de Feature 004 (T129–T131 adaptadores UI; T501–T507 render-mode selector) — supersede ADL-022.
+- [x] Identidad visual Blade Runner 2049: paleta dark-first, tokens CSS, glow/glass acotado (US1).
+- [x] Layout dual rediseñado: header, separador de panels, responsive mobile (US2).
+- [x] Componentes de chat rediseñados: burbujas, AgentTrace, WidgetGenerationTrace (US3).
+- [x] Canvas con estados visuales ricos: idle, generating, bootstrapping, error (US4).
+- [x] Onboarding wizard de primera vez: modal 3 pasos, activación automática (US5).
+- [x] Setup page rediseñada con la identidad visual de la app (US6).
   - Incluye selector de render-mode (shadcn/bootstrap/heroui + Design System deshabilitado) — Feature 004 T501–T507 diferidas.
   - Incluye implementación de adaptadores UI para el runtime del widget (T129–T131) y cobertura de Escenarios 6–7 y 11–12 del quickstart de Feature 004 (T307, T507).
 
