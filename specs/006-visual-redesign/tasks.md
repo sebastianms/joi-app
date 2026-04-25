@@ -76,12 +76,12 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 
 ## User Story 5 — Onboarding wizard de primera visita (P2, Q3)
 
-- [ ] T060 [US5] Crear [frontend/src/hooks/useOnboardingWizard.ts](frontend/src/hooks/useOnboardingWizard.ts) según `contracts/components.md`.
-- [ ] T061 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepConnect.tsx](frontend/src/components/onboarding/WizardStepConnect.tsx).
-- [ ] T062 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepAsk.tsx](frontend/src/components/onboarding/WizardStepAsk.tsx) con ejemplo de prompt.
-- [ ] T063 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepGenerate.tsx](frontend/src/components/onboarding/WizardStepGenerate.tsx) con preview estático de un widget.
-- [ ] T064 [US5] Crear [frontend/src/components/onboarding/OnboardingWizard.tsx](frontend/src/components/onboarding/OnboardingWizard.tsx) orquestando los 3 pasos + overlay dismissable.
-- [ ] T065 [US5] Integrar `OnboardingWizard` en `layout.tsx` controlado por `useOnboardingWizard`. Botón "¿Cómo funciona?" en `AppHeader` llama `open()`.
+- [x] T060 [US5] Crear [frontend/src/hooks/useOnboardingWizard.ts](frontend/src/hooks/useOnboardingWizard.ts) según `contracts/components.md`.
+- [x] T061 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepConnect.tsx](frontend/src/components/onboarding/WizardStepConnect.tsx).
+- [x] T062 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepAsk.tsx](frontend/src/components/onboarding/WizardStepAsk.tsx) con ejemplo de prompt.
+- [x] T063 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepGenerate.tsx](frontend/src/components/onboarding/WizardStepGenerate.tsx) con preview estático de un widget.
+- [x] T064 [US5] Crear [frontend/src/components/onboarding/OnboardingWizard.tsx](frontend/src/components/onboarding/OnboardingWizard.tsx) orquestando los 3 pasos + overlay dismissable.
+- [x] T065 [US5] Integrar `OnboardingWizard` en `layout.tsx` controlado por `useOnboardingWizard`. Botón "¿Cómo funciona?" en `AppHeader` llama `open()`.
 - [ ] T066 [P] [US5] Playwright test: `localStorage.clear()` + reload → wizard aparece → completar → flag queda en localStorage → reload → no reaparece (Escenario 1 del quickstart).
 
 ---

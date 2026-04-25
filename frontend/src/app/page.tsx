@@ -6,7 +6,9 @@ import { CanvasPanel } from "@/components/canvas/canvas-panel";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { PanelSeparator } from "@/components/layout/PanelSeparator";
 import { LayoutTabs } from "@/components/layout/LayoutTabs";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { useLayoutMode } from "@/hooks/useLayoutMode";
+import { useOnboardingWizard } from "@/hooks/useOnboardingWizard";
 import { useChat, type ChatMessage } from "@/hooks/use-chat";
 import type { WidgetSpec } from "@/types/widget";
 
@@ -43,6 +45,7 @@ function pickCanvasSource(messages: ChatMessage[]): CanvasSource {
 export default function Home() {
   const chat = useChat();
   const layoutMode = useLayoutMode();
+  const onboarding = useOnboardingWizard();
   const [activeTab, setActiveTab] = useState<"chat" | "canvas">("chat");
   const { widgetSpec, dataRows, extractionEmpty } = pickCanvasSource(chat.messages);
 
@@ -59,7 +62,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <AppHeader />
+      <AppHeader onOpenOnboarding={onboarding.open} />
 
       {layoutMode === "dual" ? (
         <main className="flex flex-1 min-h-0 overflow-hidden">
@@ -81,6 +84,11 @@ export default function Home() {
           />
         </main>
       )}
+      <OnboardingWizard
+        open={onboarding.isOpen}
+        onClose={onboarding.close}
+        onComplete={onboarding.complete}
+      />
     </div>
   );
 }
