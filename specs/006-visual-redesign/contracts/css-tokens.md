@@ -3,7 +3,7 @@
 **Archivo fuente**: [frontend/src/app/globals.css](frontend/src/app/globals.css)
 **Modo de referenciado**: Tailwind v4 `@theme` block + CSS variables nativas.
 
-> Los **valores** se definen al completar Fase 0 (validación visual, Clarify Q1). Este contrato fija los **nombres, roles y reglas de uso**.
+> Valores **aprobados** en mockup 2026-04-25 (Clarify Q1 cerrado).
 
 ---
 
@@ -11,21 +11,20 @@
 
 ```css
 :root {
-  --joi-bg:               <hex>;            /* fondo base */
-  --joi-surface:          <hex>;            /* panels */
-  --joi-surface-elevated: <hex>;            /* overlays */
-  --joi-border:           <rgba>;           /* bordes sutiles */
-  --joi-accent:           <hex>;            /* acción primaria */
-  --joi-accent-warm:      <hex>;            /* alertas */
-  --joi-text:             <hex>;            /* texto principal */
-  --joi-muted:            <hex>;            /* texto secundario */
-  --joi-glow:             <rgba>;           /* glow del acento */
+  --joi-bg:               #0a0d12;
+  --joi-surface:          #111520;
+  --joi-surface-elevated: #161b28;
+  --joi-border:           rgba(255,255,255,0.08);
+  --joi-accent:           #00d4ff;
+  --joi-accent-warm:      #f5a623;
+  --joi-text:             #e2e8f0;
+  --joi-muted:            #64748b;
+  --joi-glow:             rgba(0,212,255,0.15);
+  --joi-success:          #22c55e;
 }
 ```
 
-Valores propuestos (pre-validación):
-
-| Token | Valor propuesto |
+| Token | Valor |
 |---|---|
 | `--joi-bg` | `#0a0d12` |
 | `--joi-surface` | `#111520` |
@@ -36,6 +35,7 @@ Valores propuestos (pre-validación):
 | `--joi-text` | `#e2e8f0` |
 | `--joi-muted` | `#64748b` |
 | `--joi-glow` | `rgba(0,212,255,0.15)` |
+| `--joi-success` | `#22c55e` |
 
 ---
 
@@ -55,10 +55,10 @@ Valores propuestos (pre-validación):
 - Medir `npm run build` en frontend sobre HEAD `main` al iniciar Implement. Registrar aquí:
 
 ```
-Baseline main@<commit-sha>@2026-04-24:
-  Route `/`              First Load JS: <TBD>kB gzipped
-  Route `/setup`         First Load JS: <TBD>kB gzipped
-  Shared JS              <TBD>kB gzipped
+Baseline main@fadf15f@2026-04-25:
+  Total static JS chunks (uncompressed): 1.1 MB
+  Total static JS chunks (gzipped):      ~319 KB
+  (Turbopack build — no per-route breakdown disponible en output)
 ```
 
 - Verificación: re-medir al cerrar Polish. Diff > +10KB gzipped bloquea merge.

@@ -108,7 +108,7 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 ## Polish (cross-cutting)
 
 - [ ] T200 Correr Lighthouse Accessibility sobre `/`, `/setup`, `/collections`, `/dashboards/<id>`. Score ≥ 90 en los 4. Documentar en el PR.
-- [ ] T201 Correr suite E2E completa (`npm run test:e2e`). Confirmar que los 22 tests originales + los nuevos (Escenarios 1, 2, 5, 6–7/11–12) pasan.
+- [ ] T201 Correr suite E2E completa (`npm run test:e2e`). Confirmar que los todos tests originales + los nuevos (Escenarios 1, 2, 5, 6–7/11–12) pasan.
 - [ ] T202 Re-medir bundle (Clarify Q5). Diff contra baseline de T005. Si > +10KB gzipped, optimizar antes de mergear.
 - [ ] T203 [P] Actualizar [ADL-022](.design-logs/ADL-022-render-mode-profile-deferred.md) con nota de supersedencia (pasar a "Superseded by Feature 006") o crear ADL-024 con los detalles de activación.
 - [ ] T204 Actualizar [specs/roadmap.md](specs/roadmap.md) marcando Phase 7 como `[DONE]` al cerrar la feature.

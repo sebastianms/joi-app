@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joi App — Visual Mockup 006</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Token candidates (pre-validación) ─────────────────────────────── */
+    :root {
+      --joi-bg:               #0a0d12;
+      --joi-surface:          #111520;
+      --joi-surface-elevated: #161b28;
+      --joi-border:           rgba(255,255,255,0.08);
+      --joi-accent:           #00d4ff;
+      --joi-accent-warm:      #f5a623;
+      --joi-text:             #e2e8f0;
+      --joi-muted:            #64748b;
+      --joi-glow:             rgba(0,212,255,0.15);
+      --joi-success:          #22c55e;
+      --joi-error:            #f5a623;
+
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--joi-bg);
+      color: var(--joi-text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 52px;
+      background: color-mix(in srgb, var(--joi-surface) 60%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--joi-border);
+      flex-shrink: 0;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo .logo-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--joi-accent) 0%, #0084a8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #000;
+      letter-spacing: -0.5px;
+    }
+
+    .header-logo .logo-name {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--joi-text);
+    }
+
+    .header-logo .logo-name span {
+      color: var(--joi-accent);
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+      background: none;
+      color: var(--joi-text);
+    }
+
+    .btn-ghost {
+      color: var(--joi-muted);
+    }
+    .btn-ghost:hover { color: var(--joi-text); background: rgba(255,255,255,0.05); }
+
+    .btn-primary {
+      background: var(--joi-accent);
+      color: #000;
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 0 3px var(--joi-glow);
+    }
+
+    .btn-outline {
+      border-color: var(--joi-border);
+      color: var(--joi-muted);
+    }
+    .btn-outline:hover {
+      border-color: var(--joi-accent);
+      color: var(--joi-accent);
+    }
+
+    .session-badge {
+      font-size: 11px;
+      color: var(--joi-muted);
+      padding: 3px 8px;
+      border: 1px solid var(--joi-border);
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Dual panel ─────────────────────────────────────────────────────── */
+    .panels {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .chat-panel {
+      width: 420px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: color-mix(in srgb, var(--joi-surface) 60%, transparent);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid var(--joi-border);
+    }
+
+    .panel-separator {
+      width: 1px;
+      background: var(--joi-border);
+      box-shadow: 2px 0 12px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+    }
+
+    .canvas-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: color-mix(in srgb, var(--joi-surface) 40%, transparent);
+      backdrop-filter: blur(8px);
+    }
+
+    /* ── Panel headers ──────────────────────────────────────────────────── */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--joi-border);
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--joi-muted);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--joi-success);
+    }
+
+    .status-dot.thinking {
+      background: var(--joi-accent);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Chat messages ──────────────────────────────────────────────────── */
+    .chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .chat-log::-webkit-scrollbar { width: 4px; }
+    .chat-log::-webkit-scrollbar-track { background: transparent; }
+    .chat-log::-webkit-scrollbar-thumb { background: var(--joi-border); border-radius: 2px; }
+
+    .message-user {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .message-user .bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 12px 12px 2px 12px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .message-agent {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--joi-accent) 0%, #0084a8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .agent-text {
+      max-width: 85%;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--joi-text);
+    }
+
+    /* ── Agent Trace ────────────────────────────────────────────────────── */
+    .agent-trace {
+      margin-top: 8px;
+      border: 1px solid var(--joi-border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .agent-trace-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--joi-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .agent-trace-header .icon { font-size: 12px; }
+
+    .agent-trace-body {
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.25);
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 11.5px;
+      line-height: 1.7;
+      color: var(--joi-muted);
+      border-top: 1px solid var(--joi-border);
+    }
+
+    .sql-keyword { color: var(--joi-accent); font-weight: 600; }
+    .sql-string  { color: var(--joi-accent-warm); }
+    .sql-comment { color: #4a5568; font-style: italic; }
+
+    /* ── Widget Generation Trace ────────────────────────────────────────── */
+    .wgt-trace {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid var(--joi-border);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.02);
+      font-size: 11px;
+    }
+
+    .wgt-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .wgt-badge.generated {
+      background: rgba(0,212,255,0.15);
+      color: var(--joi-accent);
+      animation: pulse-badge 2s infinite;
+    }
+
+    .wgt-badge.cache {
+      background: rgba(34,197,94,0.15);
+      color: var(--joi-success);
+    }
+
+    .wgt-badge.recovered {
+      background: rgba(100,116,139,0.15);
+      color: var(--joi-muted);
+    }
+
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ── Cache reuse suggestion ─────────────────────────────────────────── */
+    .cache-suggestion {
+      margin-top: 8px;
+      padding: 10px 14px;
+      border: 1px solid rgba(0,212,255,0.2);
+      border-radius: 8px;
+      background: rgba(0,212,255,0.05);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .cache-suggestion .label { color: var(--joi-muted); }
+    .cache-suggestion .name  { color: var(--joi-text); font-weight: 500; }
+
+    /* ── Typing indicator ───────────────────────────────────────────────── */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .typing-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--joi-accent);
+      animation: typing 1.4s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    /* ── Chat input ─────────────────────────────────────────────────────── */
+    .chat-input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--joi-border);
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--joi-border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--joi-text);
+      outline: none;
+      resize: none;
+      min-height: 38px;
+      max-height: 120px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--joi-accent);
+      box-shadow: 0 0 0 3px var(--joi-glow);
+    }
+
+    .chat-input::placeholder { color: var(--joi-muted); }
+
+    /* ── Canvas panel content ───────────────────────────────────────────── */
+    .canvas-header-info {
+      font-size: 11px;
+      color: var(--joi-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .canvas-header-info .ds-tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border: 1px solid var(--joi-border);
+      border-radius: 4px;
+      color: var(--joi-muted);
+    }
+
+    /* ── Idle state ─────────────────────────────────────────────────────── */
+    .canvas-idle {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px;
+    }
+
+    .dot-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+      opacity: 0.12;
+      margin-bottom: 8px;
+    }
+
+    .dot-grid span {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--joi-text);
+    }
+
+    .idle-copy {
+      text-align: center;
+    }
+
+    .idle-copy h2 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--joi-text);
+      margin-bottom: 8px;
+    }
+
+    .idle-copy p {
+      font-size: 13px;
+      color: var(--joi-muted);
+      max-width: 320px;
+    }
+
+    /* ── Generating state ───────────────────────────────────────────────── */
+    .canvas-generating {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px;
+    }
+
+    .construct-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 280px;
+    }
+
+    .construct-line {
+      height: 2px;
+      border-radius: 1px;
+      background: var(--joi-accent);
+      animation: construct 2s ease-in-out infinite;
+      transform-origin: left;
+    }
+
+    .construct-line:nth-child(1) { width: 100%; animation-delay: 0s; opacity: 0.8; }
+    .construct-line:nth-child(2) { width: 70%;  animation-delay: 0.15s; opacity: 0.6; }
+    .construct-line:nth-child(3) { width: 85%;  animation-delay: 0.3s; opacity: 0.7; }
+    .construct-line:nth-child(4) { width: 50%;  animation-delay: 0.45s; opacity: 0.5; }
+    .construct-line:nth-child(5) { width: 90%;  animation-delay: 0.6s; opacity: 0.75; }
+    .construct-line:nth-child(6) { width: 40%;  animation-delay: 0.75s; opacity: 0.4; }
+
+    @keyframes construct {
+      0%   { transform: scaleX(0); opacity: 0; }
+      20%  { opacity: 0.8; }
+      60%  { transform: scaleX(1); }
+      100% { transform: scaleX(1); opacity: 0.2; }
+    }
+
+    .generating-label {
+      font-size: 13px;
+      color: var(--joi-muted);
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Onboarding wizard ──────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .wizard {
+      background: color-mix(in srgb, var(--joi-surface-elevated) 90%, transparent);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--joi-border);
+      border-radius: 14px;
+      padding: 32px;
+      width: 480px;
+      max-width: 90vw;
+    }
+
+    .wizard-step-indicator {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .step-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--joi-border);
+    }
+
+    .step-dot.active {
+      background: var(--joi-accent);
+      box-shadow: 0 0 0 3px var(--joi-glow);
+    }
+
+    .step-dot.done { background: var(--joi-success); }
+
+    .wizard-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .wizard h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 10px;
+    }
+
+    .wizard p {
+      font-size: 14px;
+      color: var(--joi-muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    .wizard-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── Section labels ─────────────────────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--joi-muted);
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--joi-border);
+    }
+
+    /* ── Tabs (mobile mockup) ───────────────────────────────────────────── */
+    .tabs-container {
+      display: flex;
+      border-bottom: 1px solid var(--joi-border);
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--joi-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      color: var(--joi-accent);
+      border-bottom-color: var(--joi-accent);
+    }
+
+    /* ── Sections (mockup layout) ───────────────────────────────────────── */
+    .section {
+      margin: 32px 0;
+      padding: 0 24px;
+    }
+
+    .mockup-frame {
+      border: 1px solid var(--joi-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    h1.page-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      color: var(--joi-text);
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--joi-muted);
+      margin-bottom: 32px;
+    }
+
+    .page-header {
+      padding: 24px 24px 0;
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--joi-border);
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1 class="page-title">Joi · Visual Mockup 006</h1>
+  <p class="page-subtitle">Pre-validación de tokens y componentes. Paleta candidata: bg #0a0d12 · accent #00d4ff · warm #f5a623</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 1. SHELL PRINCIPAL (header + dual panel)                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <p class="section-label">1 · Shell principal — dual panel (≥ 768px)</p>
+  <div class="mockup-frame" style="height: 600px;">
+    <div class="app">
+
+      <!-- Header -->
+      <header class="header">
+        <div class="header-logo">
+          <div class="logo-mark">J</div>
+          <span class="logo-name">JOI<span>.</span>APP</span>
+        </div>
+        <nav class="header-nav">
+          <span class="session-badge">sesión · 8a3f</span>
+          <button class="btn btn-ghost">Dashboards</button>
+          <button class="btn btn-ghost">Colecciones</button>
+          <button class="btn btn-outline">¿Cómo funciona?</button>
+        </nav>
+      </header>
+
+      <!-- Panels -->
+      <div class="panels">
+
+        <!-- Chat panel -->
+        <div class="chat-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <div class="status-dot"></div>
+              JOI · AGENTE
+            </div>
+            <div style="font-size:11px; color: var(--joi-muted);">listo</div>
+          </div>
+
+          <div class="chat-log">
+
+            <!-- User message -->
+            <div class="message-user">
+              <div class="bubble">ventas por mes en 2025</div>
+            </div>
+
+            <!-- Agent message with trace -->
+            <div class="message-agent">
+              <div class="avatar">J</div>
+              <div>
+                <div class="agent-text">
+                  Aquí tienes las ventas mensuales de 2025. He generado un gráfico de barras con los datos de tu fuente conectada.
+                </div>
+                <!-- AgentTrace colapsado -->
+                <div class="agent-trace">
+                  <div class="agent-trace-header">
+                    <span class="icon">⌨</span>
+                    <span>SQL ejecutado — 312ms · 12 filas</span>
+                    <span style="margin-left:auto;">▶</span>
+                  </div>
+                </div>
+                <!-- AgentTrace expandido (se muestra en sección aparte) -->
+              </div>
+            </div>
+
+            <!-- Agent message with WGT trace (cache) -->
+            <div class="message-agent">
+              <div class="avatar">J</div>
+              <div>
+                <div class="agent-text">Encontré un widget similar en caché.</div>
+                <div class="wgt-trace">
+                  <span class="wgt-badge cache">CACHÉ</span>
+                  <span style="color: var(--joi-muted);">Widget: ventas-mensuales-2025 · reutilizado</span>
+                </div>
+                <div class="cache-suggestion">
+                  <div>
+                    <div class="label">Widget en caché encontrado</div>
+                    <div class="name">ventas-mensuales-2025</div>
+                  </div>
+                  <button class="btn btn-primary" style="font-size:12px; padding:5px 12px;">Usar este</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Agent message generating -->
+            <div class="message-agent">
+              <div class="avatar">J</div>
+              <div>
+                <div class="agent-text">Generando visualización…</div>
+                <div class="wgt-trace">
+                  <span class="wgt-badge generated">GENERANDO</span>
+                  <span style="color: var(--joi-muted);">bar_chart · procesando</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="message-agent">
+              <div class="avatar">J</div>
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Input area -->
+          <div class="chat-input-area">
+            <textarea class="chat-input" placeholder="Pregunta algo sobre tus datos…" rows="1"></textarea>
+            <button class="btn btn-primary">Enviar</button>
+          </div>
+        </div>
+
+        <div class="panel-separator"></div>
+
+        <!-- Canvas panel — idle state -->
+        <div class="canvas-panel">
+          <div class="panel-header">
+            <div class="panel-title">CANVAS</div>
+            <div class="canvas-header-info">
+              <span class="ds-tag">sales_sample.db</span>
+              <span class="ds-tag">shadcn</span>
+            </div>
+          </div>
+
+          <div class="canvas-idle">
+            <div class="dot-grid">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="idle-copy">
+              <h2>Tu canvas está esperando</h2>
+              <p>Pregunta algo sobre tus datos y Joi generará una visualización aquí.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 2. CANVAS STATES                                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <p class="section-label">2 · Canvas — estados</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+    <!-- Generating -->
+    <div class="mockup-frame" style="background: color-mix(in srgb, var(--joi-surface) 40%, transparent);">
+      <div style="padding:12px 16px; border-bottom: 1px solid var(--joi-border); font-size:11px; color:var(--joi-muted); letter-spacing:0.1em; text-transform:uppercase;">Generating</div>
+      <div class="canvas-generating" style="min-height:220px;">
+        <div class="construct-lines">
+          <div class="construct-line"></div>
+          <div class="construct-line"></div>
+          <div class="construct-line"></div>
+          <div class="construct-line"></div>
+          <div class="construct-line"></div>
+          <div class="construct-line"></div>
+        </div>
+        <div class="generating-label">
+          <div class="typing-dot" style="width:6px;height:6px;"></div>
+          Construyendo widget
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div class="mockup-frame" style="background: color-mix(in srgb, var(--joi-surface) 40%, transparent);">
+      <div style="padding:12px 16px; border-bottom: 1px solid var(--joi-border); font-size:11px; color:var(--joi-muted); letter-spacing:0.1em; text-transform:uppercase;">Error</div>
+      <div style="min-height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:32px; text-align:center;">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;">⚠</div>
+        <div>
+          <div style="font-weight:600; margin-bottom:6px;">No se pudo renderizar</div>
+          <div style="font-size:12px; color:var(--joi-muted);">El widget generó un error de sintaxis. Intenta reformular tu pregunta.</div>
+        </div>
+        <button class="btn btn-outline" style="font-size:12px;">Reintentar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 3. AGENT TRACE EXPANDIDO                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <p class="section-label">3 · AgentTrace — expandido con SQL highlight</p>
+  <div class="mockup-frame">
+    <div class="agent-trace" style="border:none; border-radius:0;">
+      <div class="agent-trace-header">
+        <span class="icon">⌨</span>
+        <span>SQL ejecutado — 312ms · 12 filas</span>
+        <span style="margin-left:auto;">▼</span>
+      </div>
+      <div class="agent-trace-body">
+        <span class="sql-keyword">SELECT</span>
+        &nbsp;&nbsp;strftime(<span class="sql-string">'%Y-%m'</span>, sale_date) <span class="sql-keyword">AS</span> month,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="sql-keyword">SUM</span>(amount) <span class="sql-keyword">AS</span> total_sales<br>
+        <span class="sql-keyword">FROM</span> sales<br>
+        <span class="sql-keyword">WHERE</span> sale_date <span class="sql-keyword">BETWEEN</span> <span class="sql-string">'2025-01-01'</span> <span class="sql-keyword">AND</span> <span class="sql-string">'2025-12-31'</span><br>
+        <span class="sql-keyword">GROUP BY</span> month<br>
+        <span class="sql-keyword">ORDER BY</span> month <span class="sql-keyword">ASC</span><br>
+        <br>
+        <span class="sql-comment">-- 12 rows returned · read-only guard: OK</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 4. LAYOUT MOBILE — TABS                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <p class="section-label">4 · Layout responsive — tabs (&lt; 768px)</p>
+  <div class="mockup-frame" style="max-width: 375px; height: 480px; overflow: hidden;">
+    <div class="app">
+      <header class="header" style="padding: 0 12px;">
+        <div class="header-logo">
+          <div class="logo-mark">J</div>
+          <span class="logo-name">JOI<span>.</span></span>
+        </div>
+        <button class="btn btn-outline" style="font-size:11px; padding: 4px 10px;">¿Cómo funciona?</button>
+      </header>
+      <div class="tabs-container">
+        <button class="tab-btn active" data-role="layout-tab-chat">Chat</button>
+        <button class="tab-btn" data-role="layout-tab-canvas">Canvas</button>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; background: color-mix(in srgb, var(--joi-surface) 60%, transparent);">
+        <div class="chat-log" style="flex:1;">
+          <div class="message-user"><div class="bubble">ventas por mes</div></div>
+          <div class="message-agent">
+            <div class="avatar">J</div>
+            <div class="agent-text">Aquí tienes el gráfico mensual.</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <textarea class="chat-input" placeholder="Pregunta sobre tus datos…" rows="1"></textarea>
+          <button class="btn btn-primary" style="font-size:12px; padding:7px 10px;">↑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 5. ONBOARDING WIZARD                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <p class="section-label">5 · Onboarding wizard — paso 1 de 3</p>
+  <div class="mockup-frame" style="position:relative; height: 380px; overflow: hidden; background: var(--joi-bg);">
+    <!-- Fondo difuminado (simula la app detrás) -->
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+      <div class="wizard">
+        <div class="wizard-step-indicator">
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+        </div>
+        <div class="wizard-icon">⚡</div>
+        <h2>Conecta tus datos</h2>
+        <p>Joi necesita una fuente de datos para trabajar — puede ser una base de datos SQL o un archivo JSON. Ve a Configurar para añadir tu primera fuente.</p>
+        <div class="wizard-actions">
+          <button class="btn btn-ghost" style="font-size:12px; color:var(--joi-muted);">Omitir</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary">Ir a configurar →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 6. CANVAS CON WIDGET ACTIVO                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section">
+  <p class="section-label">6 · Canvas — widget activo (bar chart, KPI, tabla)</p>
+
+  <!-- Full shell con widget bar chart -->
+  <div class="mockup-frame" style="height:620px; margin-bottom:20px;">
+    <div class="app">
+      <header class="header">
+        <div class="header-logo">
+          <div class="logo-mark">J</div>
+          <span class="logo-name">JOI<span>.</span>APP</span>
+        </div>
+        <nav class="header-nav">
+          <span class="session-badge">sesión · 8a3f</span>
+          <button class="btn btn-ghost">Dashboards</button>
+          <button class="btn btn-ghost">Colecciones</button>
+          <button class="btn btn-outline">¿Cómo funciona?</button>
+        </nav>
+      </header>
+      <div class="panels">
+        <!-- Chat panel (compacto) -->
+        <div class="chat-panel">
+          <div class="panel-header">
+            <div class="panel-title"><div class="status-dot"></div>JOI · AGENTE</div>
+            <div style="font-size:11px; color: var(--joi-muted);">listo</div>
+          </div>
+          <div class="chat-log">
+            <div class="message-user"><div class="bubble">ventas por mes en 2025</div></div>
+            <div class="message-agent">
+              <div class="avatar">J</div>
+              <div>
+                <div class="agent-text">Aquí tienes las ventas mensuales de 2025 agrupadas por mes.</div>
+                <div class="agent-trace">
+                  <div class="agent-trace-header">
+                    <span class="icon">⌨</span>
+                    <span>SQL · 312ms · 12 filas</span>
+                    <span style="margin-left:auto;">▶</span>
+                  </div>
+                </div>
+                <div class="wgt-trace" style="margin-top:6px;">
+                  <span class="wgt-badge" style="background:rgba(34,197,94,0.15);color:var(--joi-success);">LISTO</span>
+                  <span style="color:var(--joi-muted);">bar_chart · generado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea class="chat-input" placeholder="Pregunta algo sobre tus datos…" rows="1"></textarea>
+            <button class="btn btn-primary">Enviar</button>
+          </div>
+        </div>
+        <div class="panel-separator"></div>
+
+        <!-- Canvas con widget bar chart -->
+        <div class="canvas-panel">
+          <div class="panel-header">
+            <div class="panel-title">ventas por mes 2025</div>
+            <div class="canvas-header-info">
+              <span class="ds-tag">sales_sample.db</span>
+              <span class="ds-tag">shadcn</span>
+              <button class="btn btn-outline" style="font-size:11px;padding:3px 10px;">Guardar widget</button>
+            </div>
+          </div>
+
+          <!-- Widget frame (simula el iframe) -->
+          <div style="flex:1; padding:20px; display:flex; flex-direction:column; overflow:hidden;">
+            <div style="
+              flex:1;
+              background: var(--joi-surface);
+              border: 1px solid var(--joi-border);
+              border-radius: 10px;
+              padding: 20px 24px 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              overflow: hidden;
+            ">
+              <!-- Widget title -->
+              <div style="display:flex; justify-content:space-between; align-items:baseline; flex-shrink:0;">
+                <div>
+                  <div style="font-size:14px; font-weight:600; letter-spacing:0.02em;">Ventas por mes — 2025</div>
+                  <div style="font-size:11px; color:var(--joi-muted); margin-top:2px;">Fuente: sales · actualizado ahora</div>
+                </div>
+                <div style="font-size:12px; color:var(--joi-accent); font-weight:500;">$842.3K total</div>
+              </div>
+
+              <!-- Bar chart: viewBox contiene todo (barras + labels eje X) dentro de 540×220 -->
+              <svg viewBox="0 0 540 220" style="width:100%; max-width:640px; height:auto; display:block;" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stop-color="#00d4ff" stop-opacity="0.85"/>
+                    <stop offset="100%" stop-color="#00d4ff" stop-opacity="0.2"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- Chart area: x 44–540, y 10–185, height=175 -->
+                <!-- Grid lines -->
+                <line x1="44" y1="10"  x2="536" y2="10"  stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="44" y1="53"  x2="536" y2="53"  stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="44" y1="97"  x2="536" y2="97"  stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="44" y1="141" x2="536" y2="141" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="44" y1="185" x2="536" y2="185" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+
+                <!-- Y axis labels (alineados a y de cada gridline) -->
+                <text x="38" y="13"  text-anchor="end" font-size="10" font-family="Inter,sans-serif" fill="#64748b">100K</text>
+                <text x="38" y="57"  text-anchor="end" font-size="10" font-family="Inter,sans-serif" fill="#64748b">75K</text>
+                <text x="38" y="101" text-anchor="end" font-size="10" font-family="Inter,sans-serif" fill="#64748b">50K</text>
+                <text x="38" y="145" text-anchor="end" font-size="10" font-family="Inter,sans-serif" fill="#64748b">25K</text>
+
+                <!--
+                  Escala: 100K → y=10, 0K → y=185, rango=175px
+                  bar_y  = 185 - (val/100 * 175)
+                  bar_h  = (val/100 * 175)
+                  bar_x  = 44 + i*41 + 6   (41px por columna, 6px margen, ancho barra 28px)
+                -->
+                <!-- Ene 62K  y=107 h=108 x=50  --> <rect x="50"  y="107" width="28" height="78"  rx="3" fill="url(#barGrad)"/>
+                <!-- Feb 48K  y=127 h=84  x=91  --> <rect x="91"  y="127" width="28" height="58"  rx="3" fill="url(#barGrad)"/>
+                <!-- Mar 71K  y=61  h=124 x=132 --> <rect x="132" y="61"  width="28" height="124" rx="3" fill="url(#barGrad)"/>
+                <!-- Abr 55K  y=89  h=96  x=173 --> <rect x="173" y="89"  width="28" height="96"  rx="3" fill="url(#barGrad)"/>
+                <!-- May 80K  y=45  h=140 x=214 --> <rect x="214" y="45"  width="28" height="140" rx="3" fill="url(#barGrad)"/>
+                <!-- Jun 67K  y=68  h=117 x=255 --> <rect x="255" y="68"  width="28" height="117" rx="3" fill="url(#barGrad)"/>
+                <!-- Jul 91K  y=26  h=159 x=296 · MAX --> <rect x="296" y="26"  width="28" height="159" rx="3" fill="url(#barGrad)"/>
+                <!-- Ago 78K  y=48  h=137 x=337 --> <rect x="337" y="48"  width="28" height="137" rx="3" fill="url(#barGrad)"/>
+                <!-- Sep 59K  y=82  h=103 x=378 --> <rect x="378" y="82"  width="28" height="103" rx="3" fill="url(#barGrad)"/>
+                <!-- Oct 85K  y=36  h=149 x=419 --> <rect x="419" y="36"  width="28" height="149" rx="3" fill="url(#barGrad)"/>
+                <!-- Nov 72K  y=59  h=126 x=460 --> <rect x="460" y="59"  width="28" height="126" rx="3" fill="url(#barGrad)"/>
+                <!-- Dic 74K  y=55  h=130 x=501 --> <rect x="501" y="55"  width="28" height="130" rx="3" fill="url(#barGrad)"/>
+
+                <!-- Jul highlight (max) -->
+                <rect x="296" y="26" width="28" height="159" rx="3" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
+                <text x="310" y="21" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#00d4ff" font-weight="600">91K</text>
+
+                <!-- X axis month labels (y=200, dentro del viewBox 220) -->
+                <text x="64"  y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Ene</text>
+                <text x="105" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Feb</text>
+                <text x="146" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Mar</text>
+                <text x="187" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Abr</text>
+                <text x="228" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">May</text>
+                <text x="269" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Jun</text>
+                <text x="310" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#00d4ff">Jul</text>
+                <text x="351" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Ago</text>
+                <text x="392" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Sep</text>
+                <text x="433" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Oct</text>
+                <text x="474" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Nov</text>
+                <text x="515" y="200" text-anchor="middle" font-size="10" font-family="Inter,sans-serif" fill="#64748b">Dic</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI + Tabla side by side -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+    <!-- KPI widget -->
+    <div class="mockup-frame" style="background: var(--joi-surface);">
+      <div style="padding:12px 16px; border-bottom:1px solid var(--joi-border); font-size:11px; color:var(--joi-muted); letter-spacing:0.1em; text-transform:uppercase;">Widget — KPI</div>
+      <div style="padding:28px;">
+        <div style="
+          background: var(--joi-bg);
+          border: 1px solid var(--joi-border);
+          border-radius: 10px;
+          padding: 28px 24px;
+          display:flex; flex-direction:column; gap:8px;
+        ">
+          <div style="font-size:11px; color:var(--joi-muted); letter-spacing:0.1em; text-transform:uppercase;">Total ventas 2025</div>
+          <div style="font-size:42px; font-weight:700; letter-spacing:-0.02em; color:var(--joi-text); line-height:1;">$842<span style="color:var(--joi-accent);">.3K</span></div>
+          <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+            <span style="
+              background:rgba(34,197,94,0.15);
+              color:var(--joi-success);
+              font-size:11px;
+              font-weight:600;
+              padding:2px 8px;
+              border-radius:4px;
+            ">▲ +12.4%</span>
+            <span style="font-size:11px; color:var(--joi-muted);">vs año anterior</span>
+          </div>
+          <div style="margin-top:12px; height:2px; border-radius:1px; background:var(--joi-border); overflow:hidden;">
+            <div style="width:74%; height:100%; background: linear-gradient(90deg, var(--joi-accent), rgba(0,212,255,0.3));"></div>
+          </div>
+          <div style="font-size:10px; color:var(--joi-muted); margin-top:2px;">74% de la meta anual</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla widget -->
+    <div class="mockup-frame" style="background: var(--joi-surface);">
+      <div style="padding:12px 16px; border-bottom:1px solid var(--joi-border); font-size:11px; color:var(--joi-muted); letter-spacing:0.1em; text-transform:uppercase;">Widget — Tabla</div>
+      <div style="padding:20px;">
+        <div style="
+          background: var(--joi-bg);
+          border: 1px solid var(--joi-border);
+          border-radius: 10px;
+          overflow: hidden;
+        ">
+          <div style="padding:14px 16px; border-bottom:1px solid var(--joi-border);">
+            <div style="font-size:13px; font-weight:600;">Top regiones — 2025</div>
+            <div style="font-size:11px; color:var(--joi-muted); margin-top:2px;">Por volumen de ventas</div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--joi-border);">
+                <th style="padding:9px 16px; text-align:left; color:var(--joi-muted); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase;">Región</th>
+                <th style="padding:9px 16px; text-align:right; color:var(--joi-muted); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase;">Total</th>
+                <th style="padding:9px 16px; text-align:right; color:var(--joi-muted); font-weight:500; letter-spacing:0.06em; font-size:10px; text-transform:uppercase;">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:9px 16px; color:var(--joi-text);">Norte</td>
+                <td style="padding:9px 16px; text-align:right; color:var(--joi-text); font-weight:500;">$234.1K</td>
+                <td style="padding:9px 16px; text-align:right;">
+                  <span style="color:var(--joi-success); font-size:11px;">27.8%</span>
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.04); background:rgba(0,212,255,0.03);">
+                <td style="padding:9px 16px; color:var(--joi-accent); font-weight:500;">Sur</td>
+                <td style="padding:9px 16px; text-align:right; color:var(--joi-text); font-weight:500;">$198.7K</td>
+                <td style="padding:9px 16px; text-align:right;">
+                  <span style="color:var(--joi-accent); font-size:11px;">23.6%</span>
+                </td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:9px 16px; color:var(--joi-text);">Este</td>
+                <td style="padding:9px 16px; text-align:right; color:var(--joi-text); font-weight:500;">$187.3K</td>
+                <td style="padding:9px 16px; text-align:right;">
+                  <span style="color:var(--joi-muted); font-size:11px;">22.2%</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:9px 16px; color:var(--joi-text);">Oeste</td>
+                <td style="padding:9px 16px; text-align:right; color:var(--joi-text); font-weight:500;">$222.2K</td>
+                <td style="padding:9px 16px; text-align:right;">
+                  <span style="color:var(--joi-muted); font-size:11px;">26.4%</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- 7. TOKEN REFERENCE (antes sección 6)                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="section" style="margin-bottom:64px;">
+  <p class="section-label">7 · Token reference (candidatos)</p>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;">
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#0a0d12;"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-bg</div>
+        <div style="color:var(--joi-muted);">#0a0d12</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#111520;"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-surface</div>
+        <div style="color:var(--joi-muted);">#111520</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#161b28;"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-surface-elevated</div>
+        <div style="color:var(--joi-muted);">#161b28</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#00d4ff; box-shadow: 0 0 20px rgba(0,212,255,0.4);"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-accent</div>
+        <div style="color:var(--joi-muted);">#00d4ff</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#f5a623;"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-accent-warm</div>
+        <div style="color:var(--joi-muted);">#f5a623</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#e2e8f0;"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-text</div>
+        <div style="color:var(--joi-muted);">#e2e8f0</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:#64748b;"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-muted</div>
+        <div style="color:var(--joi-muted);">#64748b</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--joi-border); border-radius:8px; overflow:hidden;">
+      <div style="height:60px; background:rgba(0,212,255,0.15); border-bottom:1px solid var(--joi-border);"></div>
+      <div style="padding:10px 12px; font-size:12px;">
+        <div style="font-weight:600; margin-bottom:2px;">--joi-glow</div>
+        <div style="color:var(--joi-muted);">rgba(0,212,255,0.15)</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

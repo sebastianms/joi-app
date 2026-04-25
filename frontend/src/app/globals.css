@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
+/* ── Joi tokens ─────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --joi-bg:               #0a0d12;
+  --joi-surface:          #111520;
+  --joi-surface-elevated: #161b28;
+  --joi-border:           rgba(255, 255, 255, 0.08);
+  --joi-accent:           #00d4ff;
+  --joi-accent-warm:      #f5a623;
+  --joi-text:             #e2e8f0;
+  --joi-muted:            #64748b;
+  --joi-glow:             rgba(0, 212, 255, 0.15);
+  --joi-success:          #22c55e;
 }
 
+/* ── Tailwind theme mapping ─────────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:      var(--joi-bg);
+  --color-foreground:      var(--joi-text);
+  --color-surface:         var(--joi-surface);
+  --color-surface-elevated: var(--joi-surface-elevated);
+  --color-accent:          var(--joi-accent);
+  --color-accent-warm:     var(--joi-accent-warm);
+  --color-muted:           var(--joi-muted);
+  --color-success:         var(--joi-success);
+  --font-sans:             var(--font-geist-sans);
+  --font-mono:             var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── Dark-first reset ────────────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--joi-bg);
+  color: var(--joi-text);
+  font-family: var(--font-sans, Arial, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────────────── */
+@keyframes pulse-accent {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+@keyframes construct-lines {
+  0%   { transform: scaleX(0); opacity: 0; }
+  20%  { opacity: 0.8; }
+  60%  { transform: scaleX(1); }
+  100% { transform: scaleX(1); opacity: 0.15; }
+}
+
+@keyframes glow-in {
+  from { box-shadow: 0 0 0 0 var(--joi-glow); }
+  to   { box-shadow: 0 0 0 4px var(--joi-glow); }
+}
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { opacity: 0.2; transform: translateY(0); }
+  30%            { opacity: 1;   transform: translateY(-3px); }
 }

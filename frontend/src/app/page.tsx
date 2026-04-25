@@ -1,8 +1,12 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { CanvasPanel } from "@/components/canvas/canvas-panel";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { PanelSeparator } from "@/components/layout/PanelSeparator";
+import { LayoutTabs } from "@/components/layout/LayoutTabs";
+import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { useChat, type ChatMessage } from "@/hooks/use-chat";
 import type { WidgetSpec } from "@/types/widget";
 
@@ -38,32 +42,45 @@ function pickCanvasSource(messages: ChatMessage[]): CanvasSource {
 
 export default function Home() {
   const chat = useChat();
+  const layoutMode = useLayoutMode();
+  const [activeTab, setActiveTab] = useState<"chat" | "canvas">("chat");
   const { widgetSpec, dataRows, extractionEmpty } = pickCanvasSource(chat.messages);
 
-  return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
-      <header className="flex items-center justify-between border-b border-border bg-background px-6 py-3">
-        <h1 className="text-lg font-semibold tracking-tight">Joi-App</h1>
-        <Link
-          href="/setup"
-          className="text-sm text-primary underline-offset-4 hover:underline"
-        >
-          Configurar fuentes de datos
-        </Link>
-      </header>
+  const chatSlot = <ChatPanel chat={chat} />;
+  const canvasSlot = (
+    <CanvasPanel
+      sessionId={chat.sessionId}
+      widgetSpec={widgetSpec}
+      dataRows={dataRows}
+      isGenerating={chat.isSending && !widgetSpec}
+      extractionEmpty={extractionEmpty}
+    />
+  );
 
-      <main className="grid flex-1 grid-cols-1 gap-4 p-4 md:grid-cols-2">
-        <div className="min-h-0">
-          <ChatPanel chat={chat} />
-        </div>
-        <CanvasPanel
-          sessionId={chat.sessionId}
-          widgetSpec={widgetSpec}
-          dataRows={dataRows}
-          isGenerating={chat.isSending && !widgetSpec}
-          extractionEmpty={extractionEmpty}
-        />
-      </main>
+  return (
+    <div className="flex min-h-screen flex-col">
+      <AppHeader />
+
+      {layoutMode === "dual" ? (
+        <main className="flex flex-1 min-h-0 overflow-hidden">
+          <div className="flex flex-col flex-1 min-h-0" data-role="chat-panel">
+            {chatSlot}
+          </div>
+          <PanelSeparator />
+          <div className="flex flex-col flex-1 min-h-0" data-role="canvas-panel">
+            {canvasSlot}
+          </div>
+        </main>
+      ) : (
+        <main className="flex flex-1 min-h-0 overflow-hidden">
+          <LayoutTabs
+            active={activeTab}
+            onTabChange={setActiveTab}
+            chatSlot={chatSlot}
+            canvasSlot={canvasSlot}
+          />
+        </main>
+      )}
     </div>
   );
 }

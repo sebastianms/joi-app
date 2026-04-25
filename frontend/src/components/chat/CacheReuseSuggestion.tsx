@@ -18,32 +18,37 @@ export function CacheReuseSuggestion({
   onGenerateNew,
 }: CacheReuseSuggestionProps) {
   const { isReusing, reuseError, reuseCache } = useWidgetCacheSuggestion();
-
   const scorePercent = Math.round(suggestion.score * 100);
 
   return (
-    <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs dark:border-amber-800 dark:bg-amber-950" data-role="cache-reuse-suggestion">
-      <div className="mb-2 flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+    <div
+      className="mt-2 rounded-lg border border-[color:var(--joi-accent)]/20
+        bg-[color:var(--joi-accent)]/5 p-3 text-xs"
+      data-role="cache-reuse-suggestion"
+    >
+      <div className="mb-2 flex items-center gap-1.5 text-[color:var(--joi-accent)]">
         <Sparkles className="h-3.5 w-3.5 shrink-0" />
         <span className="font-medium">
           Widget similar encontrado ({scorePercent}% coincidencia)
         </span>
       </div>
 
-      <p className="mb-1 text-muted-foreground">
-        Tipo: <span className="font-medium">{suggestion.widget_type}</span>
+      <p className="mb-1 text-[color:var(--joi-muted)]">
+        Tipo: <span className="font-medium text-[color:var(--joi-text)]">{suggestion.widget_type}</span>
       </p>
-      <p className="mb-3 truncate text-muted-foreground italic">
+      <p className="mb-3 truncate text-[color:var(--joi-muted)] italic">
         &ldquo;{suggestion.prompt_text}&rdquo;
       </p>
 
       {reuseError && (
-        <p className="mb-2 text-red-600 dark:text-red-400">{reuseError}</p>
+        <p className="mb-2 text-[color:var(--joi-accent-warm)]">{reuseError}</p>
       )}
 
       <div className="flex gap-2">
         <button
-          className="flex-1 rounded bg-amber-600 px-2 py-1.5 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="flex-1 rounded px-2 py-1.5 font-semibold
+            bg-[color:var(--joi-accent)] text-black
+            hover:opacity-90 disabled:opacity-50 transition-opacity"
           disabled={isReusing}
           onClick={() => void reuseCache(suggestion.cache_entry_id, sessionId)}
           data-role="cache-reuse-button"
@@ -51,7 +56,10 @@ export function CacheReuseSuggestion({
           {isReusing ? "Aplicando…" : "Usar este widget"}
         </button>
         <button
-          className="flex items-center gap-1 rounded border border-border px-2 py-1.5 font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          className="flex items-center gap-1 rounded border border-[color:var(--joi-border)]
+            px-2 py-1.5 font-medium text-[color:var(--joi-muted)]
+            hover:border-[color:var(--joi-accent)] hover:text-[color:var(--joi-accent)]
+            disabled:opacity-50 transition-colors"
           disabled={isReusing}
           onClick={() => onGenerateNew(originalPrompt)}
           data-role="cache-skip-button"

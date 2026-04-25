@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import type { ChatMessage, UseChatResult, WidgetSummary } from "@/hooks/use-chat";
 import { AgentTraceBlock } from "./agent-trace-block";
 import { CacheReuseSuggestion } from "./CacheReuseSuggestion";
@@ -15,8 +14,7 @@ interface MessageListProps {
   onSendMessage?: UseChatResult["sendMessage"];
 }
 
-const DEFAULT_EMPTY_LABEL =
-  "Inicia la conversación enviando un mensaje abajo.";
+const DEFAULT_EMPTY_LABEL = "Inicia la conversación enviando un mensaje abajo.";
 
 export function MessageList({
   messages,
@@ -33,7 +31,7 @@ export function MessageList({
 
   if (messages.length === 0 && !isTyping) {
     return (
-      <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
+      <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-[color:var(--joi-muted)]">
         {emptyLabel}
       </div>
     );
@@ -41,7 +39,8 @@ export function MessageList({
 
   return (
     <div
-      className="flex flex-1 flex-col gap-3 overflow-y-auto p-4"
+      className="flex flex-1 flex-col gap-4 overflow-y-auto p-4
+        [scrollbar-width:thin] [scrollbar-color:var(--joi-border)_transparent]"
       role="log"
       aria-live="polite"
     >
@@ -85,36 +84,53 @@ function MessageBubble({
   onSendMessage?: UseChatResult["sendMessage"];
 }) {
   const isUser = message.role === "user";
+
+  if (isUser) {
+    return (
+      <div className="flex justify-end">
+        <div
+          className="max-w-[75%] whitespace-pre-wrap rounded-xl rounded-br-sm
+            px-3.5 py-2.5 text-sm leading-relaxed
+            bg-[color:var(--joi-accent)]/10 border border-[color:var(--joi-accent)]/20
+            text-[color:var(--joi-text)]"
+          data-role="user"
+        >
+          {message.content}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={cn(
-        "flex w-full",
-        isUser ? "justify-end" : "justify-start"
-      )}
-    >
+    <div className="flex gap-2.5 items-start" data-role="assistant">
+      {/* Avatar */}
       <div
-        className={cn(
-          "max-w-[80%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm shadow-sm",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground"
-        )}
-        data-role={message.role}
+        className="w-6 h-6 rounded-full flex-shrink-0 mt-0.5
+          flex items-center justify-center
+          bg-[color:var(--joi-accent)] text-black text-[10px] font-bold"
       >
-        {isUser ? message.content : renderWithLinks(message.content)}
-        {!isUser && message.trace && (
+        J
+      </div>
+
+      {/* Content — no bubble, text directo */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm leading-relaxed text-[color:var(--joi-text)] whitespace-pre-wrap">
+          {renderWithLinks(message.content)}
+        </p>
+
+        {message.trace && (
           <AgentTraceBlock
             trace={message.trace}
             extraction={message.extraction}
           />
         )}
-        {!isUser && message.recoveredWidget && (
+        {message.recoveredWidget && (
           <RecoveredWidgetCard widget={message.recoveredWidget} />
         )}
-        {!isUser && message.candidates && message.candidates.length > 0 && (
+        {message.candidates && message.candidates.length > 0 && (
           <CandidateList candidates={message.candidates} />
         )}
-        {!isUser && message.cacheSuggestion && sessionId && onSendMessage && (
+        {message.cacheSuggestion && sessionId && onSendMessage && (
           <CacheReuseSuggestion
             suggestion={message.cacheSuggestion}
             sessionId={sessionId}
@@ -131,11 +147,17 @@ function MessageBubble({
 
 function RecoveredWidgetCard({ widget }: { widget: WidgetSummary }) {
   return (
-    <div className="mt-2 flex items-center gap-2 rounded border border-border bg-background px-3 py-2 text-xs">
-      <span className="flex-1 truncate font-medium">{widget.display_name}</span>
+    <div
+      className="mt-2 flex items-center gap-2 rounded-md
+        border border-[color:var(--joi-border)]
+        bg-[color:var(--joi-surface)] px-3 py-2 text-xs"
+    >
+      <span className="flex-1 truncate font-medium text-[color:var(--joi-text)]">
+        {widget.display_name}
+      </span>
       <Link
         href={`/?recovered_widget=${widget.id}`}
-        className="text-primary underline hover:opacity-80 shrink-0"
+        className="text-[color:var(--joi-accent)] hover:opacity-80 shrink-0 transition-opacity"
       >
         Abrir
       </Link>
@@ -149,12 +171,14 @@ function CandidateList({ candidates }: { candidates: WidgetSummary[] }) {
       {candidates.map((w) => (
         <div
           key={w.id}
-          className="flex items-center gap-2 rounded border border-border bg-background px-3 py-1.5 text-xs"
+          className="flex items-center gap-2 rounded-md
+            border border-[color:var(--joi-border)]
+            bg-[color:var(--joi-surface)] px-3 py-1.5 text-xs"
         >
-          <span className="flex-1 truncate">{w.display_name}</span>
+          <span className="flex-1 truncate text-[color:var(--joi-text)]">{w.display_name}</span>
           <Link
             href={`/?recovered_widget=${w.id}`}
-            className="text-primary underline hover:opacity-80 shrink-0"
+            className="text-[color:var(--joi-accent)] hover:opacity-80 shrink-0 transition-opacity"
           >
             Abrir
           </Link>
@@ -167,15 +191,17 @@ function CandidateList({ candidates }: { candidates: WidgetSummary[] }) {
 function TypingIndicator() {
   return (
     <div
-      className="flex justify-start"
-      aria-label="Asistente escribiendo"
+      className="flex items-center gap-1.5 py-1"
+      aria-label="Asistente procesando"
       role="status"
     >
-      <div className="flex gap-1 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground shadow-sm">
-        <span className="h-2 w-2 animate-bounce rounded-full bg-current [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-current [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-current" />
-      </div>
+      {[0, 200, 400].map((delay) => (
+        <span
+          key={delay}
+          className="block w-1.5 h-1.5 rounded-full bg-[color:var(--joi-accent)]"
+          style={{ animation: `typing-bounce 1.4s ${delay}ms infinite` }}
+        />
+      ))}
     </div>
   );
 }
