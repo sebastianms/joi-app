@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import type { AgentTrace, DataExtraction } from "@/types/extraction";
 import type { WidgetGenerationTrace } from "@/types/widget";
 
@@ -10,10 +7,9 @@ interface AgentTraceBlockProps {
 }
 
 export function AgentTraceBlock({ trace, extraction }: AgentTraceBlockProps) {
-  const [open, setOpen] = useState(false);
   const rowCount = extraction?.row_count ?? trace.preview_rows.length;
   const ms = trace.widget_generation?.generation_ms ?? null;
-  const summaryLabel = [
+  const stats = [
     ms != null ? `${ms}ms` : null,
     `${rowCount} fila${rowCount !== 1 ? "s" : ""}`,
   ]
@@ -21,21 +17,19 @@ export function AgentTraceBlock({ trace, extraction }: AgentTraceBlockProps) {
     .join(" · ");
 
   return (
-    <div
+    <details
       className="mt-2 rounded-md border border-[color:var(--joi-border)] overflow-hidden text-xs"
       data-role="agent-trace"
       data-extraction-id={trace.extraction_id}
+      aria-label="Agent trace"
     >
-      <button
-        className="w-full flex items-center gap-2 px-3 py-2
+      <summary
+        className="flex cursor-pointer list-none items-center gap-2 px-3 py-2
           bg-[color:var(--joi-surface-elevated)] text-[color:var(--joi-muted)]
-          hover:text-[color:var(--joi-text)] transition-colors text-left"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label="Agent trace"
+          hover:text-[color:var(--joi-text)] transition-colors select-none"
       >
         {/* Terminal icon */}
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0" aria-hidden="true">
           <path d="M1.5 3L4.5 6L1.5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M6 9h4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
@@ -47,30 +41,29 @@ export function AgentTraceBlock({ trace, extraction }: AgentTraceBlockProps) {
           </span>
         )}
 
-        <span className="font-mono tracking-tight">{trace.pipeline} — {summaryLabel}</span>
-        <span className="ml-auto text-[10px]">{open ? "▼" : "▶"}</span>
-      </button>
+        <span className="font-mono tracking-tight">
+          Agent Trace · {trace.pipeline} — {stats}
+        </span>
+      </summary>
 
-      {open && (
-        <div
-          className="border-t border-[color:var(--joi-border)] px-3 py-2 space-y-2
-            bg-black/20"
-        >
-          {trace.query_display && (
-            <SqlBlock sql={trace.query_display} />
-          )}
-          {trace.preview_rows.length > 0 && (
-            <PreviewTable
-              rows={trace.preview_rows}
-              columns={trace.preview_columns.map((c) => c.name)}
-            />
-          )}
-          {trace.widget_generation && (
-            <WidgetGenerationSection wg={trace.widget_generation} />
-          )}
-        </div>
-      )}
-    </div>
+      <div
+        className="border-t border-[color:var(--joi-border)] px-3 py-2 space-y-2
+          bg-black/20"
+      >
+        {trace.query_display && (
+          <SqlBlock sql={trace.query_display} />
+        )}
+        {trace.preview_rows.length > 0 && (
+          <PreviewTable
+            rows={trace.preview_rows}
+            columns={trace.preview_columns.map((c) => c.name)}
+          />
+        )}
+        {trace.widget_generation && (
+          <WidgetGenerationSection wg={trace.widget_generation} />
+        )}
+      </div>
+    </details>
   );
 }
 

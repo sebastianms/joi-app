@@ -35,6 +35,12 @@ export const FEATURE_005_SESSIONS = [
   `${E2E_SESSION_ID}-dashboard-missing-conn`,
 ] as const;
 
+// Feature 006 render-mode sessions — no DB connection required (render-mode only).
+export const FEATURE_006_SESSIONS = [
+  `${E2E_SESSION_ID}-render-mode-change`,
+  `${E2E_SESSION_ID}-render-mode-reset`,
+] as const;
+
 const PYTHON = path.resolve(__dirname, "../../backend/.venv/bin/python");
 const SEED_SCRIPT = path.resolve(__dirname, "seed-e2e-db.py");
 
@@ -47,6 +53,7 @@ export default async function globalSetup() {
       E2E_SESSION_ID,
       ...QUICKSTART_SESSIONS,
       ...FEATURE_005_SESSIONS,
+      ...FEATURE_006_SESSIONS,
     ],
     { stdio: "inherit" },
   );

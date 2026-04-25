@@ -207,7 +207,6 @@ function PanelShell({ children }: { children: React.ReactNode }) {
       className="flex min-h-0 flex-1 flex-col
         bg-[color:var(--joi-surface)]/40 backdrop-blur-sm"
       aria-label="Canvas de widgets"
-      data-role="canvas-panel"
     >
       {children}
     </section>

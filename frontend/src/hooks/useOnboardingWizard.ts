@@ -14,10 +14,10 @@ export function useOnboardingWizard(): OnboardingWizardControls {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Auto-open only on first visit (no session id yet) and not already completed.
-    const isFirstVisit = joiStorage.sessionId.get() === null;
-    const alreadyCompleted = joiStorage.onboarding.isCompleted();
-    if (isFirstVisit && !alreadyCompleted) {
+    // Show on every visit until the user explicitly completes the wizard.
+    // Note: useChat creates the session ID synchronously before this effect runs,
+    // so checking sessionId === null would always be false.
+    if (!joiStorage.onboarding.isCompleted()) {
       setIsOpen(true);
     }
   }, []);
