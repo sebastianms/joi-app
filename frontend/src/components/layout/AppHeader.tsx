@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { joiStorage } from "@/lib/storage/joi-storage";
 import { useEffect, useState } from "react";
 
@@ -8,7 +9,16 @@ interface AppHeaderProps {
   onOpenOnboarding?: () => void;
 }
 
+const NAV_LINK_BASE = "px-3 py-1.5 text-[13px] font-medium rounded transition-colors";
+const NAV_LINK_ACTIVE = "text-[color:var(--joi-accent)] bg-[color:var(--joi-accent)]/10";
+const NAV_LINK_IDLE = "text-[color:var(--joi-muted)] hover:text-[color:var(--joi-text)] hover:bg-white/5";
+
+function navClass(active: boolean) {
+  return `${NAV_LINK_BASE} ${active ? NAV_LINK_ACTIVE : NAV_LINK_IDLE}`;
+}
+
 export function AppHeader({ onOpenOnboarding }: AppHeaderProps) {
+  const pathname = usePathname();
   const [shortSession, setShortSession] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,25 +56,13 @@ export function AppHeader({ onOpenOnboarding }: AppHeaderProps) {
             sesión · {shortSession}
           </span>
         )}
-        <Link
-          href="/"
-          className="px-3 py-1.5 text-[13px] font-medium text-[color:var(--joi-muted)]
-            rounded hover:text-[color:var(--joi-text)] hover:bg-white/5 transition-colors"
-        >
+        <Link href="/" className={navClass(pathname === "/")}>
           Chat
         </Link>
-        <Link
-          href="/dashboards"
-          className="px-3 py-1.5 text-[13px] font-medium text-[color:var(--joi-muted)]
-            rounded hover:text-[color:var(--joi-text)] hover:bg-white/5 transition-colors"
-        >
+        <Link href="/dashboards" className={navClass(pathname.startsWith("/dashboards"))}>
           Dashboards
         </Link>
-        <Link
-          href="/collections"
-          className="px-3 py-1.5 text-[13px] font-medium text-[color:var(--joi-muted)]
-            rounded hover:text-[color:var(--joi-text)] hover:bg-white/5 transition-colors"
-        >
+        <Link href="/collections" className={navClass(pathname.startsWith("/collections"))}>
           Colecciones
         </Link>
         <button
@@ -78,10 +76,7 @@ export function AppHeader({ onOpenOnboarding }: AppHeaderProps) {
         </button>
         <Link
           href="/setup"
-          className="px-3 py-1.5 text-[13px] font-medium text-[color:var(--joi-muted)]
-            rounded border border-[color:var(--joi-border)]
-            hover:border-[color:var(--joi-accent)] hover:text-[color:var(--joi-accent)]
-            transition-colors"
+          className={`${navClass(pathname.startsWith("/setup"))} border border-[color:var(--joi-border)] ${pathname.startsWith("/setup") ? "border-[color:var(--joi-accent)]" : "hover:border-[color:var(--joi-accent)]"}`}
         >
           Configurar
         </Link>
