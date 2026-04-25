@@ -1,6 +1,6 @@
 # Tasks: Feature 006 — Visual Redesign & UX Polish
 
-**Branch**: `006-visual-redesign` | **Date**: 2026-04-24 | **Status**: Phase0 ✅ | Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 🔄 | US6 ⬜ | Polish ⬜
+**Branch**: `006-visual-redesign` | **Date**: 2026-04-24 | **Status**: Phase0 ✅ | Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 ✅ | US6 ✅ | Polish ⬜
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable. `[US1..6]` solo en bloques de user stories.
@@ -90,17 +90,17 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 
 **Cierra backlog diferido de Feature 004 (T129–T131, T501–T507).**
 
-- [ ] T070 [US6] Rediseñar shell de [frontend/src/app/setup/page.tsx](frontend/src/app/setup/page.tsx) con [frontend/src/components/setup/SetupShell.tsx](frontend/src/components/setup/SetupShell.tsx) que aplica identidad visual.
-- [ ] T071 [P] [US6] Rediseñar `ConnectionForm` existente con inputs estilizados (border sutil + glow en focus), feedback de conexión con check animado y errores con copy accionable.
-- [ ] T072 [US6] Integrar `VectorStoreStep` de Feature 005 en el wizard de setup como paso opcional con la identidad visual. Banner "Usando Qdrant por defecto" cuando no hay BYO.
-- [ ] T073 [US6] Activar endpoints backend de render-mode si quedaron como stub de Feature 004 (validar [backend/app/api/](backend/app/api/) y completar). Contract: `GET /api/render-mode`, `PUT /api/render-mode`.
-- [ ] T074 [P] [US6] Crear [frontend/src/hooks/useRenderMode.ts](frontend/src/hooks/useRenderMode.ts) según `contracts/components.md`.
-- [ ] T075 [P] [US6] Crear [frontend/src/components/setup/RenderModeStep.tsx](frontend/src/components/setup/RenderModeStep.tsx) con 4 tarjetas (`shadcn`, `bootstrap`, `heroui`, `design_system_disabled`).
-- [ ] T076 [P] [US6] Crear [frontend/src/components/setup/RenderModePreview.tsx](frontend/src/components/setup/RenderModePreview.tsx).
-- [ ] T077 [US6] Implementar adaptadores UI del runtime en [frontend/src/lib/widget-runtime/adapters/shadcn.tsx](frontend/src/lib/widget-runtime/adapters/shadcn.tsx), `bootstrap.tsx`, `heroui.tsx`.
-- [ ] T078 [US6] Crear [frontend/src/lib/widget-runtime/render-mode-registry.ts](frontend/src/lib/widget-runtime/render-mode-registry.ts) mapeando mode → adapter.
-- [ ] T079 [US6] Integrar registry en el entrypoint del runtime (`entry.tsx` o equivalente) para aplicar el adapter activo al bootstrap.
-- [ ] T080 [US6] Actualizar script `build:widget-runtime` si el bundle cambió (mismo comando, verificar output).
+- [x] T070 [US6] Rediseñar shell de [frontend/src/app/setup/page.tsx](frontend/src/app/setup/page.tsx) con [frontend/src/components/setup/SetupShell.tsx](frontend/src/components/setup/SetupShell.tsx) que aplica identidad visual.
+- [x] T071 [P] [US6] Rediseñar `ConnectionForm` existente con inputs estilizados (border sutil + glow en focus), feedback de conexión con check animado y errores con copy accionable.
+- [x] T072 [US6] Integrar `VectorStoreStep` de Feature 005 en el wizard de setup como paso opcional con la identidad visual. Banner "Usando Qdrant por defecto" cuando no hay BYO.
+- [x] T073 [US6] Activar endpoints backend de render-mode si quedaron como stub de Feature 004 (validar [backend/app/api/](backend/app/api/) y completar). Contract: `GET /api/render-mode`, `PUT /api/render-mode`.
+- [x] T074 [P] [US6] Crear [frontend/src/hooks/useRenderMode.ts](frontend/src/hooks/useRenderMode.ts) según `contracts/components.md`.
+- [x] T075 [P] [US6] Crear [frontend/src/components/setup/RenderModeStep.tsx](frontend/src/components/setup/RenderModeStep.tsx) con 4 tarjetas (`shadcn`, `bootstrap`, `heroui`, `design_system_disabled`).
+- [x] T076 [P] [US6] Crear [frontend/src/components/setup/RenderModePreview.tsx](frontend/src/components/setup/RenderModePreview.tsx).
+- [x] T077 [US6] Implementar adaptadores UI del runtime en [frontend/src/lib/widget-runtime/adapters/shadcn.tsx](frontend/src/lib/widget-runtime/adapters/shadcn.tsx), `bootstrap.tsx`, `heroui.tsx`.
+- [x] T078 [US6] Crear [frontend/src/lib/widget-runtime/render-mode-registry.ts](frontend/src/lib/widget-runtime/render-mode-registry.ts) mapeando mode → adapter.
+- [x] T079 [US6] Integrar registry en el entrypoint del runtime (`entry.tsx` o equivalente) para aplicar el adapter activo al bootstrap.
+- [x] T080 [US6] Actualizar script `build:widget-runtime` si el bundle cambió (mismo comando, verificar output).
 - [ ] T081 [US6] Playwright: automatizar Escenarios 6–7 y 11–12 del quickstart de Feature 004 (cambio de render-mode cambia widget en runtime).
 
 ---

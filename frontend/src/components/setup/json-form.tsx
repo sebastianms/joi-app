@@ -1,146 +1,126 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { AlertCircle, CheckCircle2, Upload } from "lucide-react"
+import { useState } from "react";
+import { joiStorage } from "@/lib/storage/joi-storage";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const INPUT_CLS = `w-full rounded-lg px-3 py-2.5 text-sm
+  bg-black/30 border border-[color:var(--joi-border)]
+  text-[color:var(--joi-text)] placeholder:text-[color:var(--joi-muted)]
+  focus:outline-none focus:border-[color:var(--joi-accent)]
+  focus:shadow-[0_0_0_3px_var(--joi-glow)]
+  transition-all`;
+
+const LABEL_CLS = "block text-xs font-medium text-[color:var(--joi-muted)] mb-1.5 uppercase tracking-wider";
 
 export function JSONUploadForm() {
-  const [file, setFile] = useState<File | null>(null)
-  const [connectionName, setConnectionName] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [file, setFile] = useState<File | null>(null);
+  const [connectionName, setConnectionName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0]
-      
-      // Client-side validation: size limit
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setError(`File is too large. Maximum allowed size is 10 MB.`)
-        setFile(null)
-        e.target.value = '' // reset input
-        return
-      }
-      
-      // Client-side validation: type limit (basic check)
-      if (selectedFile.type !== "application/json" && !selectedFile.name.endsWith('.json')) {
-        setError("Only .json files are allowed.")
-        setFile(null)
-        e.target.value = ''
-        return
-      }
-
-      setFile(selectedFile)
-      setError(null)
-      setSuccess(null)
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0] ?? null;
+    setError(null);
+    setSuccess(null);
+    if (!selected) { setFile(null); return; }
+    if (selected.size > MAX_FILE_SIZE) {
+      setError("Archivo demasiado grande. Máximo 10 MB.");
+      setFile(null);
+      e.target.value = "";
+      return;
     }
+    if (selected.type !== "application/json" && !selected.name.endsWith(".json")) {
+      setError("Solo se permiten archivos .json.");
+      setFile(null);
+      e.target.value = "";
+      return;
+    }
+    setFile(selected);
   }
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!file || !connectionName) return
-
-    setIsLoading(true)
-    setError(null)
-    setSuccess(null)
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file || !connectionName) return;
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("name", connectionName)
-      formData.append("user_session_id", localStorage.getItem("joi_session_id") ?? "demo-session-123")
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("name", connectionName);
+      formData.append("user_session_id", joiStorage.sessionId.get() ?? "demo-session");
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api";
-      const response = await fetch(`${apiUrl}/connections/json`, {
-        method: "POST",
-        body: formData,
-      })
+      const r = await fetch(`${apiUrl}/connections/json`, { method: "POST", body: formData });
+      const data = await r.json() as { detail?: string };
+      if (!r.ok) throw new Error(data.detail ?? "Error subiendo archivo");
 
-      const data = await response.json() as { detail?: string }
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to upload JSON file")
-      }
-
-      setSuccess("JSON uploaded and validated successfully!")
-      setFile(null)
-      setConnectionName("")
-      
-      // Reseteamos el formulario HTML para borrar el input de file visualmente
-      const form = e.target as HTMLFormElement
-      form.reset()
-      
+      setSuccess("Archivo cargado y validado correctamente.");
+      setFile(null);
+      setConnectionName("");
+      (e.target as HTMLFormElement).reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred")
+      setError(err instanceof Error ? err.message : "Error inesperado");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <div className="space-y-4">
-        
-        <div className="space-y-2">
-          <Label htmlFor="json-name">Connection Name</Label>
-          <Input 
-            id="json-name" 
-            placeholder="e.g., Historical Sales Data"
-            value={connectionName}
-            onChange={(e) => setConnectionName(e.target.value)}
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="json-file">Upload JSON File</Label>
-          <Input 
-            id="json-file" 
-            type="file" 
-            accept=".json,application/json"
-            onChange={handleFileChange}
-            required
-            disabled={isLoading}
-            className="cursor-pointer"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Max file size: 10 MB. Format: .json
-          </p>
-        </div>
-
+    <form onSubmit={(e) => { void onSubmit(e); }} className="space-y-5">
+      <div>
+        <label className={LABEL_CLS}>Nombre de la conexión</label>
+        <input
+          value={connectionName}
+          onChange={(e) => setConnectionName(e.target.value)}
+          placeholder="Datos históricos de ventas"
+          required
+          disabled={isLoading}
+          className={INPUT_CLS}
+        />
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Upload Failed</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+      <div>
+        <label className={LABEL_CLS}>Archivo JSON</label>
+        <input
+          type="file"
+          accept=".json,application/json"
+          onChange={handleFileChange}
+          required
+          disabled={isLoading}
+          className={`${INPUT_CLS} cursor-pointer file:mr-3 file:rounded file:border-0
+            file:bg-[color:var(--joi-accent)] file:text-black file:text-xs file:font-semibold file:px-3 file:py-1`}
+        />
+        <p className="text-[10px] text-[color:var(--joi-muted)] mt-1.5">Máximo 10 MB · formato .json</p>
+      </div>
 
       {success && (
-        <Alert className="border-green-500 text-green-600">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
+        <div className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm
+          border border-[color:var(--joi-success)]/30 bg-[color:var(--joi-success)]/10 text-[color:var(--joi-success)]">
+          <span>✓</span> {success}
+        </div>
       )}
 
-      <Button type="submit" className="w-full" disabled={isLoading || !file || !connectionName}>
-        {isLoading ? "Uploading & Validating..." : (
-          <>
-            <Upload className="mr-2 h-4 w-4" /> Upload Data Source
-          </>
-        )}
-      </Button>
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm
+          border border-[color:var(--joi-accent-warm)]/30 bg-[color:var(--joi-accent-warm)]/10 text-[color:var(--joi-accent-warm)]">
+          <span>⚠</span> {error}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={isLoading || !file || !connectionName}
+        className="w-full py-2.5 rounded-lg text-sm font-semibold
+          bg-[color:var(--joi-accent)] text-black
+          hover:opacity-90 transition-opacity disabled:opacity-50"
+      >
+        {isLoading ? "Subiendo…" : "Subir archivo"}
+      </button>
     </form>
-  )
+  );
 }

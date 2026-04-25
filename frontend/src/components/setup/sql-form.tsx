@@ -1,146 +1,131 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { joiStorage } from "@/lib/storage/joi-storage";
 
-// Esquema Zod basado en Pydantic
-const connectionSchema = z.object({
-  name: z.string().min(2, "Connection name must be at least 2 characters"),
-  source_type: z.enum(["POSTGRESQL", "MYSQL", "SQLITE", "FILE"]),
-  connection_string: z.string().min(5, "Must be a valid database connection string (e.g. sqlite+aiosqlite:///...)"),
-  user_session_id: z.string(), // Oculto o auto-generado
-});
+type SourceType = "POSTGRESQL" | "MYSQL" | "SQLITE";
 
-type ConnectionFormValues = z.infer<typeof connectionSchema>;
+const INPUT_CLS = `w-full rounded-lg px-3 py-2.5 text-sm
+  bg-black/30 border border-[color:var(--joi-border)]
+  text-[color:var(--joi-text)] placeholder:text-[color:var(--joi-muted)]
+  focus:outline-none focus:border-[color:var(--joi-accent)]
+  focus:shadow-[0_0_0_3px_var(--joi-glow)]
+  transition-all`;
+
+const LABEL_CLS = "block text-xs font-medium text-[color:var(--joi-muted)] mb-1.5 uppercase tracking-wider";
 
 export function SQLConnectionForm() {
-  const [testResult, setTestResult] = useState<"success" | "error" | null>(null);
+  const [name, setName] = useState("");
+  const [sourceType, setSourceType] = useState<SourceType>("POSTGRESQL");
+  const [connectionString, setConnectionString] = useState("");
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<ConnectionFormValues>({
-    resolver: zodResolver(connectionSchema),
-    defaultValues: {
-      name: "",
-      source_type: "POSTGRESQL",
-      connection_string: "",
-      user_session_id: "",
-    },
-  });
-
-  async function onSubmit(data: ConnectionFormValues) {
-    setTestResult(null);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("idle");
     setErrorMessage(null);
+    setIsSubmitting(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
-      const response = await fetch(`${baseUrl}/connections/sql`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api";
+      const sessionId = joiStorage.sessionId.get() ?? "demo-session";
+      const r = await fetch(`${baseUrl}/connections/sql`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          name,
+          source_type: sourceType,
+          connection_string: connectionString,
+          user_session_id: sessionId,
+        }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Unknown error connecting to DB");
+      if (!r.ok) {
+        const err = await r.json();
+        throw new Error(err.detail ?? "Error desconocido");
       }
-
-      const result = await response.json();
-      setTestResult("success");
-      console.log("Connection saved:", result);
-    } catch (error) {
-      setTestResult("error");
-      setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred");
+      setStatus("success");
+    } catch (e) {
+      setStatus("error");
+      setErrorMessage(e instanceof Error ? e.message : "Error inesperado");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-card rounded-lg shadow-sm border border-border">
-      <h2 className="text-2xl font-bold mb-6 text-foreground">Connect Database</h2>
+    <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-5">
+      <div>
+        <label className={LABEL_CLS}>Nombre de la conexión</label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Producción DB"
+          required
+          minLength={2}
+          className={INPUT_CLS}
+        />
+      </div>
 
-      {testResult === "success" && (
-        <Alert className="mb-6 border-green-500 text-green-700 bg-green-50 dark:bg-green-950/50">
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>
-            Connection established and saved successfully.
-          </AlertDescription>
-        </Alert>
+      <div>
+        <label className={LABEL_CLS}>Motor</label>
+        <select
+          value={sourceType}
+          onChange={(e) => setSourceType(e.target.value as SourceType)}
+          className={INPUT_CLS}
+          style={{ appearance: "none" }}
+        >
+          <option value="POSTGRESQL">PostgreSQL</option>
+          <option value="MYSQL">MySQL</option>
+          <option value="SQLITE">SQLite</option>
+        </select>
+      </div>
+
+      <div>
+        <label className={LABEL_CLS}>Connection string</label>
+        <input
+          value={connectionString}
+          onChange={(e) => setConnectionString(e.target.value)}
+          placeholder="postgresql+asyncpg://user:pass@host/db"
+          required
+          minLength={5}
+          className={INPUT_CLS}
+        />
+      </div>
+
+      {status === "success" && (
+        <div
+          className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm
+            border border-[color:var(--joi-success)]/30
+            bg-[color:var(--joi-success)]/10
+            text-[color:var(--joi-success)]"
+        >
+          <span>✓</span> Conexión establecida correctamente.
+        </div>
       )}
 
-      {testResult === "error" && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Connection Failed</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
+      {status === "error" && (
+        <div
+          className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm
+            border border-[color:var(--joi-accent-warm)]/30
+            bg-[color:var(--joi-accent-warm)]/10
+            text-[color:var(--joi-accent-warm)]"
+        >
+          <span>⚠</span> {errorMessage}
+        </div>
       )}
 
-      <form 
-        onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const data = {
-            name: formData.get("name") as string,
-            source_type: formData.get("source_type") as ConnectionFormValues["source_type"],
-            connection_string: formData.get("connection_string") as string,
-            user_session_id: localStorage.getItem("joi_session_id") ?? "demo-session-123"
-          };
-          onSubmit(data);
-        }} 
-        className="space-y-6"
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full py-2.5 rounded-lg text-sm font-semibold
+          bg-[color:var(--joi-accent)] text-black
+          hover:opacity-90 transition-opacity
+          disabled:opacity-50"
       >
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Connection Name</label>
-          <input 
-            name="name" 
-            placeholder="Production DB" 
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Engine</label>
-          <select
-            name="source_type"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            required
-          >
-            <option value="POSTGRESQL">PostgreSQL</option>
-            <option value="MYSQL">MySQL</option>
-            <option value="SQLITE">SQLite</option>
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Connection String</label>
-          <input
-            name="connection_string"
-            placeholder="postgresql+asyncpg://user:pass@host/db"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            required
-          />
-        </div>
-
-        <Button type="submit" className="w-full">
-          Connect
-        </Button>
-      </form>
-    </div>
+        {isSubmitting ? "Conectando…" : "Conectar"}
+      </button>
+    </form>
   );
 }

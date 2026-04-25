@@ -13,10 +13,21 @@ import {
   makeResizeMessage,
 } from "./protocol";
 import { getRenderer } from "./registry";
+import { setActiveAdapter, type RenderModeName } from "./render-mode-registry";
 
 // Register built-in renderers by side-effect import. Each file calls
 // registerRenderer() at module load.
 import "./renderers";
+
+// Apply render mode from localStorage before first render.
+(function applyStoredRenderMode() {
+  try {
+    const stored = localStorage.getItem("joi_render_mode") as RenderModeName | null;
+    if (stored) setActiveAdapter(stored);
+  } catch {
+    // localStorage unavailable in some sandboxed iframes — ignore
+  }
+})();
 
 interface RuntimeState {
   initialized: boolean;
