@@ -7,6 +7,17 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# ── Matar procesos previos ────────────────────────────────────────────────────
+if pkill -f "next dev" 2>/dev/null; then
+  echo "[dev.sh] Deteniendo next dev anterior…"
+  sleep 1
+fi
+if lsof -ti:8000 &>/dev/null; then
+  echo "[dev.sh] Deteniendo proceso existente en :8000…"
+  kill $(lsof -ti:8000) 2>/dev/null || true
+  sleep 1
+fi
+
 # ── Backend ───────────────────────────────────────────────────────────────────
 echo "[dev.sh] Iniciando backend en :8000…"
 (cd backend && bash dev.sh "$@") &
