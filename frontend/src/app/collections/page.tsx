@@ -5,6 +5,7 @@ import { CollectionList } from "@/components/collections/CollectionList";
 import { CollectionManager } from "@/components/collections/CollectionManager";
 import { useCollections } from "@/hooks/use-collections";
 import { getSessionId } from "@/lib/session";
+import { AppHeader } from "@/components/layout/AppHeader";
 
 export default function CollectionsPage() {
   const [sessionId, setSessionId] = useState("");
@@ -56,7 +57,9 @@ export default function CollectionsPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col h-screen">
+      <AppHeader />
+      <div className="flex flex-1 overflow-hidden">
       <aside className="w-64 border-r border-border bg-background p-4 overflow-y-auto shrink-0">
         {isLoading ? (
           <p className="text-xs text-muted-foreground">Cargando…</p>
@@ -85,6 +88,7 @@ export default function CollectionsPage() {
           onMoveWidget={handleMoveWidget}
         />
       </main>
+      </div>
     </div>
   );
 }

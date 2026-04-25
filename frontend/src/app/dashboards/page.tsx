@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useDashboards } from "@/hooks/useDashboards";
 import { getSessionId } from "@/lib/session";
+import { AppHeader } from "@/components/layout/AppHeader";
 
 export default function DashboardsPage() {
   const [sessionId, setSessionId] = useState("");
@@ -30,7 +31,9 @@ export default function DashboardsPage() {
   }
 
   return (
-    <main className="flex flex-col min-h-screen p-8 max-w-2xl mx-auto">
+    <div className="flex flex-col min-h-screen">
+      <AppHeader />
+    <main className="flex flex-col flex-1 p-8 max-w-2xl mx-auto w-full">
       <h1 className="text-xl font-bold tracking-tight mb-6 text-[color:var(--joi-text)]">
         Dashboards
       </h1>
@@ -100,5 +103,6 @@ export default function DashboardsPage() {
         ))}
       </ul>
     </main>
+    </div>
   );
 }
