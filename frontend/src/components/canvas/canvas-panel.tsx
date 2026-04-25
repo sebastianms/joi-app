@@ -1,7 +1,3 @@
-// Canvas panel (T138). Orquesta use-canvas y decide qué renderizar según
-// el estado: skeleton de generación, skeleton de bootstrap, iframe con el
-// widget, empty state o error banner (T403/T404).
-
 "use client";
 
 import { useMemo, useState } from "react";
@@ -77,18 +73,12 @@ export function CanvasPanel({
 
   if (!widgetSpec) {
     return (
-      <PanelShell dashed>
-        <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
-          <p className="max-w-sm">
-            Los widgets generados aparecerán aquí cuando solicites visualizar tus datos.
-          </p>
-        </div>
+      <PanelShell>
+        <IdleState />
       </PanelShell>
     );
   }
 
-  // Error with a previously-rendered widget: keep the frame visible (FR-014) and
-  // overlay the error banner so the user sees the last good state.
   if (state.loading_stage === "error" && state.last_error) {
     const hasPrevious = state.previous_widget_spec !== null && bundleCode;
     if (hasPrevious) {
@@ -97,7 +87,7 @@ export function CanvasPanel({
           <div className="flex flex-col gap-2 p-3">
             <WidgetErrorBanner error={state.last_error} />
             <div
-              className="relative w-full overflow-hidden rounded-lg border border-border bg-background"
+              className="relative w-full overflow-hidden rounded-lg border border-[color:var(--joi-border)] bg-[color:var(--joi-surface)]"
               style={{ height: frameHeight }}
               data-role="widget-container"
             >
@@ -132,9 +122,9 @@ export function CanvasPanel({
   return (
     <>
       <PanelShell>
-        <div className="flex flex-col gap-2 p-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-foreground">
+        <div className="flex flex-col gap-2 p-3 h-full">
+          <div className="flex items-center justify-between flex-shrink-0">
+            <h2 className="text-sm font-medium text-[color:var(--joi-text)] tracking-tight">
               {widgetSpec.visual_options?.title ?? "Widget"}
             </h2>
             <div className="flex items-center gap-2">
@@ -147,13 +137,16 @@ export function CanvasPanel({
                 size="sm"
                 onClick={handleOpenSaveDialog}
                 data-role="widget-save-button"
+                className="border-[color:var(--joi-border)] text-[color:var(--joi-muted)]
+                  hover:border-[color:var(--joi-accent)] hover:text-[color:var(--joi-accent)]
+                  transition-colors"
               >
                 Guardar
               </Button>
             </div>
           </div>
           <div
-            className="relative w-full overflow-hidden rounded-lg border border-border bg-background"
+            className="relative w-full overflow-hidden rounded-lg border border-[color:var(--joi-border)] bg-[color:var(--joi-surface)]"
             style={{ height: frameHeight }}
             data-role="widget-container"
           >
@@ -164,9 +157,7 @@ export function CanvasPanel({
               onLoad={handleFrameLoad}
             />
             {state.loading_stage === "bootstrapping" && (
-              <div className="pointer-events-none absolute inset-0 rounded-lg bg-card">
-                <WidgetLoading stage="bootstrapping" />
-              </div>
+              <WidgetLoading stage="bootstrapping" />
             )}
           </div>
         </div>
@@ -182,20 +173,39 @@ export function CanvasPanel({
   );
 }
 
-function PanelShell({
-  children,
-  dashed = false,
-}: {
-  children: React.ReactNode;
-  dashed?: boolean;
-}) {
+function IdleState() {
+  const dots = Array.from({ length: 48 });
+  return (
+    <div
+      className="flex h-full flex-col items-center justify-center gap-6 p-10 text-center"
+      data-role="canvas-idle"
+    >
+      <div
+        className="grid gap-2.5 opacity-[0.08]"
+        style={{ gridTemplateColumns: "repeat(12, 1fr)" }}
+        aria-hidden="true"
+      >
+        {dots.map((_, i) => (
+          <span key={i} className="block w-1 h-1 rounded-full bg-[color:var(--joi-text)]" />
+        ))}
+      </div>
+      <div>
+        <h2 className="text-base font-semibold tracking-wide text-[color:var(--joi-text)] mb-2">
+          Tu canvas está esperando
+        </h2>
+        <p className="text-sm text-[color:var(--joi-muted)] max-w-xs leading-relaxed">
+          Pregunta algo sobre tus datos y Joi generará una visualización aquí.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PanelShell({ children }: { children: React.ReactNode }) {
   return (
     <section
-      className={
-        dashed
-          ? "flex min-h-0 flex-1 flex-col rounded-xl border border-dashed border-border bg-card"
-          : "flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card"
-      }
+      className="flex min-h-0 flex-1 flex-col
+        bg-[color:var(--joi-surface)]/40 backdrop-blur-sm"
       aria-label="Canvas de widgets"
       data-role="canvas-panel"
     >

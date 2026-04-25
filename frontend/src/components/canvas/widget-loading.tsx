@@ -1,44 +1,63 @@
-// Canvas skeleton shown while the architect generates the spec (generating)
-// and while the iframe bootstraps the runtime (bootstrapping). Purely presentational.
-
 import type { CanvasLoadingStage } from "@/types/widget";
 
 interface WidgetLoadingProps {
   stage: Extract<CanvasLoadingStage, "generating" | "bootstrapping">;
 }
 
-const STAGE_COPY: Record<WidgetLoadingProps["stage"], { title: string; detail: string }> = {
-  generating: {
-    title: "Construyendo el widget…",
-    detail: "El arquitecto está eligiendo el tipo de visualización según tus datos.",
-  },
-  bootstrapping: {
-    title: "Renderizando el widget…",
-    detail: "Cargando el runtime dentro del canvas aislado.",
-  },
-};
-
 export function WidgetLoading({ stage }: WidgetLoadingProps) {
-  const copy = STAGE_COPY[stage];
+  if (stage === "generating") {
+    return (
+      <div
+        className="flex h-full flex-col items-center justify-center gap-6 p-8"
+        role="status"
+        aria-live="polite"
+        aria-label="Construyendo widget"
+        data-role="widget-loading"
+        data-stage={stage}
+      >
+        <div className="flex flex-col gap-1.5 w-64">
+          {[1, 0.7, 0.85, 0.5, 0.9, 0.4].map((w, i) => (
+            <div
+              key={i}
+              className="h-0.5 rounded-full bg-[color:var(--joi-accent)] origin-left"
+              style={{
+                width: `${w * 100}%`,
+                animation: `construct-lines 2s ${i * 150}ms ease-in-out infinite`,
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex items-center gap-2 text-[13px] text-[color:var(--joi-muted)] tracking-wide">
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-[color:var(--joi-accent)]"
+            style={{ animation: "pulse-accent 1.5s infinite" }}
+          />
+          Construyendo widget
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
-      className="flex h-full flex-col gap-4 p-6"
+      className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3
+        bg-[color:var(--joi-bg)]/80 backdrop-blur-sm rounded-lg"
       role="status"
       aria-live="polite"
-      aria-label={copy.title}
+      aria-label="Renderizando widget"
       data-role="widget-loading"
       data-stage={stage}
     >
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-foreground">{copy.title}</p>
-        <p className="text-xs text-muted-foreground">{copy.detail}</p>
+      <div className="flex gap-1">
+        {[0, 200, 400].map((d) => (
+          <span
+            key={d}
+            className="w-1.5 h-1.5 rounded-full bg-[color:var(--joi-accent)]"
+            style={{ animation: `typing-bounce 1.4s ${d}ms infinite` }}
+          />
+        ))}
       </div>
-      <div className="flex flex-1 flex-col gap-3 rounded-lg border border-border bg-card p-4">
-        <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
-        <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
-        <div className="mt-2 flex-1 animate-pulse rounded bg-muted" />
-      </div>
+      <p className="text-xs text-[color:var(--joi-muted)] tracking-wider">Renderizando…</p>
     </div>
   );
 }

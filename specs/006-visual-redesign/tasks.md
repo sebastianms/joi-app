@@ -1,6 +1,6 @@
 # Tasks: Feature 006 — Visual Redesign & UX Polish
 
-**Branch**: `006-visual-redesign` | **Date**: 2026-04-24 | **Status**: Draft (post-Plan)
+**Branch**: `006-visual-redesign` | **Date**: 2026-04-24 | **Status**: Phase0 ✅ | Setup ✅ | Foundational ✅ | US1 ✅ | US2 ✅ | US3 ✅ | US4 ✅ | US5 🔄 | US6 ⬜ | Polish ⬜
 
 > Formato: `- [ ] T### [P?] [US?] Descripción con ruta exacta`.
 > `[P]` = paralelizable. `[US1..6]` solo en bloques de user stories.
@@ -16,61 +16,61 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 
 ## Phase 0 — Visual validation (bloqueante, Clarify Q1)
 
-- [ ] T001 Crear [docs/visual-mockup/index.html](docs/visual-mockup/index.html) con el shell completo usando los hex propuestos (bg #0a0d12, surface #111520, accent #00d4ff, warm #f5a623) + tipografía Geist Sans. Incluir: header, dual panel, una burbuja user, una del agente, AgentTrace colapsado, canvas idle, canvas generating, CacheReuseSuggestion stub, onboarding card stub.
-- [ ] T002 **STOP & ASK**: presentar el mockup al usuario. Ajustar valores hasta aprobación explícita. Anotar los valores finales en [contracts/css-tokens.md](specs/006-visual-redesign/contracts/css-tokens.md) antes de continuar.
+- [x] T001 Crear [docs/visual-mockup/index.html](docs/visual-mockup/index.html) con el shell completo usando los hex propuestos (bg #0a0d12, surface #111520, accent #00d4ff, warm #f5a623) + tipografía Geist Sans. Incluir: header, dual panel, una burbuja user, una del agente, AgentTrace colapsado, canvas idle, canvas generating, CacheReuseSuggestion stub, onboarding card stub.
+- [x] T002 **STOP & ASK**: presentar el mockup al usuario. Ajustar valores hasta aprobación explícita. Anotar los valores finales en [contracts/css-tokens.md](specs/006-visual-redesign/contracts/css-tokens.md) antes de continuar.
 
 ---
 
 ## Setup
 
-- [ ] T005 Anotar baseline de bundle en [contracts/css-tokens.md](specs/006-visual-redesign/contracts/css-tokens.md): correr `cd frontend && npm run build` en HEAD de main, registrar First Load JS por ruta.
-- [ ] T006 [P] Crear [frontend/src/lib/storage/joi-storage.ts](frontend/src/lib/storage/joi-storage.ts) con helpers tipados para las 3 keys de localStorage documentadas en [contracts/localstorage.md](specs/006-visual-redesign/contracts/localstorage.md). Prohibir `localStorage.*` directo en componentes (agregar regla ESLint si hay config).
-- [ ] T007 [P] Crear directorios nuevos: `frontend/src/components/{layout,onboarding,canvas}/`, `frontend/src/lib/widget-runtime/adapters/`. `.gitkeep` en los vacíos.
+- [x] T005 Anotar baseline de bundle en [contracts/css-tokens.md](specs/006-visual-redesign/contracts/css-tokens.md): correr `cd frontend && npm run build` en HEAD de main, registrar First Load JS por ruta.
+- [x] T006 [P] Crear [frontend/src/lib/storage/joi-storage.ts](frontend/src/lib/storage/joi-storage.ts) con helpers tipados para las 3 keys de localStorage documentadas en [contracts/localstorage.md](specs/006-visual-redesign/contracts/localstorage.md). Prohibir `localStorage.*` directo en componentes (agregar regla ESLint si hay config).
+- [x] T007 [P] Crear directorios nuevos: `frontend/src/components/{layout,onboarding,canvas}/`, `frontend/src/lib/widget-runtime/adapters/`. `.gitkeep` en los vacíos.
 
 ---
 
 ## Foundational (bloquean US1–US6)
 
-- [ ] T010 Actualizar [frontend/src/app/globals.css](frontend/src/app/globals.css) con los tokens CSS definitivos (post-T002), bloque `@theme` de Tailwind v4, keyframes custom (`pulse-accent`, `construct-lines`, `glow-in`), y reset dark-first.
-- [ ] T011 Crear [frontend/src/hooks/useLayoutMode.ts](frontend/src/hooks/useLayoutMode.ts) (contrato: devuelve `"dual" | "tabs"`, listener `matchMedia` 768px, SSR-safe).
+- [x] T010 Actualizar [frontend/src/app/globals.css](frontend/src/app/globals.css) con los tokens CSS definitivos (post-T002), bloque `@theme` de Tailwind v4, keyframes custom (`pulse-accent`, `construct-lines`, `glow-in`), y reset dark-first.
+- [x] T011 Crear [frontend/src/hooks/useLayoutMode.ts](frontend/src/hooks/useLayoutMode.ts) (contrato: devuelve `"dual" | "tabs"`, listener `matchMedia` 768px, SSR-safe).
 
 ---
 
 ## User Story 1 — Identidad visual Blade Runner (P1)
 
-- [ ] T020 [US1] Aplicar tokens al shell raíz en [frontend/src/app/layout.tsx](frontend/src/app/layout.tsx): bg, texto, tipografía global con tracking.
-- [ ] T021 [P] [US1] Crear [frontend/src/components/layout/AppHeader.tsx](frontend/src/components/layout/AppHeader.tsx) con logo/nombre, navegación mínima, indicador de sesión, botón "¿Cómo funciona?".
-- [ ] T022 [P] [US1] Crear [frontend/src/components/layout/PanelSeparator.tsx](frontend/src/components/layout/PanelSeparator.tsx) con profundidad (border + shadow sutil).
-- [ ] T023 [US1] Auditar todo el repo por hardcodes de color (`#`, `rgb`, `text-[...]`) y reemplazar por tokens. Comando de referencia: `grep -rn "text-\[\|bg-\[\|border-\[" frontend/src/components/`.
+- [x] T020 [US1] Aplicar tokens al shell raíz en [frontend/src/app/layout.tsx](frontend/src/app/layout.tsx): bg, texto, tipografía global con tracking.
+- [x] T021 [P] [US1] Crear [frontend/src/components/layout/AppHeader.tsx](frontend/src/components/layout/AppHeader.tsx) con logo/nombre, navegación mínima, indicador de sesión, botón "¿Cómo funciona?".
+- [x] T022 [P] [US1] Crear [frontend/src/components/layout/PanelSeparator.tsx](frontend/src/components/layout/PanelSeparator.tsx) con profundidad (border + shadow sutil).
+- [x] T023 [US1] Auditar todo el repo por hardcodes de color (`#`, `rgb`, `text-[...]`) y reemplazar por tokens. Comando de referencia: `grep -rn "text-\[\|bg-\[\|border-\[" frontend/src/components/`.
 
 ---
 
 ## User Story 2 — Layout dual rediseñado con responsive (P1, Q2)
 
-- [ ] T030 [US2] Crear [frontend/src/components/layout/LayoutTabs.tsx](frontend/src/components/layout/LayoutTabs.tsx) según [contracts/components.md](specs/006-visual-redesign/contracts/components.md#layouttabs). `role=tablist`, dos tabs, keyboard nav.
-- [ ] T031 [US2] Actualizar [frontend/src/app/page.tsx](frontend/src/app/page.tsx) para usar `useLayoutMode()` y alternar entre split-pane y `LayoutTabs`. Preservar `data-role="chat-panel"` y `"canvas-panel"`.
+- [x] T030 [US2] Crear [frontend/src/components/layout/LayoutTabs.tsx](frontend/src/components/layout/LayoutTabs.tsx) según [contracts/components.md](specs/006-visual-redesign/contracts/components.md#layouttabs). `role=tablist`, dos tabs, keyboard nav.
+- [x] T031 [US2] Actualizar [frontend/src/app/page.tsx](frontend/src/app/page.tsx) para usar `useLayoutMode()` y alternar entre split-pane y `LayoutTabs`. Preservar `data-role="chat-panel"` y `"canvas-panel"`.
 - [ ] T032 [P] [US2] Añadir Playwright test que ejercita viewports 1024/375 y valida los atributos de tabs (Escenario 2 del quickstart).
 
 ---
 
 ## User Story 3 — Componentes de chat rediseñados (P1)
 
-- [ ] T040 [US3] Rediseñar [frontend/src/components/chat/MessageBubble.tsx](frontend/src/components/chat/MessageBubble.tsx): variantes user/agent, tokens CSS, avatar Joi para agente. Preservar `data-role`.
-- [ ] T041 [P] [US3] Rediseñar [frontend/src/components/chat/AgentTrace.tsx](frontend/src/components/chat/AgentTrace.tsx) con collapse + CSS syntax highlight (regex keywords SQL).
-- [ ] T042 [P] [US3] Rediseñar [frontend/src/components/chat/WidgetGenerationTrace.tsx](frontend/src/components/chat/WidgetGenerationTrace.tsx) con badge `source`, pulse animado en `in-progress`. Consume el campo `source` que Feature 005 introdujo.
-- [ ] T043 [P] [US3] Crear [frontend/src/components/chat/TypingIndicator.tsx](frontend/src/components/chat/TypingIndicator.tsx) con animación de procesamiento.
-- [ ] T044 [US3] Estilar `CacheReuseSuggestion` (componente de Feature 005) con los tokens CSS y estados hover/focus.
+- [x] T040 [US3] Rediseñar [frontend/src/components/chat/MessageBubble.tsx](frontend/src/components/chat/MessageBubble.tsx): variantes user/agent, tokens CSS, avatar Joi para agente. Preservar `data-role`.
+- [x] T041 [P] [US3] Rediseñar [frontend/src/components/chat/AgentTrace.tsx](frontend/src/components/chat/AgentTrace.tsx) con collapse + CSS syntax highlight (regex keywords SQL).
+- [x] T042 [P] [US3] Rediseñar [frontend/src/components/chat/WidgetGenerationTrace.tsx](frontend/src/components/chat/WidgetGenerationTrace.tsx) con badge `source`, pulse animado en `in-progress`. Consume el campo `source` que Feature 005 introdujo.
+- [x] T043 [P] [US3] Crear [frontend/src/components/chat/TypingIndicator.tsx](frontend/src/components/chat/TypingIndicator.tsx) con animación de procesamiento.
+- [x] T044 [US3] Estilar `CacheReuseSuggestion` (componente de Feature 005) con los tokens CSS y estados hover/focus.
 
 ---
 
 ## User Story 4 — Canvas con estados visuales ricos (P1)
 
-- [ ] T050 [US4] Definir el tipo discriminado `CanvasState` en [frontend/src/types/canvas.ts](frontend/src/types/canvas.ts) según `contracts/components.md`.
-- [ ] T051 [P] [US4] Crear [frontend/src/components/canvas/IdleState.tsx](frontend/src/components/canvas/IdleState.tsx) con patrón de puntos + copy de invitación.
-- [ ] T052 [P] [US4] Crear [frontend/src/components/canvas/GeneratingState.tsx](frontend/src/components/canvas/GeneratingState.tsx) con animación de líneas progresivas (no spinner).
-- [ ] T053 [P] [US4] Crear [frontend/src/components/canvas/BootstrappingOverlay.tsx](frontend/src/components/canvas/BootstrappingOverlay.tsx) con progress sobre iframe.
-- [ ] T054 [P] [US4] Crear [frontend/src/components/canvas/CanvasErrorState.tsx](frontend/src/components/canvas/CanvasErrorState.tsx) con tono warning (warm), sin rojo alarma.
-- [ ] T055 [US4] Integrar en [frontend/src/components/canvas/CanvasPanel.tsx](frontend/src/components/canvas/CanvasPanel.tsx) con transiciones 200ms ease entre estados.
+- [x] T050 [US4] Definir el tipo discriminado `CanvasState` en [frontend/src/types/canvas.ts](frontend/src/types/canvas.ts) según `contracts/components.md`.
+- [x] T051 [P] [US4] Crear [frontend/src/components/canvas/IdleState.tsx](frontend/src/components/canvas/IdleState.tsx) con patrón de puntos + copy de invitación.
+- [x] T052 [P] [US4] Crear [frontend/src/components/canvas/GeneratingState.tsx](frontend/src/components/canvas/GeneratingState.tsx) con animación de líneas progresivas (no spinner).
+- [x] T053 [P] [US4] Crear [frontend/src/components/canvas/BootstrappingOverlay.tsx](frontend/src/components/canvas/BootstrappingOverlay.tsx) con progress sobre iframe.
+- [x] T054 [P] [US4] Crear [frontend/src/components/canvas/CanvasErrorState.tsx](frontend/src/components/canvas/CanvasErrorState.tsx) con tono warning (warm), sin rojo alarma.
+- [x] T055 [US4] Integrar en [frontend/src/components/canvas/CanvasPanel.tsx](frontend/src/components/canvas/CanvasPanel.tsx) con transiciones 200ms ease entre estados.
 
 ---
 
