@@ -49,7 +49,7 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 
 - [x] T030 [US2] Crear [frontend/src/components/layout/LayoutTabs.tsx](frontend/src/components/layout/LayoutTabs.tsx) según [contracts/components.md](specs/006-visual-redesign/contracts/components.md#layouttabs). `role=tablist`, dos tabs, keyboard nav.
 - [x] T031 [US2] Actualizar [frontend/src/app/page.tsx](frontend/src/app/page.tsx) para usar `useLayoutMode()` y alternar entre split-pane y `LayoutTabs`. Preservar `data-role="chat-panel"` y `"canvas-panel"`.
-- [ ] T032 [P] [US2] Añadir Playwright test que ejercita viewports 1024/375 y valida los atributos de tabs (Escenario 2 del quickstart).
+- [x] T032 [P] [US2] Añadir Playwright test que ejercita viewports 1024/375 y valida los atributos de tabs (Escenario 2 del quickstart).
 
 ---
 
@@ -82,7 +82,7 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 - [x] T063 [P] [US5] Crear [frontend/src/components/onboarding/WizardStepGenerate.tsx](frontend/src/components/onboarding/WizardStepGenerate.tsx) con preview estático de un widget.
 - [x] T064 [US5] Crear [frontend/src/components/onboarding/OnboardingWizard.tsx](frontend/src/components/onboarding/OnboardingWizard.tsx) orquestando los 3 pasos + overlay dismissable.
 - [x] T065 [US5] Integrar `OnboardingWizard` en `layout.tsx` controlado por `useOnboardingWizard`. Botón "¿Cómo funciona?" en `AppHeader` llama `open()`.
-- [ ] T066 [P] [US5] Playwright test: `localStorage.clear()` + reload → wizard aparece → completar → flag queda en localStorage → reload → no reaparece (Escenario 1 del quickstart).
+- [x] T066 [P] [US5] Playwright test: `localStorage.clear()` + reload → wizard aparece → completar → flag queda en localStorage → reload → no reaparece (Escenario 1 del quickstart).
 
 ---
 
@@ -101,7 +101,7 @@ Esta feature consume componentes creados por Feature 005 (`CacheReuseSuggestion`
 - [x] T078 [US6] Crear [frontend/src/lib/widget-runtime/render-mode-registry.ts](frontend/src/lib/widget-runtime/render-mode-registry.ts) mapeando mode → adapter.
 - [x] T079 [US6] Integrar registry en el entrypoint del runtime (`entry.tsx` o equivalente) para aplicar el adapter activo al bootstrap.
 - [x] T080 [US6] Actualizar script `build:widget-runtime` si el bundle cambió (mismo comando, verificar output).
-- [ ] T081 [US6] Playwright: automatizar Escenarios 6–7 y 11–12 del quickstart de Feature 004 (cambio de render-mode cambia widget en runtime).
+- [x] T081 [US6] Playwright: automatizar Escenarios 6–7 y 11–12 del quickstart de Feature 004 (cambio de render-mode cambia widget en runtime).
 
 ---
 
