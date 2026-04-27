@@ -1,4 +1,22 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: joi-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: joi
+      POSTGRES_USER: joi
+      POSTGRES_PASSWORD: joi
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U joi -d joi"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   qdrant:
     image: qdrant/qdrant:v1.10.0
     container_name: joi-qdrant
@@ -20,17 +38,17 @@ services:
     container_name: joi-backend
     ports:
       - "8000:8000"
-    volumes:
-      # Montamos un volumen para la base de datos local
-      - ./backend/data:/app/data
-    # Carga API keys + LLM_MODEL_* + flags de Data Agent desde backend/.env.
-    # Los valores del bloque `environment` siguen teniendo prioridad (override
-    # para el entorno containerizado: path de la DB y CORS del frontend Docker).
     env_file:
       - ./backend/.env
     environment:
-      - DATABASE_URL=sqlite+aiosqlite:////app/data/joi.db
+      - DATABASE_URL=postgresql+asyncpg://joi:joi@postgres:5432/joi
+      - QDRANT_URL=http://qdrant:6333
       - CORS_ORIGINS=["http://localhost:3000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -41,10 +59,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Asegura que las llamadas a la API vayan al servicio backend en modo cliente o SSR según corresponda
-      # (En SSR usaría el nombre del servicio, pero como el frontend de Nextjs llama desde el browser en este MVP, usamos localhost)
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api
     depends_on:
-      - qdrant
       - backend
     restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -7,18 +7,37 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
 from app.services.widget_cache.bootstrap import ensure_widget_cache_collection
-import app.models.user_session  # noqa: F401 — registra UserSession en Base.metadata
-import app.models.render_mode  # noqa: F401 — registra RenderModeProfileORM en Base.metadata
-import app.models.widget  # noqa: F401 — registra WidgetORM en Base.metadata
-import app.models.collection  # noqa: F401 — registra Collection, CollectionWidget en Base.metadata
-import app.models.dashboard  # noqa: F401 — registra Dashboard, DashboardItem en Base.metadata
-import app.models.vector_store_config  # noqa: F401 — registra VectorStoreConfigORM en Base.metadata
-import app.models.widget_cache  # noqa: F401 — registra WidgetCacheEntryORM en Base.metadata
+import app.models.user_session  # noqa: F401
+import app.models.render_mode  # noqa: F401
+import app.models.widget  # noqa: F401
+import app.models.collection  # noqa: F401
+import app.models.dashboard  # noqa: F401
+import app.models.vector_store_config  # noqa: F401
+import app.models.widget_cache  # noqa: F401
+
+
+async def _init_db() -> None:
+    if settings.DATABASE_URL.startswith("postgresql"):
+        # Production: run pending Alembic migrations
+        import asyncio
+        from alembic.config import Config
+        from alembic import command
+
+        def _run(cfg: Config) -> None:
+            command.upgrade(cfg, "head")
+
+        alembic_cfg = Config("alembic.ini")
+        alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+        await asyncio.get_event_loop().run_in_executor(None, _run, alembic_cfg)
+    else:
+        # Development: create tables directly (SQLite, fast startup)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await _init_db()
     await ensure_widget_cache_collection()
     yield
 
