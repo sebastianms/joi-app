@@ -1,162 +1,232 @@
-# Joi-App
+# Joi · App
 
 > *"She's not your wife. She's not real. I know."* — Joi, Blade Runner 2049
 
-Plataforma de generación dinámica de UI con IA. El sistema interpreta datos y contratos para renderizar **widgets** en tiempo real mediante un sistema multi-agente, manteniendo independencia de proveedores tecnológicos.
+**Joi** convierte tus datos en visualizaciones interactivas en segundos. Conectas tu base de datos (SQL o JSON), le preguntas en lenguaje natural, y la app genera el widget correcto en tiempo real — tabla, gráfico de barras, KPI, mapa de calor — sin que tengas que escribir una línea de código.
 
 ![Coverage](docs/coverage-badge.svg)
 [![CI](https://github.com/sebastianms/joi-app/actions/workflows/ci.yml/badge.svg)](https://github.com/sebastianms/joi-app/actions/workflows/ci.yml)
 
-## Stack
+---
+
+## ¿Qué hace?
+
+### Hablas, ella visualiza
+
+Escribe un mensaje como *"muéstrame las ventas por región del último trimestre"* y Joi:
+
+1. Interpreta la intención y genera el SQL correcto.
+2. Ejecuta la consulta de forma segura (solo `SELECT`, nunca escritura).
+3. Elige el tipo de widget más adecuado para los datos devueltos.
+4. Genera el código del widget y lo renderiza en el canvas, en vivo.
+
+Si los datos cambian de forma, el widget cambia con ellos. Si el generador falla, siempre hay una tabla con los datos crudos como fallback.
+
+### Memoria semántica
+
+Joi recuerda los widgets que ya generaste. Si vuelves a pedir algo similar, te ofrece reutilizar el widget anterior en lugar de regenerar. Esto reduce la latencia y el costo de API a cero en consultas repetidas.
+
+### Colecciones y dashboards
+
+Guarda los widgets que te parecen útiles, agrúpalos en colecciones y compónalos en dashboards personalizados con drag-and-drop. Un dashboard puede mezclar widgets de diferentes fuentes de datos.
+
+### Agnóstica de proveedor
+
+Usa Anthropic, OpenAI o Gemini — el mismo `.env` controla qué modelo va a cada agente. Para el vector store puedes usar Qdrant (incluido en Docker Compose), Chroma, Pinecone, Weaviate o PGVector.
+
+---
+
+## Cómo funciona por dentro
+
+```
+Usuario: "ventas por mes 2025"
+         │
+         ▼
+  Triage Engine ─── consulta simple? ──► responde directamente
+         │
+         │ consulta de datos
+         ▼
+  Data Agent
+  ├─ genera SQL
+  ├─ guard read-only (solo SELECT)
+  └─ ejecuta → DataExtraction (JSON)
+         │
+         ▼
+  Cache RAG ─── hit semántico (score ≥ 0.85)? ──► sugiere widget guardado
+         │
+         │ miss → pipeline completo
+         ▼
+  Agente Arquitecto
+  └─ selector determinístico → tipo de widget óptimo
+         │
+         ▼
+  Agente Generador (LLM)
+  └─ WidgetSpec con bindings validados
+         │
+         ▼
+  Canvas (iframe sandboxed + Recharts)
+  └─ widget visible, interactivo, aislado del DOM host
+```
+
+**Tipos de widget soportados:**
+`table` · `bar_chart` · `line_chart` · `area_chart` · `pie_chart` · `kpi` · `scatter_plot` · `heatmap`
+
+---
+
+## Stack técnico
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | Next.js + Tailwind CSS + shadcn/ui |
-| Backend | Python + FastAPI + LiteLLM (LLM agnóstico) |
-| DB Secundaria | SQLite (vía SQLAlchemy async) |
-| Cache Vectorial | Qdrant (Docker) |
-| Tests | pytest + pytest-asyncio + Playwright (e2e) |
+| Frontend | Next.js 15 · Tailwind CSS v4 · shadcn/ui |
+| Backend | Python 3.13 · FastAPI · LiteLLM (agnóstico de LLM) |
+| Base de datos | SQLite vía SQLAlchemy async (desarrollo) / PostgreSQL (producción) |
+| Cache vectorial | Qdrant (default Docker) · Chroma · Pinecone · Weaviate · PGVector |
+| Tests | pytest · pytest-asyncio · Playwright E2E |
+| CI | GitHub Actions |
 
-## Estructura
-
-```
-joi-app/
-├── backend/          # FastAPI + Python (Agentes, API, DB)
-├── frontend/         # Next.js + Tailwind + shadcn/ui
-├── specs/            # Documentación SDD (mission, roadmap, tech-stack, features)
-└── docs/             # Artefactos generados (badges, etc.)
-```
+---
 
 ## Levantar el proyecto
 
-### Desarrollo local (recomendado)
+### Requisitos previos
 
-**Requisitos previos**: Python 3.11+, Node.js 18+, Docker (solo para Qdrant).
+- Python 3.11+
+- Node.js 18+
+- Docker (solo para Qdrant — el vector store)
 
-**Primera vez — backend:**
+### Primera vez
+
+**Backend:**
 
 ```bash
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # completar API keys
+cp .env.example .env
 ```
 
-**Primera vez — frontend:**
+Abre `.env` y completa al menos una API key de LLM:
+
+```env
+# Elige uno (o más):
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AIza...
+
+# Y configura los modelos para ese proveedor:
+LLM_MODEL_CHAT=anthropic/claude-haiku-4-5-20251001
+LLM_MODEL_SQL=anthropic/claude-haiku-4-5-20251001
+LLM_MODEL_WIDGET=anthropic/claude-haiku-4-5-20251001
+
+# Modelo de embeddings (debe coincidir con el proveedor):
+EMBEDDING_MODEL=gemini/text-embedding-004   # o text-embedding-3-small para OpenAI
+```
+
+**Frontend:**
 
 ```bash
 cd frontend
 npm install
-npm run build:widget-runtime
+npm run build:widget-runtime   # compila el bundle del sandbox de widgets
 ```
 
-**Arranque diario:**
+### Arranque diario
 
 ```bash
-# 1. Qdrant (vector store) — solo necesita Docker, corre en background
+# 1. Vector store en background (solo la primera vez o tras reiniciar Docker)
 docker compose up qdrant -d
 
-# 2. Backend + Frontend en un solo comando
+# 2. Backend + Frontend juntos
 ./dev.sh
 ```
 
-| Servicio     | URL                                                  |
+`./dev.sh` espera a que el backend responda antes de arrancar el frontend. No hace falta coordinarlos manualmente.
+
+| Servicio | URL |
 |---|---|
-| Frontend     | [http://localhost:3000](http://localhost:3000)        |
-| Backend API  | [http://localhost:8000/api](http://localhost:8000/api)|
-| Swagger Docs | [http://localhost:8000/docs](http://localhost:8000/docs)|
-| Qdrant UI    | [http://localhost:6333/dashboard](http://localhost:6333/dashboard)|
+| App | http://localhost:3000 |
+| API | http://localhost:8000/api |
+| Swagger | http://localhost:8000/docs |
+| Qdrant UI | http://localhost:6333/dashboard |
 
-`./dev.sh` levanta backend (uvicorn) y frontend (next dev) juntos, esperando a que el backend responda antes de arrancar el frontend. No hace falta coordinarlos manualmente.
-
-### Docker completo
-
-Construye y orquesta todos los servicios (producción / CI):
+### Docker completo (producción / CI)
 
 ```bash
 docker compose up --build
 ```
 
-## Capacidades del sistema
-
-### Conexión a datos
-
-El Setup Wizard conecta la app a cualquier fuente de datos en segundos. Soporta **PostgreSQL, MySQL, SQLite y JSON**. La conexión queda guardada en sesión — no hace falta reconectar en cada visita.
-
-### Chat con inteligencia contextual
-
-El motor de triage interpreta el mensaje del usuario y decide en tiempo real si puede responderlo de forma directa o si requiere consultar la base de datos. Las consultas simples (saludos, ayuda, preferencias de visualización) se resuelven sin tocar la DB — sin latencia, sin costos LLM innecesarios.
-
-### Pipeline multi-agente Text-to-SQL
-
-Para consultas de datos, tres agentes trabajan en secuencia:
-
-```
-Usuario: "muéstrame las ventas por región"
-      ↓
-Data Agent: genera SQL → guard read-only → ejecuta → DataExtraction
-      ↓
-Agente Arquitecto: selector determinístico → tipo de widget óptimo
-      ↓
-Agente Generador (LLM): WidgetSpec con bindings validados
-      ↓
-Canvas: iframe sandboxed + Recharts → widget visible
-```
-
-El guard SQL garantiza que solo se ejecuten sentencias `SELECT` — ninguna operación de escritura puede llegar a la base de datos del usuario.
-
-### Visualizaciones automáticas
-
-El sistema elige el tipo de widget más adecuado según la forma de los datos, sin intervención del usuario:
-
-`table` · `bar_chart` · `line_chart` · `area_chart` · `pie_chart` · `kpi` · `scatter_plot` · `heatmap`
-
-**Preferencia explícita**: el usuario puede pedir un tipo distinto ("prefiero verlo como tabla") y el sistema reutiliza la extracción anterior sin re-ejecutar la consulta SQL.
-
-**Fallback universal**: cualquier fallo del generador (timeout, spec inválida, crash del renderer) produce automáticamente una tabla con los datos crudos. La sesión nunca se interrumpe.
-
-### Cache semántico de widgets (RAG)
-
-Cuando el usuario repite una consulta similar a una ya generada, el sistema sugiere reutilizar el widget anterior en lugar de regenerar código. El flujo:
-
-1. Antes de llamar al LLM, el pipeline consulta el vector store con el prompt.
-2. Si hay hit con score ≥ 0.85 → devuelve `cache_suggestion` al chat (botones "Usar este widget" / "Generar uno nuevo").
-3. Si no hay hit o el usuario opta por regenerar (`skip_cache=true`) → pipeline normal.
-4. Tras generar con éxito → se indexa el nuevo widget.
-
-Los filtros `session_id`, `connection_id` y `data_schema_hash` son obligatorios en toda búsqueda: un widget de otra sesión o con un schema distinto nunca se sugiere. Al eliminar una conexión, todas las entradas asociadas se soft-deletean automáticamente.
-
-#### Vector store: Qdrant por defecto y BYO opcional
-
-Por defecto, la app usa **Qdrant** en Docker Compose — no hace falta configurar nada. Si prefieres tu propio proveedor, ve a `/setup → Vector Store` y elige uno:
-
-| Provider | Extra a instalar | Docs |
-|---|---|---|
-| Qdrant (BYO remoto) | — (ya instalado) | [qdrant.tech](https://qdrant.tech/) |
-| Chroma | `pip install langchain-chroma` | [trychroma.com](https://www.trychroma.com/) |
-| Pinecone | `pip install langchain-pinecone` | [pinecone.io](https://www.pinecone.io/) |
-| Weaviate | `pip install langchain-weaviate` | [weaviate.io](https://weaviate.io/) |
-| PGVector | `pip install langchain-postgres` | [pgvector](https://github.com/pgvector/pgvector) |
-
-Las credenciales se cifran con Fernet (clave en `VECTOR_STORE_ENCRYPTION_KEY`) antes de persistir. El botón "Validar conexión" hace un ping real al provider antes de guardar. Si Qdrant u otro provider no está disponible, el caché se degrada a miss sin interrumpir al usuario (FR-013).
-
-### Aislamiento de seguridad
-
-Cada widget corre en un `<iframe sandbox="allow-scripts">` con CSP que bloquea `connect-src`. El código del widget no puede acceder al DOM del host, leer cookies ni hacer peticiones de red.
-
-Para construir el bundle del runtime antes de levantar el frontend:
-
-```bash
-cd frontend
-npm run build:widget-runtime
-```
+---
 
 ## Tests
 
 ```bash
-# Backend (corre en menos de 5 s, sin servicios externos)
+# Backend — suite completa (< 5 s, sin servicios externos)
 cd backend && .venv/bin/pytest
 
-# Con reporte de cobertura
+# Con cobertura
 cd backend && .venv/bin/pytest --cov=app --cov-report=term-missing
+
+# E2E (requiere backend + frontend corriendo)
+cd frontend && ./dev-e2e.sh   # desde la raíz: ./dev-e2e.sh
+```
+
+La suite E2E levanta sus propios procesos, siembra la base de datos de test y los cierra al terminar.
+
+---
+
+## Configuración avanzada
+
+### Cambiar el modelo LLM
+
+Joi usa LiteLLM, así que el formato de modelo es `proveedor/nombre-del-modelo`:
+
+```env
+LLM_MODEL_WIDGET=gemini/gemini-2.5-flash
+LLM_MODEL_SQL=anthropic/claude-sonnet-4-6
+LLM_MODEL_CHAT=openai/gpt-4o-mini
+```
+
+Cada propósito puede usar un proveedor distinto. Los modelos más capaces para generación de widgets (`LLM_MODEL_WIDGET`) dan mejores resultados en la calidad del código generado.
+
+### Vector store BYO (Bring Your Own)
+
+Qdrant corre en Docker Compose por defecto. Para usar otro proveedor:
+
+1. Ve a `/setup → Vector Store`.
+2. Elige el proveedor e ingresa las credenciales (se cifran con AES-256 antes de persistir).
+3. Haz click en "Validar conexión" — Joi hace un ping real antes de guardar.
+
+Si el vector store no está disponible, el cache se degrada a miss y la sesión continúa normalmente.
+
+### Render-mode del widget
+
+Los widgets pueden renderizarse con diferentes frameworks UI. Configurable en `/setup → Widgets`:
+
+- **shadcn** (default) — componentes Radix + Tailwind
+- **Bootstrap 5** — clases CSS clásicas
+- **HeroUI** — componentes React modernos
+- **Sin framework** — HTML/CSS puro
+
+---
+
+## Estructura del repositorio
+
+```
+joi-app/
+├── backend/
+│   ├── app/
+│   │   ├── api/          # Endpoints FastAPI
+│   │   ├── models/       # SQLAlchemy ORM
+│   │   ├── repositories/ # Acceso a datos
+│   │   └── services/     # Agentes, cache RAG, embeddings, triage
+│   └── tests/            # Unit + integration tests
+├── frontend/
+│   ├── src/
+│   │   ├── app/          # Páginas Next.js (App Router)
+│   │   ├── components/   # Componentes React
+│   │   ├── hooks/        # Custom hooks
+│   │   └── lib/          # Utilidades, storage, widget runtime
+│   └── e2e/              # Tests Playwright
+├── specs/                # Documentación SDD (features, roadmap, ADLs)
+└── .design-logs/         # Architectural Decision Logs (ADL-001 → ADL-023)
 ```
