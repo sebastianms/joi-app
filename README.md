@@ -157,6 +157,31 @@ docker compose up --build
 
 ---
 
+## Migraciones de base de datos
+
+En desarrollo (SQLite) el schema se crea automáticamente al arrancar. En producción (PostgreSQL) el backend corre `alembic upgrade head` al iniciarse — no hace falta hacerlo manualmente.
+
+Al cambiar un modelo ORM, genera la migración así:
+
+```bash
+cd backend
+
+# Genera el archivo de migración comparando modelos vs DB actual
+DATABASE_URL=sqlite+aiosqlite:///./joi_app.db \
+  .venv/bin/alembic revision --autogenerate -m "descripcion_del_cambio"
+
+# Revisa el archivo generado en alembic/versions/ antes de commitear
+```
+
+```bash
+# Otros comandos útiles
+.venv/bin/alembic history          # ver historial de migraciones
+.venv/bin/alembic current          # ver en qué revisión está la DB
+.venv/bin/alembic downgrade -1     # revertir una migración
+```
+
+---
+
 ## Tests
 
 ```bash
