@@ -111,38 +111,24 @@ test.describe("Esc 1 — Primera visita dispara el OnboardingWizard", () => {
     expect(flag).toBe("true");
   });
 
-  test("paso 2 y 3 accesibles via 'Ir a configurar' sin navegar (intercept)", async ({ page }) => {
-    // Use a capture-phase listener to preventDefault on /setup link clicks.
-    // This stops the browser (and Next.js router) from following the href, while
-    // React's synthetic onClick={onNext} still fires (we don't stopPropagation).
-    await page.addInitScript(() => {
-      document.addEventListener(
-        "click",
-        (e) => {
-          const a = (e.target as Element)?.closest?.("a[href*='setup']");
-          if (a) e.preventDefault();
-        },
-        { capture: true },
-      );
-    });
+  test("paso 2 y 3 accesibles via 'Siguiente →'", async ({ page }) => {
     await gotoFreshSession(page);
     const dialog = await getDialog(page);
     await expect(dialog).toBeVisible({ timeout: 3000 });
 
-    // Step 1 → noWaitAfter so Playwright doesn't block on navigation that won't happen.
-    await dialog.getByRole("link", { name: /ir a configurar/i }).click({ noWaitAfter: true });
-    // Step 2 should now be visible
-    await expect(dialog.getByText(/pregunta por tus datos/i)).toBeVisible({ timeout: 3000 });
+    // Step 1: "Ir a configurar" es un link secundario; "Siguiente →" avanza el wizard
+    await expect(dialog.getByRole("link", { name: /ir a configurar/i })).toBeVisible();
+    await dialog.getByRole("button", { name: /siguiente/i }).click();
 
-    // Step 2 → Entendido
+    // Step 2
+    await expect(dialog.getByText(/pregunta por tus datos/i)).toBeVisible({ timeout: 3000 });
     await dialog.getByRole("button", { name: /entendido/i }).click();
+
     // Step 3
     await expect(dialog.getByText(/joi genera tu visualización/i)).toBeVisible({ timeout: 2000 });
-
-    // Step 3 → Empezar (completes wizard)
     await dialog.getByRole("button", { name: /empezar/i }).click();
-    await expect(dialog).not.toBeVisible({ timeout: 3000 });
 
+    await expect(dialog).not.toBeVisible({ timeout: 3000 });
     const flag = await page.evaluate(() => localStorage.getItem("joi_onboarding_completed"));
     expect(flag).toBe("true");
   });
